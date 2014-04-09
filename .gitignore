@@ -172,3 +172,9 @@ UpgradeLog*.htm
 
 # Microsoft Fakes
 FakesAssemblies/
+
+
+## My own customizations of GitHub default cSharp gitignore
+Service References/
+*.pfx
+BuildProcessTemplates/
