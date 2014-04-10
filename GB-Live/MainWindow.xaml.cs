@@ -22,7 +22,7 @@ namespace GB_Live
             this.DataContext = this;
 
             this._updateTimer.Tick += _updateTimer_Tick;
-            this._updateTimer.Interval = new TimeSpan(0, 0, 60);
+            this._updateTimer.Interval = new TimeSpan(0, 15, 0);
             this._updateTimer.IsEnabled = true;
 
             this.Events = new ObservableCollection<GBUpcomingEvent>();
@@ -74,19 +74,15 @@ namespace GB_Live
                 {
                     int startingIndex = rawWebsite.IndexOf(beginsUpcomingHtml); // will return the index of the opening <
                     int endingIndex = rawWebsite.IndexOf(endsUpcomingHtml, startingIndex); // will return the index of the opening <
-                    int length = endingIndex - startingIndex + 5; // + 5 includes all of the </dl> tag
+                    int length = endingIndex - startingIndex + 5; // + 5 to include all of the </dl> tag
 
                     string upcomingHtml = rawWebsite.Substring(startingIndex, length);
 
                     List<GBUpcomingEvent> events = ParseHtmlForEvents(upcomingHtml);
 
-                    foreach (GBUpcomingEvent each in events)
-                    {
-                        if (EventNotFound(each))
-                        {
-                            this.Events.Add(each);
-                        }
-                    }
+                    RemoveOldEvents(events);
+
+                    AddNewEvents(events);
                 }
                 else
                 {
@@ -95,6 +91,35 @@ namespace GB_Live
             }
 
             this.Title = appName;
+        }
+
+        private void RemoveOldEvents(List<GBUpcomingEvent> events)
+        {
+            List<GBUpcomingEvent> eventsToRemove = new List<GBUpcomingEvent>();
+
+            foreach (GBUpcomingEvent eventInThisDotEvents in this.Events)
+            {
+                if (events.Contains(eventInThisDotEvents) == false)
+                {
+                    eventsToRemove.Add(eventInThisDotEvents);
+                }
+            }
+
+            foreach (GBUpcomingEvent anEvent in eventsToRemove)
+            {
+                this.Events.Remove(anEvent);
+            }
+        }
+
+        private void AddNewEvents(List<GBUpcomingEvent> events)
+        {
+            foreach (GBUpcomingEvent each in events)
+            {
+                if (EventNotFound(each))
+                {
+                    this.Events.Add(each);
+                }
+            }
         }
 
         private async Task<string> DownloadWebsite(string gbUrl)
@@ -226,5 +251,13 @@ namespace GB_Live
                 image.SetValue(Canvas.LeftProperty, -50d);
             }
         }
+
+        //private static class Extensions
+        //{
+        //    public static bool ListContains<T>(this List<T> list)
+        //    {
+        //        return true;
+        //    }
+        //}
     }
 }

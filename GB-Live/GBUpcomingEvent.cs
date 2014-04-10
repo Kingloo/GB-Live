@@ -14,6 +14,7 @@ namespace GB_Live
         public string Title { get; private set; }
         public DateTime Time { get; private set; }
         public GBEventType EventType { get; private set; }
+        public bool Premium { get; private set; }
         public Uri BackgroundImageUrl { get; private set; }
 
         public GBUpcomingEvent(string s)
@@ -21,6 +22,7 @@ namespace GB_Live
             this.Title = GetTitleFromString(s);
             this.Time = GetTimeFromString(s);
             this.EventType = GetEventTypeFromString(s);
+            this.Premium = false;
             this.BackgroundImageUrl = GetBackgroundImageUrlFromString(s);
         }
 
