@@ -5,7 +5,6 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Threading;
 
 namespace GB_Live
@@ -21,18 +20,16 @@ namespace GB_Live
             InitializeComponent();
             this.DataContext = this;
 
-            this._updateTimer.Tick += _updateTimer_Tick;
-            this._updateTimer.Interval = new TimeSpan(0, 15, 0);
-            this._updateTimer.IsEnabled = true;
-
             this.Events = new ObservableCollection<GBUpcomingEvent>();
+            
+            this._updateTimer.Tick += _updateTimer_Tick;
+            this._updateTimer.Interval = new TimeSpan(0, 3, 0);
+            this._updateTimer.IsEnabled = true;
         }
 
         private async void _updateTimer_Tick(object sender, EventArgs e)
         {
-            Console.Write("checking ... ");
             await UpdateAsync();
-            Console.Write("finished\n");
         }
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -44,6 +41,12 @@ namespace GB_Live
         {
             switch (e.Key)
             {
+                //case System.Windows.Input.Key.F1:
+                //    NotificationService.Send("Bombin' the A.M. With Scoops and the Wolf", new Uri("http://server.newson.z:9092"));
+                //    break;
+                //case System.Windows.Input.Key.F2:
+                //    NotificationService.Send("Bombin' the A.M. With Scoops and the Wolf", "I am a description about something. Please listen to me.", new Uri("http://server.newson.z:9092"));
+                //    break;
                 case System.Windows.Input.Key.F5:
                     await UpdateAsync();
                     break;
@@ -58,12 +61,12 @@ namespace GB_Live
         private async Task UpdateAsync()
         {
             this.Title = string.Format("{0}: checking ...", appName);
-
+            
             string rawWebsite = await DownloadWebsite("http://www.giantbomb.com");
 
             if (String.IsNullOrEmpty(rawWebsite))
             {
-                MessageBox.Show("fail 1");
+                MessageBox.Show("There was a problem downloading the webpage. The website may be down.");
             }
             else
             {
@@ -72,25 +75,26 @@ namespace GB_Live
 
                 if (rawWebsite.Contains(beginsUpcomingHtml))
                 {
-                    int startingIndex = rawWebsite.IndexOf(beginsUpcomingHtml); // will return the index of the opening <
-                    int endingIndex = rawWebsite.IndexOf(endsUpcomingHtml, startingIndex); // will return the index of the opening <
-                    int length = endingIndex - startingIndex + 5; // + 5 to include all of the </dl> tag
+                    string upcomingEventsHtml = RetrieveHtmlSegmentFromWholePage(rawWebsite, beginsUpcomingHtml, endsUpcomingHtml);
 
-                    string upcomingHtml = rawWebsite.Substring(startingIndex, length);
+                    List<GBUpcomingEvent> allEvents = ParseHtmlForEvents(upcomingEventsHtml);
 
-                    List<GBUpcomingEvent> events = ParseHtmlForEvents(upcomingHtml);
+                    RemoveOldEvents(allEvents); // when an existing event has been removed from the website
 
-                    RemoveOldEvents(events);
-
-                    AddNewEvents(events);
-                }
-                else
-                {
-                    MessageBox.Show("fail 2");
+                    AddNewEvents(allEvents);
                 }
             }
 
             this.Title = appName;
+        }
+
+        private string RetrieveHtmlSegmentFromWholePage(string whole, string begins, string ends)
+        {
+            int startingIndex = whole.IndexOf(begins); // will return the index of the opening <
+            int endingIndex = whole.IndexOf(ends, startingIndex); // will return the index of the opening <
+            int length = endingIndex - startingIndex + 5; // + 5 to include all of the </dl> tag
+            
+            return whole.Substring(startingIndex, length);
         }
 
         private void RemoveOldEvents(List<GBUpcomingEvent> events)
@@ -135,7 +139,14 @@ namespace GB_Live
             }
             catch (WebException)
             {
+                if (webResp != null)
+                {
+                    webResp.Close();
+                }
+
                 webResp = null;
+
+                return string.Empty;
             }
 
             if (webResp != null)
@@ -144,6 +155,8 @@ namespace GB_Live
                 {
                     response = await sr.ReadToEndAsync();
                 }
+
+                webResp.Close();
             }
 
             return response;
@@ -215,14 +228,9 @@ namespace GB_Live
             return true;
         }
 
-        private void Image_ImageFailed(object sender, ExceptionRoutedEventArgs e)
-        {
-            Console.WriteLine("image failed: " + sender.GetType().ToString());
-        }
-
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (MessageBox.Show("Really close?", "GB Live", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            if (MessageBox.Show("Really close?", "GB Live", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
                 e.Cancel = false;
             }
@@ -231,33 +239,5 @@ namespace GB_Live
                 e.Cancel = true;
             }
         }
-
-        private void Image_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            Image image = (Image)sender;
-
-            Console.WriteLine(image.Source.Height + ", " + image.Source.Width);
-
-            double amountTaller = image.Source.Height - 100d;
-            double amountWider = image.Source.Width - 450d;
-
-            if (amountTaller > 0)
-            {
-                image.SetValue(Canvas.TopProperty, -10d);
-            }
-
-            if (amountWider > 0)
-            {
-                image.SetValue(Canvas.LeftProperty, -50d);
-            }
-        }
-
-        //private static class Extensions
-        //{
-        //    public static bool ListContains<T>(this List<T> list)
-        //    {
-        //        return true;
-        //    }
-        //}
     }
 }

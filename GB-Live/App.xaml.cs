@@ -14,6 +14,8 @@ namespace GB_Live
             {
                 sw.WriteLine(string.Format("{0}{1}: {2}: {3}: {4}{0}", Environment.NewLine, DateTime.Now, Application.Current.ToString(), e.Exception.ToString(), e.Exception.Message.ToString()));
             }
+
+            e.Handled = false;
         }
     }
 }

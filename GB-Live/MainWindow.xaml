@@ -5,12 +5,7 @@
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         Loaded="Window_Loaded"
         Closing="Window_Closing"
-        KeyDown="Window_KeyDown"
-        Title="GB Live"
-        WindowStyle="ThreeDBorderWindow"
-        Background="Black"
-        ResizeMode="CanMinimize"
-        SizeToContent="Height" Width="450">
+        KeyDown="Window_KeyDown">
     
     <Window.Resources>
         
@@ -25,61 +20,45 @@
         <DataTemplate DataType="{x:Type this:GBUpcomingEvent}">
             
             <DataTemplate.Resources>
-                
-                <Style TargetType="{x:Type Label}">
-                    <Setter Property="FontSize" Value="18" />
-                    <Setter Property="FontWeight" Value="SemiBold" />
-                    <Setter Property="Background" Value="Transparent" />
-                    <Setter Property="Foreground" Value="LightGray" />
-                    <Setter Property="Height" Value="30" />
-                    <!--<Setter Property="VerticalAlignment" Value="Stretch" />-->
-                    <Setter Property="VerticalContentAlignment" Value="Center" />
-                    <Setter Property="Width" Value="Auto" />
-                    <Setter Property="HorizontalAlignment" Value="Stretch" />
-                    <Setter Property="HorizontalContentAlignment" Value="Center" />
-                </Style>
-
-                <Style TargetType="{x:Type Image}">
-                    <Setter Property="Opacity" Value="0.3" />
-                    <Setter Property="Height" Value="Auto" />
-                    <Setter Property="VerticalAlignment" Value="Center" />
-                    <Setter Property="Width" Value="Auto" />
-                    <Setter Property="HorizontalAlignment" Value="Center" />
-                    <Setter Property="Stretch" Value="UniformToFill" />
-                </Style>
-                
                 <this:AddSpacesToEnumConverter x:Key="addSpacesToEnumConverter" />
-                
+                <this:FormatDateTimeString x:Key="formatDateTimeString" />
             </DataTemplate.Resources>
-            
-            <Canvas Width="450"
-                    Height="100"
-                    ClipToBounds="True"
-                    VerticalAlignment="Stretch">
+
+            <Grid>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="55" />
+                    <RowDefinition Height="55" />
+                </Grid.RowDefinitions>
                 
-                <Image Canvas.Top="0"
-                       Canvas.Left="0"
-                       Panel.ZIndex="0"
-                       SizeChanged="Image_SizeChanged"
-                       ImageFailed="Image_ImageFailed"
-                       Source="{Binding Path=BackgroundImageUrl}" />
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="180" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
                 
-                <Label Canvas.Top="15"
-                       Canvas.Left="15"
-                       Panel.ZIndex="1"
-                       Content="{Binding Path=Title}" />
+                <Image Source="{Binding Path=BackgroundImageUrl, Mode=OneTime}"
+                       Grid.ColumnSpan="2"
+                       Grid.RowSpan="2" />
                 
-                <Label Canvas.Top="55"
-                       Canvas.Left="15"
-                       Panel.ZIndex="1"
-                       Content="{Binding Path=EventType, Converter={StaticResource addSpacesToEnumConverter}}" />
+                <Label Content="{Binding Path=Title, Mode=OneTime}"
+                       Style="{StaticResource ResourceKey=LabelBase}"
+                       VerticalContentAlignment="Bottom"
+                       Grid.ColumnSpan="2"
+                       Grid.Row="0" />
+
+                <Label Content="{Binding Path=EventType, Mode=OneTime, Converter={StaticResource addSpacesToEnumConverter}}"
+                       Style="{StaticResource ResourceKey=LabelBase}"
+                       VerticalContentAlignment="Top"
+                       Grid.Column="0"
+                       Grid.Row="1" />
                 
-                <Label Canvas.Top="55"
-                       Canvas.Left="140"
-                       Panel.ZIndex="1"
-                       Content="{Binding Path=Time}" />
-                
-            </Canvas>
+                <Label Content="{Binding Path=Time, Mode=OneTime, Converter={StaticResource formatDateTimeString}}"
+                       Style="{StaticResource ResourceKey=LabelBase}"
+                       VerticalContentAlignment="Top"
+                       Grid.Column="1"
+                       Grid.Row="1" />
+
+            </Grid>
             
         </DataTemplate>
         

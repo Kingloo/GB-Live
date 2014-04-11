@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Data;
+using System.Windows.Threading;
 
 namespace GB_Live
 {
@@ -11,18 +11,32 @@ namespace GB_Live
 
     public class GBUpcomingEvent : IComparable<GBUpcomingEvent>, IEquatable<GBUpcomingEvent>
     {
+        private DispatcherTimer _countdownTimer = new DispatcherTimer();
+
         public string Title { get; private set; }
         public DateTime Time { get; private set; }
-        public GBEventType EventType { get; private set; }
         public bool Premium { get; private set; }
+        public GBEventType EventType { get; private set; }
         public Uri BackgroundImageUrl { get; private set; }
 
         public GBUpcomingEvent(string s)
         {
             this.Title = GetTitleFromString(s);
             this.Time = GetTimeFromString(s);
-            this.EventType = GetEventTypeFromString(s);
-            this.Premium = false;
+
+            SetupCountdownTimer();
+
+            this.Premium = GetPremiumStatus(s);
+
+            if (Premium)
+            {
+                this.EventType = GetEventTypeFromString(s.Substring(9));
+            }
+            else
+            {
+                this.EventType = GetEventTypeFromString(s);
+            }
+
             this.BackgroundImageUrl = GetBackgroundImageUrlFromString(s);
         }
 
@@ -44,6 +58,25 @@ namespace GB_Live
             string stringToParse = HttpUtility.HtmlDecode(s.Substring(beginning, length));
 
             return TryParseAndTrim(stringToParse, false);
+        }
+
+        private void SetupCountdownTimer()
+        {
+            TimeSpan span = this.Time - DateTime.Now;
+
+            this._countdownTimer.Interval = span.Add(new TimeSpan(0, 2, 0));
+            this._countdownTimer.Tick += _countdownTimer_Tick;
+            this._countdownTimer.IsEnabled = true;
+        }
+
+        private void _countdownTimer_Tick(object sender, EventArgs e)
+        {
+            NotificationService.Send(this.Title, new Uri("http://www.giantbomb.com"));
+
+            this._countdownTimer.IsEnabled = true;
+            this._countdownTimer.Tick -= _countdownTimer_Tick;
+
+            this.Time = DateTime.MaxValue;
         }
 
         private GBEventType GetEventTypeFromString(string s)
@@ -76,13 +109,38 @@ namespace GB_Live
             }
         }
 
+        private bool GetPremiumStatus(string s)
+        {
+            int beginning = s.IndexOf("ime\">") + 5;
+            int ending = s.IndexOf("<", beginning);
+            int length = ending - beginning;
+
+            string actualText = HttpUtility.HtmlDecode(s.Substring(beginning, length));
+
+            if (actualText.StartsWith("[PREMIUM]"))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         private Uri GetBackgroundImageUrlFromString(string s)
         {
             int beginning = s.IndexOf("(") + 1;
             int ending = s.IndexOf(")", beginning);
             int length = ending - beginning;
 
-            return new Uri(s.Substring(beginning, length));
+            if (beginning == 0)
+            {
+                return null;
+            }
+            else
+            {
+                return new Uri(s.Substring(beginning, length));
+            }
         }
 
         private DateTime TryParseAndTrim(string s, bool fromEnd)
@@ -166,7 +224,7 @@ namespace GB_Live
             GBEventType eventType = (GBEventType)value;
             string eventTypeAsString = eventType.ToString();
 
-            if (StringHasExtraUppercase(eventTypeAsString))
+            if (StringHasExtraUppercaseCharacters(eventTypeAsString))
             {
                 List<int> listExtraUppercaseIndices = new List<int>();
 
@@ -194,7 +252,7 @@ namespace GB_Live
             }
         }
 
-        private bool StringHasExtraUppercase(string s)
+        private bool StringHasExtraUppercaseCharacters(string s)
         {
             char[] array = s.ToCharArray();
 
@@ -207,6 +265,28 @@ namespace GB_Live
             }
 
             return false;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            return null;
+        }
+    }
+
+    public class FormatDateTimeString : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            DateTime dt = (DateTime)value;
+
+            if (dt.Equals(DateTime.MaxValue))
+            {
+                return "Now!";
+            }
+            else
+            {
+                return dt.ToString("ddd MMM dd, HH:mm");
+            }
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
