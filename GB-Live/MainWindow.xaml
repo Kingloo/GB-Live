@@ -41,19 +41,16 @@
                        Grid.RowSpan="2" />
                 
                 <Label Content="{Binding Path=Title, Mode=OneTime}"
-                       Style="{StaticResource ResourceKey=LabelBase}"
                        VerticalContentAlignment="Bottom"
                        Grid.ColumnSpan="2"
                        Grid.Row="0" />
 
                 <Label Content="{Binding Path=EventType, Mode=OneTime, Converter={StaticResource addSpacesToEnumConverter}}"
-                       Style="{StaticResource ResourceKey=LabelBase}"
                        VerticalContentAlignment="Top"
                        Grid.Column="0"
                        Grid.Row="1" />
                 
                 <Label Content="{Binding Path=Time, Mode=OneTime, Converter={StaticResource formatDateTimeString}}"
-                       Style="{StaticResource ResourceKey=LabelBase}"
                        VerticalContentAlignment="Top"
                        Grid.Column="1"
                        Grid.Row="1" />

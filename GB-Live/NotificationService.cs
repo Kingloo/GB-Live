@@ -172,7 +172,7 @@ namespace GB_Live
 
             private Style BuildLabelTitleStyle()
             {
-                Style style = new Style(typeof(Label), (Style)Application.Current.Resources["LabelBase"]);
+                Style style = new Style(typeof(Label), (Style)Application.Current.Resources[typeof(Label)]);
 
                 style.Setters.Add(new Setter(MarginProperty, new Thickness(15, 0, 0, 0)));
 
@@ -184,7 +184,7 @@ namespace GB_Live
 
             private Style BuildLabelDescriptionStyle()
             {
-                Style style = new Style(typeof(Label), (Style)Application.Current.Resources["LabelBase"]);
+                Style style = new Style(typeof(Label), (Style)Application.Current.Resources[typeof(Label)]);
 
                 style.Setters.Add(new Setter(MarginProperty, new Thickness(0, 0, 15, 0)));
                 
