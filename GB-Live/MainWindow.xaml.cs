@@ -23,7 +23,7 @@ namespace GB_Live
             this.Events = new ObservableCollection<GBUpcomingEvent>();
             
             this._updateTimer.Tick += _updateTimer_Tick;
-            this._updateTimer.Interval = new TimeSpan(0, 3, 0);
+            this._updateTimer.Interval = new TimeSpan(0, 5, 0);
             this._updateTimer.IsEnabled = true;
         }
 
@@ -64,11 +64,7 @@ namespace GB_Live
             
             string rawWebsite = await DownloadWebsite("http://www.giantbomb.com");
 
-            if (String.IsNullOrEmpty(rawWebsite))
-            {
-                MessageBox.Show("There was a problem downloading the webpage. The website may be down.");
-            }
-            else
+            if (!(String.IsNullOrEmpty(rawWebsite)))
             {
                 string beginsUpcomingHtml = "<dl class=\"promo-upcoming\">";
                 string endsUpcomingHtml = "</dl>";
@@ -79,7 +75,14 @@ namespace GB_Live
 
                     List<GBUpcomingEvent> allEvents = ParseHtmlForEvents(upcomingEventsHtml);
 
-                    RemoveOldEvents(allEvents); // when an existing event has been removed from the website
+                    if (allEvents.Count == 0)
+                    {
+                        this.Events.Clear();
+                    }
+                    else
+                    {
+                        RemoveOldEvents(allEvents); // when an existing event has been removed from the website
+                    }
 
                     AddNewEvents(allEvents);
                 }
@@ -144,8 +147,6 @@ namespace GB_Live
                     webResp.Close();
                 }
 
-                webResp = null;
-
                 return string.Empty;
             }
 
@@ -168,13 +169,20 @@ namespace GB_Live
 
             HttpWebRequest req = HttpWebRequest.CreateHttp(gbUri);
 
+            req.Accept = "text/html";
+            req.Headers.Add("Accept-Language", "en-gb");
+            req.Headers.Add("DNT", "1");
+            req.Host = gbUri.DnsSafeHost;
             req.KeepAlive = false;
             req.Method = "GET";
             req.ProtocolVersion = HttpVersion.Version10;
             req.Referer = gbUri.DnsSafeHost;
             req.ServicePoint.ConnectionLimit = 1;
             req.Timeout = 750;
-            req.UserAgent = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
+            req.UserAgent = "Mozilla/5.0 (Windows NT 6.3; WOW64; rv:28.0) Gecko/20100101 Firefox/28.0"; // Firefox 28 on Win8.1 64bit
+
+            req.CookieContainer = new CookieContainer();
+            req.CookieContainer.Add(gbUri, new Cookie("xcg", "lu")); // maybe is my country, perhaps for timezone purposes
 
             return req;
         }
