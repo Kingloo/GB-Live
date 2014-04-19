@@ -84,6 +84,7 @@ namespace GB_Live
                 this._n = n;
 
                 this.Owner = Application.Current.MainWindow;
+
                 this.Style = BuildWindowStyle();
 
                 BuildTimer();

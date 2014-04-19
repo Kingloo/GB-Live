@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Web;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Threading;
 
@@ -11,7 +12,7 @@ namespace GB_Live
 
     public class GBUpcomingEvent : IComparable<GBUpcomingEvent>, IEquatable<GBUpcomingEvent>
     {
-        private DispatcherTimer _countdownTimer = new DispatcherTimer();
+        private DispatcherTimer _countdownTimer = null;
 
         public string Title { get; private set; }
         public DateTime Time { get; private set; }
@@ -23,8 +24,6 @@ namespace GB_Live
         {
             this.Title = GetTitleFromString(s);
             this.Time = GetTimeFromString(s);
-
-            SetupCountdownTimer();
 
             this.Premium = GetPremiumStatus(s);
 
@@ -60,20 +59,28 @@ namespace GB_Live
             return TryParseAndTrim(stringToParse, false);
         }
 
-        private void SetupCountdownTimer()
+        public void StartCountdownTimer()
         {
             TimeSpan span = this.Time - DateTime.Now;
 
-            this._countdownTimer.Interval = span.Add(new TimeSpan(0, 2, 0));
+            this._countdownTimer = new DispatcherTimer
+            {
+                Interval = span.Add(new TimeSpan(0, 2, 0)),
+            };
+
             this._countdownTimer.Tick += _countdownTimer_Tick;
             this._countdownTimer.IsEnabled = true;
         }
 
         private void _countdownTimer_Tick(object sender, EventArgs e)
         {
-            NotificationService.Send(this.Title, new Uri("http://www.giantbomb.com"));
+            Application.Current.Dispatcher.Invoke(new Action(
+                delegate()
+                {
+                    NotificationService.Send(this.Title, new Uri("http://www.giantbomb.com"));
+                }), DispatcherPriority.SystemIdle);
 
-            this._countdownTimer.IsEnabled = true;
+            this._countdownTimer.IsEnabled = false;
             this._countdownTimer.Tick -= _countdownTimer_Tick;
 
             this.Time = DateTime.MaxValue;
@@ -285,7 +292,7 @@ namespace GB_Live
             }
             else
             {
-                return dt.ToString("ddd MMM dd, HH:mm");
+                return dt.ToString("HH:mm, ddd MMM dd");
             }
         }
 

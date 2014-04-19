@@ -8,8 +8,8 @@
         KeyDown="Window_KeyDown">
     
     <Window.Resources>
-        
-        <CollectionViewSource Source="{Binding Path=Events}"
+
+        <CollectionViewSource Source="{Binding Path=Events, FallbackValue={x:Null}}"
                               x:Key="sortEventsByTime"
                               IsLiveSortingRequested="True">
             <CollectionViewSource.SortDescriptions>

@@ -18,13 +18,26 @@ namespace GB_Live
         public MainWindow()
         {
             InitializeComponent();
-            this.DataContext = this;
 
+            this.DataContext = this;
+            
             this.Events = new ObservableCollection<GBUpcomingEvent>();
+            this.Events.CollectionChanged += Events_CollectionChanged;
             
             this._updateTimer.Tick += _updateTimer_Tick;
             this._updateTimer.Interval = new TimeSpan(0, 5, 0);
             this._updateTimer.IsEnabled = true;
+        }
+
+        private void Events_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (e.NewItems.Count > 0)
+            {
+                foreach (GBUpcomingEvent each in e.NewItems)
+                {
+                    each.StartCountdownTimer();
+                }
+            }
         }
 
         private async void _updateTimer_Tick(object sender, EventArgs e)
@@ -42,10 +55,11 @@ namespace GB_Live
             switch (e.Key)
             {
                 //case System.Windows.Input.Key.F1:
-                //    NotificationService.Send("Bombin' the A.M. With Scoops and the Wolf", new Uri("http://server.newson.z:9092"));
-                //    break;
-                //case System.Windows.Input.Key.F2:
-                //    NotificationService.Send("Bombin' the A.M. With Scoops and the Wolf", "I am a description about something. Please listen to me.", new Uri("http://server.newson.z:9092"));
+                //    Application.Current.Dispatcher.Invoke(new Action(
+                //        delegate()
+                //        {
+                //            NotificationService.Send(this.Title, new Uri("http://www.giantbomb.com"));
+                //        }), DispatcherPriority.SystemIdle);
                 //    break;
                 case System.Windows.Input.Key.F5:
                     await UpdateAsync();
