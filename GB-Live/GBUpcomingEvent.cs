@@ -15,7 +15,16 @@ namespace GB_Live
         private DispatcherTimer _countdownTimer = null;
 
         public string Title { get; private set; }
-        public DateTime Time { get; private set; }
+        private DateTime _time = DateTime.MinValue;
+        public DateTime Time
+        {
+            get { return this._time; }
+            set
+            {
+                this._time = value;
+                OnPropertyChanged("Time");
+            }
+        }
         public bool Premium { get; private set; }
         public GBEventType EventType { get; private set; }
         public Uri BackgroundImageUrl { get; private set; }
@@ -41,7 +50,7 @@ namespace GB_Live
 
         private string GetTitleFromString(string s)
         {
-            int beginning = s.IndexOf("itle\">") + 6;
+            int beginning = s.IndexOf("itle\">") + 6; // + 6 to move past the > and into the actual content
             int ending = s.IndexOf("<", beginning);
             int length = ending - beginning;
 
@@ -50,7 +59,7 @@ namespace GB_Live
 
         private DateTime GetTimeFromString(string s)
         {
-            int beginning = s.IndexOf("ime\">") + 5;
+            int beginning = s.IndexOf("ime\">") + 5; // + 5 to move past the > and into the actual content
             int ending = s.IndexOf("<", beginning);
             int length = ending - beginning;
 
@@ -65,7 +74,7 @@ namespace GB_Live
 
             this._countdownTimer = new DispatcherTimer
             {
-                Interval = span.Add(new TimeSpan(0, 2, 0))
+                Interval = span.Add(new TimeSpan(0, 1, 0))
             };
 
             this._countdownTimer.Tick += _countdownTimer_Tick;
@@ -120,7 +129,7 @@ namespace GB_Live
 
         private bool GetPremiumStatus(string s)
         {
-            int beginning = s.IndexOf("ime\">") + 5;
+            int beginning = s.IndexOf("itle\">") + 6; // + 6 to move past the > and into the actual content
             int ending = s.IndexOf("<", beginning);
             int length = ending - beginning;
 
@@ -173,16 +182,9 @@ namespace GB_Live
                 }
                 else
                 {
-                    return TryParseAndTrim(TrimStringFromBeginning(s), fromEnd);
+                    return TryParseAndTrim(s.Substring(1, s.Length - 1), fromEnd);
                 }
             }
-        }
-
-        private string TrimStringFromBeginning(string s)
-        {
-            char[] c = s.ToCharArray(1, s.Length - 1);
-
-            return new string(c);
         }
 
         public override string ToString()
@@ -294,13 +296,13 @@ namespace GB_Live
             }
             else
             {
-                return dt.ToString("ddd MMM dd -- HH:mm");
+                return dt.ToString("ddd MMM dd  -  HH:mm");
             }
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            return null;
+            return DateTime.MaxValue;
         }
     }
 }

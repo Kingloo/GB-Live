@@ -207,12 +207,17 @@ namespace GB_Live
 
             foreach (GBUpcomingEvent eventInThisDotEvents in this.Events)
             {
+                // if a given event in the ViewModel OC is not in the list
+                // of events we built from the html, we want to remove it
+                // however, we can't remove it from the collection during a foreach
+                // so we add it to a temporary list
                 if (EventNotFoundInList(eventInThisDotEvents, eventsInHtml))
                 {
                     eventsToRemove.Add(eventInThisDotEvents);
                 }
             }
 
+            // now we iterate the temporary list and remove every one from the ViewModel OC
             foreach (GBUpcomingEvent anEvent in eventsToRemove)
             {
                 this.Events.Remove(anEvent);
