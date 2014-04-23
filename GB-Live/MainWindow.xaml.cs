@@ -18,9 +18,6 @@ namespace GB_Live
         {
             switch (e.Key)
             {
-                case System.Windows.Input.Key.F1:
-                    ((ViewModel)this.DataContext).IsLive = true;
-                    break;
                 case System.Windows.Input.Key.Escape:
                     this.Close();
                     break;

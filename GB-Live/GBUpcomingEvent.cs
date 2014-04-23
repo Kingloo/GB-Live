@@ -10,7 +10,7 @@ namespace GB_Live
 {
     public enum GBEventType { Unknown, Article, Podcast, Video, LiveShow };
 
-    public class GBUpcomingEvent : IComparable<GBUpcomingEvent>, IEquatable<GBUpcomingEvent>
+    public class GBUpcomingEvent : ViewModelBase, IComparable<GBUpcomingEvent>, IEquatable<GBUpcomingEvent>
     {
         private DispatcherTimer _countdownTimer = null;
 
@@ -74,11 +74,13 @@ namespace GB_Live
 
         private void _countdownTimer_Tick(object sender, EventArgs e)
         {
-            Application.Current.Dispatcher.Invoke(new Action(
+            AppDisp.Invoke(new Action(
                 delegate()
                 {
-                    NotificationService.Send(this.Title, new Uri("http://www.giantbomb.com"));
-                }), DispatcherPriority.SystemIdle);
+                    Uri gbHome = ((UriBuilder)Application.Current.Resources["gbHome"]).Uri;
+                    NotificationService.Send(this.Title, gbHome);
+                }),
+                DispatcherPriority.SystemIdle);
 
             this._countdownTimer.IsEnabled = false;
             this._countdownTimer.Tick -= _countdownTimer_Tick;

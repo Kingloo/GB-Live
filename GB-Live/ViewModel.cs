@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Threading;
 
 namespace GB_Live
@@ -13,9 +14,6 @@ namespace GB_Live
         private const string appName = "GB Live";
         private const string upcomingBegins = "<dl class=\"promo-upcoming\">";
         private const string upcomingEnds = "</dl>";
-
-        private readonly Uri gbHome = new Uri("http://www.giantbomb.com");
-        private readonly Uri gbChat = new Uri("http://www.giantbomb.com/chat");
 
         private DispatcherTimer _updateTimer = new DispatcherTimer();
         private bool _isLive = false;
@@ -89,6 +87,7 @@ namespace GB_Live
 
         private async Task CheckForLiveShow()
         {
+            Uri gbChat = ((UriBuilder)Application.Current.Resources["gbChat"]).Uri;
             string websiteAsString = await DownloadWebsite(gbChat);
 
             if (!(String.IsNullOrEmpty(websiteAsString)))
@@ -111,6 +110,7 @@ namespace GB_Live
 
         private async Task UpdateUpcomingEvents()
         {
+            Uri gbHome = ((UriBuilder)Application.Current.Resources["gbHome"]).Uri;
             string websiteAsString = await DownloadWebsite(gbHome);
 
             if (!(String.IsNullOrEmpty(websiteAsString)))
@@ -305,6 +305,7 @@ namespace GB_Live
 
         public void NavigateToChatPage()
         {
+            Uri gbChat = ((UriBuilder)Application.Current.Resources["gbChat"]).Uri;
             Misc.OpenUrlInBrowser(gbChat);
         }
     }
