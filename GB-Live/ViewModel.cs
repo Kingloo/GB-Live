@@ -257,15 +257,14 @@ namespace GB_Live
 
         private static bool EventNotFoundInList(GBUpcomingEvent eventToCheck, List<GBUpcomingEvent> listToCheckWithin)
         {
-            foreach (GBUpcomingEvent each in listToCheckWithin)
+            if (listToCheckWithin.Contains(eventToCheck))
             {
-                if (listToCheckWithin.Contains(each))
-                {
-                    return false;
-                }
+                return false;
             }
-
-            return true;
+            else
+            {
+                return true;
+            }
         }
 
         private async Task<string> DownloadWebsite(Uri gbUri)
