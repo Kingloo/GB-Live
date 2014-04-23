@@ -123,7 +123,7 @@ namespace GB_Live
                 }
                 else
                 {
-                    RemoveOldEvents(eventsFromHtml);
+                    RemoveOldEvents();
                     AddNewEvents(eventsFromHtml);
                 }
             }
@@ -201,7 +201,7 @@ namespace GB_Live
             return events;
         }
 
-        private void RemoveOldEvents(List<GBUpcomingEvent> eventsInHtml)
+        private void RemoveOldEventsDEPRECATED(List<GBUpcomingEvent> eventsInHtml)
         {
             List<GBUpcomingEvent> eventsToRemove = new List<GBUpcomingEvent>();
 
@@ -221,6 +221,24 @@ namespace GB_Live
             foreach (GBUpcomingEvent anEvent in eventsToRemove)
             {
                 this.Events.Remove(anEvent);
+            }
+        }
+
+        private void RemoveOldEvents()
+        {
+            List<GBUpcomingEvent> eventsToRemove = new List<GBUpcomingEvent>();
+
+            foreach (GBUpcomingEvent each in this.Events)
+            {
+                if (each.Time.Equals(DateTime.MaxValue))
+                {
+                    eventsToRemove.Add(each);
+                }
+            }
+
+            foreach (GBUpcomingEvent each in eventsToRemove)
+            {
+                this.Events.Remove(each);
             }
         }
 

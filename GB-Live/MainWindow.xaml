@@ -57,7 +57,7 @@
                        Grid.Column="0"
                        Grid.Row="1" />
                 
-                <Label Content="{Binding Path=Time, Mode=OneTime, Converter={StaticResource formatDateTimeString}}"
+                <Label Content="{Binding Path=Time, Mode=OneWay, Converter={StaticResource formatDateTimeString}}"
                        Style="{StaticResource GBUpcomingEventLabelStyle}"
                        VerticalContentAlignment="Top"
                        Grid.Column="1"
