@@ -50,7 +50,6 @@
         
         <Style TargetType="{x:Type Label}">
             
-            <Setter Property="Margin" Value="15,0,0,0" />
             <Setter Property="FontFamily" Value="Calibri" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Opacity" Value="0.7" />
@@ -63,7 +62,7 @@
         
         <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}" x:Key="LabelLiveStyle">
 
-            <Setter Property="Margin" Value="0,5,0,5" />
+            <Setter Property="Margin" Value="0,10,0,10" />
             <Setter Property="Opacity" Value="1.0" />
             <Setter Property="FontSize" Value="30" />
             <Setter Property="Foreground" Value="Green" />
@@ -74,6 +73,7 @@
         
         <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}" x:Key="LabelOfflineStyle">
             
+            <Setter Property="Margin" Value="0,0,0,0" />
             <Setter Property="Opacity" Value="0.5" />
             <Setter Property="FontSize" Value="16" />
             <Setter Property="Foreground" Value="Red" />
@@ -84,6 +84,7 @@
         
         <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}" x:Key="GBUpcomingEventLabelStyle">
             
+            <Setter Property="Margin" Value="15,0,0,0" />
             <Setter Property="FontSize" Value="22" />
             <Setter Property="Foreground" Value="White" />
             <Setter Property="HorizontalContentAlignment" Value="Left" />
