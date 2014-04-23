@@ -65,7 +65,7 @@ namespace GB_Live
 
             this._countdownTimer = new DispatcherTimer
             {
-                Interval = span.Add(new TimeSpan(0, 2, 0)),
+                Interval = span.Add(new TimeSpan(0, 2, 0))
             };
 
             this._countdownTimer.Tick += _countdownTimer_Tick;
@@ -82,7 +82,7 @@ namespace GB_Live
 
             this._countdownTimer.IsEnabled = false;
             this._countdownTimer.Tick -= _countdownTimer_Tick;
-
+            
             this.Time = DateTime.MaxValue;
         }
 
@@ -292,7 +292,7 @@ namespace GB_Live
             }
             else
             {
-                return dt.ToString("HH:mm, ddd MMM dd");
+                return dt.ToString("ddd MMM dd -- HH:mm");
             }
         }
 

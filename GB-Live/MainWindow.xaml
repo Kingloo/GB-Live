@@ -3,12 +3,17 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:this="clr-namespace:GB_Live"
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+        DataContext="{StaticResource vm}"
+        Title="{Binding Path=WindowTitle, Mode=OneWay}"
         Loaded="Window_Loaded"
         Closing="Window_Closing"
         KeyDown="Window_KeyDown">
     
     <Window.Resources>
 
+        <this:BooleanToLiveStatusStringConverter x:Key="booleanToLiveStatusStringConverter" />
+        <this:BooleanToLabelStyleConverter x:Key="booleanToLabelStyleConverter" />
+        
         <CollectionViewSource Source="{Binding Path=Events, FallbackValue={x:Null}}"
                               x:Key="sortEventsByTime"
                               IsLiveSortingRequested="True">
@@ -41,16 +46,19 @@
                        Grid.RowSpan="2" />
                 
                 <Label Content="{Binding Path=Title, Mode=OneTime}"
+                       Style="{StaticResource GBUpcomingEventLabelStyle}"
                        VerticalContentAlignment="Bottom"
                        Grid.ColumnSpan="2"
                        Grid.Row="0" />
 
                 <Label Content="{Binding Path=EventType, Mode=OneTime, Converter={StaticResource addSpacesToEnumConverter}}"
+                       Style="{StaticResource GBUpcomingEventLabelStyle}"
                        VerticalContentAlignment="Top"
                        Grid.Column="0"
                        Grid.Row="1" />
                 
                 <Label Content="{Binding Path=Time, Mode=OneTime, Converter={StaticResource formatDateTimeString}}"
+                       Style="{StaticResource GBUpcomingEventLabelStyle}"
                        VerticalContentAlignment="Top"
                        Grid.Column="1"
                        Grid.Row="1" />
@@ -61,19 +69,33 @@
         
     </Window.Resources>
     
-    <ItemsControl ItemsSource="{Binding Source={StaticResource sortEventsByTime}}">
+    <Grid>
         
-        <ItemsControl.Template>
-            <ControlTemplate>
-                <ItemsPresenter />
-            </ControlTemplate>
-        </ItemsControl.Template>
+        <Grid.RowDefinitions>
+            <RowDefinition MinHeight="50" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
         
-        <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-                <StackPanel />
-            </ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
+        <Label Grid.Row="0"
+               MouseDoubleClick="Label_MouseDoubleClick"
+               Content="{Binding Path=IsLive, Mode=OneWay, Converter={StaticResource booleanToLiveStatusStringConverter}}"
+               Style="{Binding Path=IsLive, Mode=OneWay, Converter={StaticResource booleanToLabelStyleConverter}}" />
         
-    </ItemsControl>
+        <ItemsControl Grid.Row="1"
+                      ItemsSource="{Binding Source={StaticResource sortEventsByTime}}">
+
+            <ItemsControl.Template>
+                <ControlTemplate>
+                    <ItemsPresenter />
+                </ControlTemplate>
+            </ItemsControl.Template>
+
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+
+        </ItemsControl>
+    </Grid>
 </Window>

@@ -121,9 +121,9 @@ namespace GB_Live
 
             private void Expiration_Tick(object sender, EventArgs e)
             {
-                this._expirationTimer.Tick -= Expiration_Tick;
                 this._expirationTimer.IsEnabled = false;
-
+                this._expirationTimer.Tick -= Expiration_Tick;
+                
                 this.Close();
             }
 
