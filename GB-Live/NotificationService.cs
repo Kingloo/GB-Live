@@ -173,25 +173,35 @@ namespace GB_Live
 
             private Style BuildLabelTitleStyle()
             {
-                Style style = new Style(typeof(Label), (Style)Application.Current.Resources[typeof(Label)]);
+                Style style = new Style(typeof(Label));
 
+                style.Setters.Add(new Setter(BackgroundProperty, Brushes.Black));
+                style.Setters.Add(new Setter(ForegroundProperty, Brushes.White));
                 style.Setters.Add(new Setter(MarginProperty, new Thickness(15, 0, 0, 0)));
-
+                style.Setters.Add(new Setter(FontFamilyProperty, new FontFamily("Calibri")));
+                style.Setters.Add(new Setter(FontSizeProperty, 22d));
                 style.Setters.Add(new Setter(HeightProperty, 75d));
+                style.Setters.Add(new Setter(VerticalAlignmentProperty, VerticalAlignment.Stretch));
                 style.Setters.Add(new Setter(VerticalContentAlignmentProperty, VerticalAlignment.Center));
+                style.Setters.Add(new Setter(HorizontalAlignmentProperty, HorizontalAlignment.Stretch));
+                style.Setters.Add(new Setter(HorizontalContentAlignmentProperty, HorizontalAlignment.Center));
 
                 return style;
             }
 
             private Style BuildLabelDescriptionStyle()
             {
-                Style style = new Style(typeof(Label), (Style)Application.Current.Resources[typeof(Label)]);
+                Style style = new Style(typeof(Label));
 
+                style.Setters.Add(new Setter(BackgroundProperty, Brushes.Black));
+                style.Setters.Add(new Setter(ForegroundProperty, Brushes.White));
                 style.Setters.Add(new Setter(MarginProperty, new Thickness(0, 0, 15, 0)));
-                
-                style.Setters.Add(new Setter(FontSizeProperty, 16d));
+                style.Setters.Add(new Setter(FontFamilyProperty, new FontFamily("Calibri")));
+                style.Setters.Add(new Setter(FontSizeProperty, 14d));
                 style.Setters.Add(new Setter(HeightProperty, 40d));
+                style.Setters.Add(new Setter(VerticalAlignmentProperty, VerticalAlignment.Stretch));
                 style.Setters.Add(new Setter(VerticalContentAlignmentProperty, VerticalAlignment.Top));
+                style.Setters.Add(new Setter(HorizontalAlignmentProperty, HorizontalAlignment.Stretch));
                 style.Setters.Add(new Setter(HorizontalContentAlignmentProperty, HorizontalAlignment.Right));
 
                 return style;
