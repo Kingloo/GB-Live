@@ -81,6 +81,15 @@ namespace GB_Live
             this._countdownTimer.IsEnabled = true;
         }
 
+        public void StopCountdownTimer()
+        {
+            if (this._countdownTimer != null)
+            {
+                this._countdownTimer.IsEnabled = false;
+                this._countdownTimer.Tick -= _countdownTimer_Tick;
+            }
+        }
+
         private void _countdownTimer_Tick(object sender, EventArgs e)
         {
             AppDisp.Invoke(new Action(
@@ -135,7 +144,7 @@ namespace GB_Live
 
             string actualText = HttpUtility.HtmlDecode(s.Substring(beginning, length));
 
-            if (actualText.StartsWith("[PREMIUM]"))
+            if (actualText.Contains("Premium"))
             {
                 return true;
             }
@@ -143,6 +152,15 @@ namespace GB_Live
             {
                 return false;
             }
+
+            //if (actualText.StartsWith("[PREMIUM]"))
+            //{
+            //    return true;
+            //}
+            //else
+            //{
+            //    return false;
+            //}
         }
 
         private Uri GetBackgroundImageUrlFromString(string s)
@@ -193,6 +211,7 @@ namespace GB_Live
 
             sb.AppendLine(string.Format("Title: {0}", this.Title));
             sb.AppendLine(string.Format("Time: {0}", this.Time));
+            sb.AppendLine(string.Format("Time remaining: {0}", this._countdownTimer.Interval.ToString()));
             sb.AppendLine(string.Format("Event type: {0}", this.EventType.ToString()));
             sb.AppendLine(string.Format("Image url: {0}", this.BackgroundImageUrl.AbsoluteUri));
 
@@ -217,14 +236,27 @@ namespace GB_Live
 
         public bool Equals(GBUpcomingEvent other)
         {
-            if (this.Title.Equals(other.Title) && this.Time.Equals(other.Time))
-            {
-                return true;
-            }
-            else
+            if (this.Title.Equals(other.Title) == false)
             {
                 return false;
             }
+
+            if (this.Time.Equals(other.Time) == false)
+            {
+                return false;
+            }
+
+            if (this.Premium.Equals(other.Premium) == false)
+            {
+                return false;
+            }
+
+            if (this.EventType.Equals(other.EventType) == false)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 

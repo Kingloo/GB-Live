@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 
 namespace GB_Live
 {
@@ -18,6 +19,12 @@ namespace GB_Live
         {
             switch (e.Key)
             {
+                //case System.Windows.Input.Key.F1:
+                //    foreach (GBUpcomingEvent each in ((ViewModel)this.DataContext).Events)
+                //    {
+                //        Console.WriteLine(each.ToString());
+                //    }
+                //    break;
                 case System.Windows.Input.Key.Escape:
                     this.Close();
                     break;

@@ -52,10 +52,9 @@ namespace GB_Live
 
         private void Events_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+            switch (e.Action)
             {
-                if (e.NewItems != null)
-                {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
                     if (e.NewItems.Count > 0)
                     {
                         foreach (GBUpcomingEvent each in e.NewItems)
@@ -63,7 +62,20 @@ namespace GB_Live
                             each.StartCountdownTimer();
                         }
                     }
-                }
+                    break;
+
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                    if (e.OldItems.Count > 0)
+                    {
+                        foreach (GBUpcomingEvent each in e.OldItems)
+                        {
+                            each.StopCountdownTimer();
+                        }
+                    }
+                    break;
+
+                default:
+                    break;
             }
         }
         
@@ -123,7 +135,7 @@ namespace GB_Live
                 }
                 else
                 {
-                    RemoveOldEvents();
+                    RemoveOldEvents(eventsFromHtml);
                     AddNewEvents(eventsFromHtml);
                 }
             }
@@ -138,24 +150,19 @@ namespace GB_Live
 
         private string FindUpcomingHtml(string websiteAsString)
         {
-            int index_upcomingBegins = websiteAsString.IndexOf(upcomingBegins);
-            int index_upcomingEnds = websiteAsString.IndexOf(upcomingEnds, index_upcomingBegins);
-            int length_upcomingHtml = index_upcomingEnds - index_upcomingBegins;
-
             if (websiteAsString.Contains(upcomingBegins) == false)
             {
                 return string.Empty;
             }
 
-            if (index_upcomingBegins < 0)
+            if (websiteAsString.Contains(upcomingEnds) == false)
             {
                 return string.Empty;
             }
 
-            if (index_upcomingEnds < 0)
-            {
-                return string.Empty;
-            }
+            int index_upcomingBegins = websiteAsString.IndexOf(upcomingBegins);
+            int index_upcomingEnds = websiteAsString.IndexOf(upcomingEnds, index_upcomingBegins);
+            int length_upcomingHtml = index_upcomingEnds - index_upcomingBegins;
 
             if (index_upcomingEnds <= index_upcomingBegins)
             {
@@ -187,7 +194,14 @@ namespace GB_Live
                     else if (line.StartsWith("</dd"))
                     {
                         shouldConcat = false;
-                        events.Add(new GBUpcomingEvent(dd));
+
+                        GBUpcomingEvent newEvent = new GBUpcomingEvent(dd);
+
+                        if (newEvent.Time > DateTime.Now)
+                        {
+                            events.Add(new GBUpcomingEvent(dd));
+                        }
+
                         dd = string.Empty;
                     }
 
@@ -201,36 +215,14 @@ namespace GB_Live
             return events;
         }
 
-        private void RemoveOldEventsDEPRECATED(List<GBUpcomingEvent> eventsInHtml)
-        {
-            List<GBUpcomingEvent> eventsToRemove = new List<GBUpcomingEvent>();
-
-            foreach (GBUpcomingEvent eventInThisDotEvents in this.Events)
-            {
-                // if a given event in the ViewModel OC is not in the list
-                // of events we built from the html, we want to remove it
-                // however, we can't remove it from the collection during a foreach
-                // so we add it to a temporary list
-                if (EventNotFoundInList(eventInThisDotEvents, eventsInHtml))
-                {
-                    eventsToRemove.Add(eventInThisDotEvents);
-                }
-            }
-
-            // now we iterate the temporary list and remove every one from the ViewModel OC
-            foreach (GBUpcomingEvent anEvent in eventsToRemove)
-            {
-                this.Events.Remove(anEvent);
-            }
-        }
-
-        private void RemoveOldEvents()
+        private void RemoveOldEvents(List<GBUpcomingEvent> eventsFromHtml)
         {
             List<GBUpcomingEvent> eventsToRemove = new List<GBUpcomingEvent>();
 
             foreach (GBUpcomingEvent each in this.Events)
             {
-                if (each.Time.Equals(DateTime.MaxValue))
+                if (each.Time.Equals(DateTime.MaxValue)
+                    || EventNotFoundInList(each, eventsFromHtml))
                 {
                     eventsToRemove.Add(each);
                 }
@@ -242,15 +234,28 @@ namespace GB_Live
             }
         }
 
-        private void AddNewEvents(List<GBUpcomingEvent> eventsInHtml)
+        private void AddNewEvents(List<GBUpcomingEvent> eventsFromHtml)
         {
             List<GBUpcomingEvent> eventsWeAlreadyHave = new List<GBUpcomingEvent>(this.Events);
 
-            foreach (GBUpcomingEvent each in eventsInHtml)
+            if (eventsWeAlreadyHave.Count == 0)
             {
-                if (EventNotFoundInList(each, eventsWeAlreadyHave))
+                // if we don't have any, add them all
+                foreach (GBUpcomingEvent each in eventsFromHtml)
                 {
                     this.Events.Add(each);
+                }
+            }
+            else
+            {
+                // if we have some, we check if we already have it
+                // if we don't already have it, we add it
+                foreach (GBUpcomingEvent each in eventsFromHtml)
+                {
+                    if (EventNotFoundInList(each, eventsWeAlreadyHave))
+                    {
+                        this.Events.Add(each);
+                    }
                 }
             }
         }
