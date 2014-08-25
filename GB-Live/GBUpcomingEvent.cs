@@ -100,6 +100,13 @@ namespace GB_Live
                 }),
                 DispatcherPriority.SystemIdle);
 
+            //await AppDisp.BeginInvoke(new Action(() =>
+            //    {
+            //        Uri gbHome = ((UriBuilder)Application.Current.Resources["gbHome"]).Uri;
+            //        NotificationService.Send(this.Title, gbHome);
+            //    }),
+            //    DispatcherPriority.SystemIdle);
+
             this._countdownTimer.IsEnabled = false;
             this._countdownTimer.Tick -= _countdownTimer_Tick;
             

@@ -88,11 +88,7 @@ namespace GB_Live
         {
             this.WindowTitle = string.Format("{0}: checking ...", appName);
 
-            Task[] taskArray = new Task[2];
-            taskArray[0] = CheckForLiveShow();
-            taskArray[1] = UpdateUpcomingEvents();
-
-            await Task.WhenAll(taskArray);
+            await Task.WhenAll(CheckForLiveShow(), UpdateUpcomingEvents());
 
             this.WindowTitle = appName;
         }
