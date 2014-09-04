@@ -277,7 +277,7 @@ namespace GB_Live
 
             try
             {
-                webResp = await req.GetResponseAsync();
+                webResp = await req.GetResponseAsync().ConfigureAwait(false);
             }
             catch (WebException)
             {
@@ -293,7 +293,7 @@ namespace GB_Live
             {
                 using (StreamReader sr = new StreamReader(webResp.GetResponseStream()))
                 {
-                    response = await sr.ReadToEndAsync();
+                    response = await sr.ReadToEndAsync().ConfigureAwait(false);
                 }
 
                 webResp.Close();

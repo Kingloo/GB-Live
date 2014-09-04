@@ -98,7 +98,7 @@ namespace GB_Live
                     Uri gbHome = ((UriBuilder)Application.Current.Resources["gbHome"]).Uri;
                     NotificationService.Send(this.Title, gbHome);
                 }),
-                DispatcherPriority.SystemIdle);
+                DispatcherPriority.Normal);
 
             //await AppDisp.BeginInvoke(new Action(() =>
             //    {
