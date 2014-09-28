@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Web;
 using System.Windows;
@@ -81,10 +82,17 @@ namespace GB_Live
             TimeSpan addedOneMinute = fromNowToEventTime.Add(new TimeSpan(600000000L));
 
             Int64 ticksUntilEvent = addedOneMinute.Ticks;
+            Int64 millisecondsUntilEvent = ticksUntilEvent / 10000;
 
-            if (ticksUntilEvent < Int32.MaxValue && ticksUntilEvent > 0)
+            if (millisecondsUntilEvent < Convert.ToInt64(Int32.MaxValue) && millisecondsUntilEvent > 0)
             {
+                Debug.WriteLine(this.Title.Substring(0, 15) + ": yes");
+
                 StartCountdownTimer(ticksUntilEvent);
+            }
+            else
+            {
+                Debug.WriteLine(this.Title.Substring(0, 15) + ": no");
             }
         }
 
@@ -221,19 +229,6 @@ namespace GB_Live
             }
         }
 
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.AppendLine(string.Format("Title: {0}", this.Title));
-            sb.AppendLine(string.Format("Time: {0}", this.Time));
-            sb.AppendLine(string.Format("Time remaining: {0}", this._countdownTimer.Interval.ToString()));
-            sb.AppendLine(string.Format("Event type: {0}", this.EventType.ToString()));
-            sb.AppendLine(string.Format("Image url: {0}", this.BackgroundImageUrl.AbsoluteUri));
-
-            return sb.ToString();
-        }
-
         public int CompareTo(GBUpcomingEvent other)
         {
             if (this.Time > other.Time)
@@ -273,6 +268,28 @@ namespace GB_Live
             }
 
             return true;
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine(string.Format("Title: {0}", this.Title));
+            sb.AppendLine(string.Format("Time: {0}", this.Time));
+
+            if (this._countdownTimer != null)
+            {
+                sb.AppendLine(string.Format("Time remaining: {0}", this._countdownTimer.Interval.ToString()));
+            }
+            else
+            {
+                sb.AppendLine("Countdown timer not created");
+            }
+
+            sb.AppendLine(string.Format("Event type: {0}", this.EventType.ToString()));
+            sb.AppendLine(string.Format("Image url: {0}", this.BackgroundImageUrl.AbsoluteUri));
+
+            return sb.ToString();
         }
     }
 

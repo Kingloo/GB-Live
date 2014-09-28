@@ -15,16 +15,16 @@ namespace GB_Live
             await ((ViewModel)this.DataContext).UpdateAsync();
         }
 
-        private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private async void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             switch (e.Key)
             {
                 case System.Windows.Input.Key.Escape:
                     this.Close();
                     break;
-                //case System.Windows.Input.Key.F1:
-                //    debug();
-                //    break;
+                case System.Windows.Input.Key.F1:
+                    await (this.DataContext as ViewModel).UpdateAsync();
+                    break;
                 default:
                     break;
             }

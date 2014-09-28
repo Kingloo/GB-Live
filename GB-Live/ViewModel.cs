@@ -100,14 +100,14 @@ namespace GB_Live
                 }
                 else
                 {
+                    foreach (GBUpcomingEvent each in this.Events)
+                    {
+                        each.Update();
+                    }
+
                     RemoveOldEvents(eventsFromHtml);
                     AddNewEvents(eventsFromHtml);
                 }
-            }
-
-            foreach (GBUpcomingEvent each in this.Events)
-            {
-                each.Update();
             }
         }
 
@@ -200,8 +200,6 @@ namespace GB_Live
 
             foreach (GBUpcomingEvent each in eventsToRemove)
             {
-                each.Update();
-
                 this.Events.Remove(each);
             }
         }
