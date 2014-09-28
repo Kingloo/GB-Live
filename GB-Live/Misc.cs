@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -221,9 +220,15 @@ namespace GB_Live
         /// </summary>
         /// <param name="req">The HttpWebRequest to perform.</param>
         /// <returns></returns>
-        public static async Task<HttpWebResponse> GetResponseAsyncExt(this HttpWebRequest req)
+        public static async Task<HttpWebResponse> GetResponseAsyncExt(this HttpWebRequest req, int maxRounds)
         {
+            if (maxRounds == 0)
+            {
+                return null;
+            }
+
             WebResponse webResp = null;
+            bool tryAgain = false;
 
             try
             {
@@ -231,17 +236,54 @@ namespace GB_Live
             }
             catch (WebException e)
             {
-                webResp = e.Response;
-
-                if (webResp == null)
+                if (e.Response != null)
                 {
-                    Misc.LogMessage("GetResponseAsyncExt: webResp was null");
-
-                    throw;
+                    webResp = e.Response;
                 }
+                else
+                {
+                    tryAgain = true;
+                }
+
+                Misc.LogException(e);
+            }
+
+            if (tryAgain)
+            {
+                await Misc.LogMessageAsync(string.Format("tryAgain: {0}, tries left: {1}", req.RequestUri.AbsoluteUri, maxRounds - 1));
+
+                await Task.Delay(5000);
+
+                webResp = await GetResponseAsyncExt(req, maxRounds - 1);
             }
 
             return (HttpWebResponse)webResp;
+        }
+
+        /// <summary>
+        /// Downloads a request as a string.
+        /// </summary>
+        /// <param name="req">Custom HttpWebRequest object.</param>
+        /// <returns></returns>
+        public static async Task<string> DownloadWebsiteAsString(HttpWebRequest req)
+        {
+            string response = string.Empty;
+
+            using (HttpWebResponse resp = await req.GetResponseAsyncExt(5))
+            {
+                if (resp != null)
+                {
+                    if (resp.StatusCode == HttpStatusCode.OK)
+                    {
+                        using (StreamReader sr = new StreamReader(resp.GetResponseStream()))
+                        {
+                            response = await sr.ReadToEndAsync().ConfigureAwait(false);
+                        }
+                    }
+                }
+            }
+
+            return response;
         }
 
         /// <summary>
@@ -282,7 +324,6 @@ namespace GB_Live
             {
                 sorted[i] = kvp.Value;
                 i++;
-                Console.WriteLine("Dict: " + kvp.Key.ToString() + ", " + kvp.Value);
             }
 
             return sorted;
@@ -318,6 +359,38 @@ namespace GB_Live
             double windowWidth = window.Width;
             window.Left = (screenWidth / 2) - (windowWidth / 2);
         }
+
+        /// <summary>
+        /// Removes CR+LF, LF, CR and Environment.NewLine from a string in that order.
+        /// </summary>
+        /// <param name="s">String to cleanse of filth.</param>
+        /// <returns></returns>
+        public static string RemoveNewLines(this string s)
+        {
+            string toReturn = s;
+
+            if (toReturn.Contains("\r\n"))
+            {
+                toReturn = toReturn.Replace("\r\n", " ");
+            }
+
+            if (toReturn.Contains("\r"))
+            {
+                toReturn = toReturn.Replace("\r", " ");
+            }
+
+            if (toReturn.Contains("\n"))
+            {
+                toReturn = toReturn.Replace("\n", " ");
+            }
+
+            if (toReturn.Contains(Environment.NewLine))
+            {
+                toReturn = toReturn.Replace(Environment.NewLine, " ");
+            }
+
+            return toReturn;
+        }   
     }
 	
 	/// <summary>

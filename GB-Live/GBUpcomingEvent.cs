@@ -68,20 +68,38 @@ namespace GB_Live
             return TryParseAndTrim(stringToParse, false);
         }
 
-        public void StartCountdownTimer()
+        public void Update()
         {
-            TimeSpan span = this.Time - DateTime.Now;
+            if (this.Time == DateTime.MaxValue)
+            {
+                StopCountdownTimer();
 
+                return;
+            }
+
+            TimeSpan fromNowToEventTime = this.Time - DateTime.Now;
+            TimeSpan addedOneMinute = fromNowToEventTime.Add(new TimeSpan(600000000L));
+
+            Int64 ticksUntilEvent = addedOneMinute.Ticks;
+
+            if (ticksUntilEvent < Int32.MaxValue && ticksUntilEvent > 0)
+            {
+                StartCountdownTimer(ticksUntilEvent);
+            }
+        }
+
+        private void StartCountdownTimer(Int64 ticks)
+        {
             this._countdownTimer = new DispatcherTimer
             {
-                Interval = span.Add(new TimeSpan(0, 1, 0))
+                Interval = new TimeSpan(ticks)
             };
 
             this._countdownTimer.Tick += _countdownTimer_Tick;
             this._countdownTimer.IsEnabled = true;
         }
 
-        public void StopCountdownTimer()
+        private void StopCountdownTimer()
         {
             if (this._countdownTimer != null)
             {
@@ -90,25 +108,16 @@ namespace GB_Live
             }
         }
 
-        private void _countdownTimer_Tick(object sender, EventArgs e)
+        private async void _countdownTimer_Tick(object sender, EventArgs e)
         {
-            AppDisp.Invoke(new Action(
-                delegate()
+            await AppDisp.BeginInvoke(new Action(() =>
                 {
                     Uri gbHome = ((UriBuilder)Application.Current.Resources["gbHome"]).Uri;
+
                     NotificationService.Send(this.Title, gbHome);
-                }),
-                DispatcherPriority.Normal);
+                }));
 
-            //await AppDisp.BeginInvoke(new Action(() =>
-            //    {
-            //        Uri gbHome = ((UriBuilder)Application.Current.Resources["gbHome"]).Uri;
-            //        NotificationService.Send(this.Title, gbHome);
-            //    }),
-            //    DispatcherPriority.SystemIdle);
-
-            this._countdownTimer.IsEnabled = false;
-            this._countdownTimer.Tick -= _countdownTimer_Tick;
+            StopCountdownTimer();
             
             this.Time = DateTime.MaxValue;
         }

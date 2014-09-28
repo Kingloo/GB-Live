@@ -36,49 +36,18 @@ namespace GB_Live
                 OnPropertyChanged("WindowTitle");
             }
         }
-        public ObservableCollection<GBUpcomingEvent> Events { get; private set; }
+        private ObservableCollection<GBUpcomingEvent> _events = new ObservableCollection<GBUpcomingEvent>();
+        public ObservableCollection<GBUpcomingEvent> Events { get { return this._events; } }
 
         public ViewModel()
         {
             this.IsLive = false;
-
-            this.Events = new ObservableCollection<GBUpcomingEvent>();
-            this.Events.CollectionChanged += Events_CollectionChanged;
 
             this._updateTimer.Tick += _updateTimer_Tick;
             this._updateTimer.Interval = new TimeSpan(0, 5, 0);
             this._updateTimer.IsEnabled = true;
         }
 
-        private void Events_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            switch (e.Action)
-            {
-                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
-                    if (e.NewItems.Count > 0)
-                    {
-                        foreach (GBUpcomingEvent each in e.NewItems)
-                        {
-                            each.StartCountdownTimer();
-                        }
-                    }
-                    break;
-
-                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
-                    if (e.OldItems.Count > 0)
-                    {
-                        foreach (GBUpcomingEvent each in e.OldItems)
-                        {
-                            each.StopCountdownTimer();
-                        }
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-        }
-        
         private async void _updateTimer_Tick(object sender, EventArgs e)
         {
             await UpdateAsync();
@@ -96,7 +65,7 @@ namespace GB_Live
         private async Task CheckForLiveShow()
         {
             Uri gbChat = ((UriBuilder)Application.Current.Resources["gbChat"]).Uri;
-            string websiteAsString = await DownloadWebsite(gbChat);
+            string websiteAsString = await Misc.DownloadWebsiteAsString(BuildHttpWebRequest(gbChat));
 
             if (!(String.IsNullOrEmpty(websiteAsString)))
             {
@@ -119,7 +88,7 @@ namespace GB_Live
         private async Task UpdateUpcomingEvents()
         {
             Uri gbHome = ((UriBuilder)Application.Current.Resources["gbHome"]).Uri;
-            string websiteAsString = await DownloadWebsite(gbHome);
+            string websiteAsString = await Misc.DownloadWebsiteAsString(BuildHttpWebRequest(gbHome));
 
             if (!(String.IsNullOrEmpty(websiteAsString)))
             {
@@ -134,6 +103,11 @@ namespace GB_Live
                     RemoveOldEvents(eventsFromHtml);
                     AddNewEvents(eventsFromHtml);
                 }
+            }
+
+            foreach (GBUpcomingEvent each in this.Events)
+            {
+                each.Update();
             }
         }
 
@@ -226,6 +200,8 @@ namespace GB_Live
 
             foreach (GBUpcomingEvent each in eventsToRemove)
             {
+                each.Update();
+
                 this.Events.Remove(each);
             }
         }
@@ -268,40 +244,6 @@ namespace GB_Live
             }
         }
 
-        private async Task<string> DownloadWebsite(Uri gbUri)
-        {
-            string response = string.Empty;
-
-            HttpWebRequest req = BuildHttpWebRequest(gbUri);
-            WebResponse webResp = null;
-
-            try
-            {
-                webResp = await req.GetResponseAsync().ConfigureAwait(false);
-            }
-            catch (WebException)
-            {
-                if (webResp != null)
-                {
-                    webResp.Close();
-                }
-
-                return string.Empty;
-            }
-
-            if (webResp != null)
-            {
-                using (StreamReader sr = new StreamReader(webResp.GetResponseStream()))
-                {
-                    response = await sr.ReadToEndAsync().ConfigureAwait(false);
-                }
-
-                webResp.Close();
-            }
-
-            return response;
-        }
-
         private HttpWebRequest BuildHttpWebRequest(Uri gbUri)
         {
             HttpWebRequest req = HttpWebRequest.CreateHttp(gbUri);
@@ -313,13 +255,14 @@ namespace GB_Live
             req.KeepAlive = false;
             req.Method = "GET";
             req.ProtocolVersion = HttpVersion.Version10;
-            req.Referer = gbUri.DnsSafeHost;
-            req.ServicePoint.ConnectionLimit = 1;
+            req.Referer = string.Format("http://{0}/", gbUri.DnsSafeHost);
+            req.ServicePoint.ConnectionLimit = 3;
             req.Timeout = 750;
             // Firefox 28 on Win 8.1 64bit
-            req.UserAgent = "Mozilla/5.0 (Windows NT 6.3; WOW64; rv:28.0) Gecko/20100101 Firefox/28.0";
+            req.UserAgent = "Mozilla/5.0 (Windows NT 6.3; WOW64; rv:28.0) Gecko/20100101 Firefox/32.0";
 
             // lu is probably country-code, returned timezone has yet to be wrong after setting this
+            // after months of use, the prior claim remains true
             req.CookieContainer = new CookieContainer();
             req.CookieContainer.Add(gbUri, new Cookie("xcg", "lu"));
 
@@ -329,6 +272,7 @@ namespace GB_Live
         public void NavigateToChatPage()
         {
             Uri gbChat = ((UriBuilder)Application.Current.Resources["gbChat"]).Uri;
+
             Misc.OpenUrlInBrowser(gbChat);
         }
     }
