@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 
 namespace GB_Live
 {
@@ -10,34 +9,11 @@ namespace GB_Live
             InitializeComponent();
         }
 
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            await ((ViewModel)this.DataContext).UpdateAsync();
-        }
-
-        private async void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            switch (e.Key)
-            {
-                case System.Windows.Input.Key.Escape:
-                    this.Close();
-                    break;
-                case System.Windows.Input.Key.F1:
-                    await (this.DataContext as ViewModel).UpdateAsync();
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        private void Label_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            ((ViewModel)this.DataContext).NavigateToChatPage();
-        }
-
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (MessageBox.Show("Really close?", "GB Live", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            MessageBoxResult mbr = MessageBox.Show("Really close?", "GB Live", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            
+            if (mbr == MessageBoxResult.Yes)
             {
                 e.Cancel = false;
             }

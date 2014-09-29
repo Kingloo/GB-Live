@@ -5,19 +5,22 @@ using System.Windows.Data;
 namespace GB_Live
 {
     [ValueConversion(typeof(bool), typeof(Style))]
-    class BooleanToLabelStyleConverter : IValueConverter
+    public class BooleanToLabelStyleConverter : IValueConverter
     {
+        public Style LabelLiveStyle { get; set; }
+        public Style LabelOfflineStyle { get; set; }
+        
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             bool isLive = (bool)value;
 
             if (isLive)
             {
-                return Application.Current.Resources["LabelLiveStyle"];
+                return this.LabelLiveStyle;
             }
             else
             {
-                return Application.Current.Resources["LabelOfflineStyle"];
+                return this.LabelOfflineStyle;
             }
         }
 
@@ -28,7 +31,7 @@ namespace GB_Live
     }
 
     [ValueConversion(typeof(bool), typeof(string))]
-    class BooleanToLiveStatusStringConverter : IValueConverter
+    public class BooleanToLiveStatusStringConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {

@@ -3,29 +3,111 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 
 namespace GB_Live
 {
-    class ViewModel : ViewModelBase
+    public class ViewModel : ViewModelBase
     {
+        #region Commands
+        private DelegateCommandAsync _refreshCommandAsync = null;
+        public DelegateCommandAsync RefreshCommandAsync
+        {
+            get
+            {
+                if (this._refreshCommandAsync == null)
+                {
+                    this._refreshCommandAsync = new DelegateCommandAsync(RefreshAsync, canExecuteAsync);
+                }
+
+                return this._refreshCommandAsync;
+            }
+        }
+
+        private async Task RefreshAsync(object _)
+        {
+            await UpdateAsync();
+        }
+
+        private DelegateCommand _goToHomePageInBrowserCommand = null;
+        public DelegateCommand GoToHomePageInBrowserCommand
+        {
+            get
+            {
+                if (this._goToHomePageInBrowserCommand == null)
+                {
+                    this._goToHomePageInBrowserCommand = new DelegateCommand(GoToHomePageInBrowser, canExecute);
+                }
+
+                return this._goToHomePageInBrowserCommand;
+            }
+        }
+
+        private void GoToHomePageInBrowser(object _)
+        {
+            Misc.OpenUrlInBrowser(App.gbHome);
+        }
+
+        private DelegateCommand _goToChatPageInBrowserCommand = null;
+        public DelegateCommand GoToChatPageInBrowserCommand
+        {
+            get
+            {
+                if (this._goToChatPageInBrowserCommand == null)
+                {
+                    this._goToChatPageInBrowserCommand = new DelegateCommand(GoToChatPageInBrowser, canExecute);
+                }
+
+                return this._goToChatPageInBrowserCommand;
+            }
+        }
+
+        private void GoToChatPageInBrowser(object _)
+        {
+            Misc.OpenUrlInBrowser(App.gbChat);
+        }
+
+        private DelegateCommand _exitCommand = null;
+        public DelegateCommand ExitCommand
+        {
+            get
+            {
+                if (this._exitCommand == null)
+                {
+                    this._exitCommand = new DelegateCommand(Exit, canExecute);
+                }
+
+                return this._exitCommand;
+            }
+        }
+
+        private void Exit(object _)
+        {
+            Application.Current.MainWindow.Close();
+        }
+
+        private bool canExecuteAsync(object _)
+        {
+            return !this.IsBusy;
+        }
+
+        private bool canExecute(object _)
+        {
+            return true;
+        }
+        #endregion
+
+        #region Fields
         private const string appName = "GB Live";
         private const string upcomingBegins = "<dl class=\"promo-upcoming\">";
         private const string upcomingEnds = "</dl>";
-
         private DispatcherTimer _updateTimer = new DispatcherTimer();
-        private bool _isLive = false;
-        public bool IsLive
-        {
-            get { return this._isLive; }
-            set
-            {
-                this._isLive = value;
-                this.OnPropertyChanged("IsLive");
-            }
-        }
+        #endregion
+
+        #region Properties
         private string _windowTitle = appName;
         public string WindowTitle
         {
@@ -33,19 +115,56 @@ namespace GB_Live
             set
             {
                 this._windowTitle = value;
-                OnPropertyChanged("WindowTitle");
+
+                OnNotifyPropertyChanged();
             }
         }
+
+        private bool _isLive = false;
+        public bool IsLive
+        {
+            get { return this._isLive; }
+            set
+            {
+                this._isLive = value;
+
+                OnNotifyPropertyChanged();
+            }
+        }
+
+        private bool _isBusy = false;
+        public bool IsBusy
+        {
+            get
+            {
+                return this._isBusy;
+            }
+            set
+            {
+                this._isBusy = value;
+
+                OnNotifyPropertyChanged();
+
+                RaiseAllCommandCanExecuteChanged();
+            }
+        }
+
+        private void RaiseAllCommandCanExecuteChanged()
+        {
+            this.RefreshCommandAsync.RaiseCanExecuteChanged();
+        }
+
         private ObservableCollection<GBUpcomingEvent> _events = new ObservableCollection<GBUpcomingEvent>();
         public ObservableCollection<GBUpcomingEvent> Events { get { return this._events; } }
+        #endregion
 
         public ViewModel()
         {
-            this.IsLive = false;
-
             this._updateTimer.Tick += _updateTimer_Tick;
             this._updateTimer.Interval = new TimeSpan(0, 5, 0);
-            this._updateTimer.IsEnabled = true;
+            this._updateTimer.Start();
+
+            UpdateAsync();
         }
 
         private async void _updateTimer_Tick(object sender, EventArgs e)
@@ -57,40 +176,45 @@ namespace GB_Live
         {
             this.WindowTitle = string.Format("{0}: checking ...", appName);
 
+            this.IsBusy = true;
             await Task.WhenAll(CheckForLiveShow(), UpdateUpcomingEvents());
+            this.IsBusy = false;
 
             this.WindowTitle = appName;
         }
 
         private async Task CheckForLiveShow()
         {
-            Uri gbChat = ((UriBuilder)Application.Current.Resources["gbChat"]).Uri;
-            string websiteAsString = await Misc.DownloadWebsiteAsString(BuildHttpWebRequest(gbChat));
+            HttpWebRequest req = BuildHttpWebRequest(App.gbChat);
+            string websiteAsString = await Misc.DownloadWebsiteAsString(req);
 
-            if (!(String.IsNullOrEmpty(websiteAsString)))
+            if (String.IsNullOrEmpty(websiteAsString) == false)
             {
                 if (websiteAsString.Contains("There is currently no show"))
                 {
-                    this.IsLive = false;
+                    if (this.IsLive == true)
+                    {
+                        this.IsLive = false;
+                    }
                 }
                 else
                 {
                     if (this.IsLive == false)
                     {
-                        NotificationService.Send("Giantbomb is LIVE", gbChat);
-                    }
+                        NotificationService.Send("Giantbomb is LIVE", App.gbChat);
 
-                    this.IsLive = true;
+                        this.IsLive = true;
+                    }
                 }
             }
         }
 
         private async Task UpdateUpcomingEvents()
         {
-            Uri gbHome = ((UriBuilder)Application.Current.Resources["gbHome"]).Uri;
-            string websiteAsString = await Misc.DownloadWebsiteAsString(BuildHttpWebRequest(gbHome));
+            HttpWebRequest req = BuildHttpWebRequest(App.gbHome);
+            string websiteAsString = await Misc.DownloadWebsiteAsString(req);
 
-            if (!(String.IsNullOrEmpty(websiteAsString)))
+            if (String.IsNullOrEmpty(websiteAsString) == false)
             {
                 List<GBUpcomingEvent> eventsFromHtml = RetrieveEventsFromHtml(websiteAsString);
 
@@ -100,13 +224,14 @@ namespace GB_Live
                 }
                 else
                 {
+                    this.Events.AddMissingItems<GBUpcomingEvent>(eventsFromHtml);
+
                     foreach (GBUpcomingEvent each in this.Events)
                     {
                         each.Update();
                     }
 
                     RemoveOldEvents(eventsFromHtml);
-                    AddNewEvents(eventsFromHtml);
                 }
             }
         }
@@ -169,7 +294,7 @@ namespace GB_Live
 
                         if (newEvent.Time > DateTime.Now)
                         {
-                            events.Add(new GBUpcomingEvent(dd));
+                            events.Add(newEvent);
                         }
 
                         dd = string.Empty;
@@ -191,6 +316,13 @@ namespace GB_Live
 
             foreach (GBUpcomingEvent each in this.Events)
             {
+                /*
+                 * when the event timer expires we set Time to DateTime.MaxValue,
+                 * therefore if Time == DateTime.MaxValue we want to remove it
+                 * 
+                 * if the event in our UI is not in the list returned from GB, we want to remove it,
+                 * because they have removed it before its time came
+                 */
                 if (each.Time.Equals(DateTime.MaxValue)
                     || EventNotFoundInList(each, eventsFromHtml))
                 {
@@ -201,32 +333,6 @@ namespace GB_Live
             foreach (GBUpcomingEvent each in eventsToRemove)
             {
                 this.Events.Remove(each);
-            }
-        }
-
-        private void AddNewEvents(List<GBUpcomingEvent> eventsFromHtml)
-        {
-            List<GBUpcomingEvent> eventsWeAlreadyHave = new List<GBUpcomingEvent>(this.Events);
-
-            if (eventsWeAlreadyHave.Count == 0)
-            {
-                // if we don't have any, add them all
-                foreach (GBUpcomingEvent each in eventsFromHtml)
-                {
-                    this.Events.Add(each);
-                }
-            }
-            else
-            {
-                // if we have some, we check if we already have it
-                // if we don't already have it, we add it
-                foreach (GBUpcomingEvent each in eventsFromHtml)
-                {
-                    if (EventNotFoundInList(each, eventsWeAlreadyHave))
-                    {
-                        this.Events.Add(each);
-                    }
-                }
             }
         }
 
@@ -255,23 +361,28 @@ namespace GB_Live
             req.ProtocolVersion = HttpVersion.Version10;
             req.Referer = string.Format("http://{0}/", gbUri.DnsSafeHost);
             req.ServicePoint.ConnectionLimit = 3;
-            req.Timeout = 750;
-            // Firefox 28 on Win 8.1 64bit
+            req.Timeout = 1250;
+            // Firefox 32 on Win 8.1 64bit
             req.UserAgent = "Mozilla/5.0 (Windows NT 6.3; WOW64; rv:28.0) Gecko/20100101 Firefox/32.0";
 
-            // lu is probably country-code, returned timezone has yet to be wrong after setting this
-            // after months of use, the prior claim remains true
+            // 1) lu is probably country-code, returned timezone has yet to be wrong after setting this
+            // 2) after months of use, the prior claim remains true
             req.CookieContainer = new CookieContainer();
             req.CookieContainer.Add(gbUri, new Cookie("xcg", "lu"));
 
             return req;
         }
 
-        public void NavigateToChatPage()
+        public override string ToString()
         {
-            Uri gbChat = ((UriBuilder)Application.Current.Resources["gbChat"]).Uri;
+            StringBuilder sb = new StringBuilder();
 
-            Misc.OpenUrlInBrowser(gbChat);
+            sb.AppendLine(this.GetType().ToString());
+            sb.AppendLine(this.WindowTitle);
+            sb.AppendLine(string.Format("IsLive: {0}", this.IsLive));
+            sb.AppendLine(string.Format("Number of events: {0}", this.Events.Count));
+
+            return sb.ToString();
         }
     }
 }

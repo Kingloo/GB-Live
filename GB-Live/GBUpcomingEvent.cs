@@ -13,19 +13,10 @@ namespace GB_Live
 
     public class GBUpcomingEvent : ViewModelBase, IComparable<GBUpcomingEvent>, IEquatable<GBUpcomingEvent>
     {
-        private DispatcherTimer _countdownTimer = null;
+        private DispatcherTimer _countdownTimer = new DispatcherTimer();
 
         public string Title { get; private set; }
-        private DateTime _time = DateTime.MinValue;
-        public DateTime Time
-        {
-            get { return this._time; }
-            set
-            {
-                this._time = value;
-                OnPropertyChanged("Time");
-            }
-        }
+        public DateTime Time { get; private set; }
         public bool Premium { get; private set; }
         public GBEventType EventType { get; private set; }
         public Uri BackgroundImageUrl { get; private set; }
@@ -34,8 +25,8 @@ namespace GB_Live
         {
             this.Title = GetTitleFromString(s);
             this.Time = GetTimeFromString(s);
-
             this.Premium = GetPremiumStatus(s);
+            this.BackgroundImageUrl = GetBackgroundImageUrlFromString(s);
 
             if (Premium)
             {
@@ -45,8 +36,6 @@ namespace GB_Live
             {
                 this.EventType = GetEventTypeFromString(s);
             }
-
-            this.BackgroundImageUrl = GetBackgroundImageUrlFromString(s);
         }
 
         private string GetTitleFromString(string s)
@@ -74,26 +63,29 @@ namespace GB_Live
             if (this.Time == DateTime.MaxValue)
             {
                 StopCountdownTimer();
-
-                return;
             }
-
-            TimeSpan fromNowToEventTime = this.Time - DateTime.Now;
-            TimeSpan addedOneMinute = fromNowToEventTime.Add(new TimeSpan(600000000L));
-
-            Int64 ticksUntilEvent = addedOneMinute.Ticks;
-            Int64 millisecondsUntilEvent = ticksUntilEvent / 10000;
-
-            if (millisecondsUntilEvent < Convert.ToInt64(Int32.MaxValue) && millisecondsUntilEvent > 0)
+            else if (this.Time > DateTime.MinValue)
             {
-                Debug.WriteLine(this.Title.Substring(0, 15) + ": yes");
+                if (this._countdownTimer.IsEnabled == false)
+                {
+                    TimeSpan fromNowToEventTime = this.Time - DateTime.Now;
+                    TimeSpan addedOneMinute = fromNowToEventTime.Add(new TimeSpan(600000000L)); // 1 tick == 10,000 milliseconds => 60,000,000 ticks == 1 minute
 
-                StartCountdownTimer(ticksUntilEvent);
+                    Int64 ticksUntilEvent = addedOneMinute.Ticks;
+                    Int64 millisecondsUntilEvent = ticksUntilEvent / 10000;
+
+                    /*
+                    * even though you can start a DispatcherTimer with a ticks type of Int64,
+                    * the equivalent number of milliseconds cannot exceed Int32.MaxValue
+                    */
+                    if (millisecondsUntilEvent < Convert.ToInt64(Int32.MaxValue) && millisecondsUntilEvent > 0)
+                    {
+                        StartCountdownTimer(ticksUntilEvent);
+                    }
+                }
             }
-            else
-            {
-                Debug.WriteLine(this.Title.Substring(0, 15) + ": no");
-            }
+
+            Debug.WriteLine(this.ToString());
         }
 
         private void StartCountdownTimer(Int64 ticks)
@@ -104,29 +96,27 @@ namespace GB_Live
             };
 
             this._countdownTimer.Tick += _countdownTimer_Tick;
-            this._countdownTimer.IsEnabled = true;
+            this._countdownTimer.Start();
         }
 
         private void StopCountdownTimer()
         {
-            if (this._countdownTimer != null)
-            {
-                this._countdownTimer.IsEnabled = false;
-                this._countdownTimer.Tick -= _countdownTimer_Tick;
-            }
+            this._countdownTimer.Stop();
+            this._countdownTimer.Tick -= _countdownTimer_Tick;
         }
 
-        private async void _countdownTimer_Tick(object sender, EventArgs e)
+        private void _countdownTimer_Tick(object sender, EventArgs e)
         {
-            await AppDisp.BeginInvoke(new Action(() =>
+            //await Application.Current.MainWindow.Dispatcher.BeginInvoke(new Action(() =>
+            //    {
+            //        NotificationService.Send(this.Title, App.gbHome);
+            //    }), DispatcherPriority.Background);
+
+            Application.Current.MainWindow.Dispatcher.Invoke(() =>
                 {
-                    Uri gbHome = ((UriBuilder)Application.Current.Resources["gbHome"]).Uri;
+                    NotificationService.Send(this.Title, App.gbHome);
+                }, DispatcherPriority.Background);
 
-                    NotificationService.Send(this.Title, gbHome);
-                }));
-
-            StopCountdownTimer();
-            
             this.Time = DateTime.MaxValue;
         }
 
@@ -176,15 +166,6 @@ namespace GB_Live
             {
                 return false;
             }
-
-            //if (actualText.StartsWith("[PREMIUM]"))
-            //{
-            //    return true;
-            //}
-            //else
-            //{
-            //    return false;
-            //}
         }
 
         private Uri GetBackgroundImageUrlFromString(string s)
@@ -279,7 +260,7 @@ namespace GB_Live
 
             if (this._countdownTimer != null)
             {
-                sb.AppendLine(string.Format("Time remaining: {0}", this._countdownTimer.Interval.ToString()));
+                sb.AppendLine(string.Format("Countdown timer enabled: {0}", this._countdownTimer.IsEnabled));
             }
             else
             {

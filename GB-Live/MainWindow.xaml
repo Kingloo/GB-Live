@@ -3,18 +3,32 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:this="clr-namespace:GB_Live"
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-        DataContext="{StaticResource vm}"
-        Title="{Binding Path=WindowTitle, Mode=OneWay}"
-        Loaded="Window_Loaded"
-        Closing="Window_Closing"
-        KeyDown="Window_KeyDown">
+        Closing="Window_Closing">
+    
+    <Window.DataContext>
+        <this:ViewModel x:Name="vm" />
+    </Window.DataContext>
+    
+    <Window.Style>
+        <Style TargetType="{x:Type this:MainWindow}" BasedOn="{StaticResource {x:Type Window}}">
+            <Setter Property="Title" Value="{Binding Path=WindowTitle, Mode=OneWay}" />
+            <Setter Property="Background" Value="Black" />
+            <Setter Property="SizeToContent" Value="Height" />
+            <Setter Property="Width" Value="500" />
+            <Setter Property="ResizeMode" Value="CanMinimize" />
+            <Setter Property="WindowStyle" Value="SingleBorderWindow" />
+        </Style>
+    </Window.Style>
     
     <Window.Resources>
 
         <this:BooleanToLiveStatusStringConverter x:Key="booleanToLiveStatusStringConverter" />
-        <this:BooleanToLabelStyleConverter x:Key="booleanToLabelStyleConverter" />
         
-        <CollectionViewSource Source="{Binding Path=Events, FallbackValue={x:Null}}"
+        <this:BooleanToLabelStyleConverter x:Key="booleanToLabelStyleConverter"
+                                           LabelLiveStyle="{StaticResource LabelLiveStyle}"
+                                           LabelOfflineStyle="{StaticResource LabelOfflineStyle}" />
+        
+        <CollectionViewSource Source="{Binding Path=Events}"
                               x:Key="sortEventsByTime"
                               IsLiveSortingRequested="True">
             <CollectionViewSource.SortDescriptions>
@@ -22,52 +36,14 @@
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
         
-        <DataTemplate DataType="{x:Type this:GBUpcomingEvent}">
-            
-            <DataTemplate.Resources>
-                <this:AddSpacesToEnumConverter x:Key="addSpacesToEnumConverter" />
-                <this:FormatDateTimeString x:Key="formatDateTimeString" />
-            </DataTemplate.Resources>
-
-            <Grid>
-
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="55" />
-                    <RowDefinition Height="55" />
-                </Grid.RowDefinitions>
-                
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="180" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                
-                <Image Source="{Binding Path=BackgroundImageUrl, Mode=OneTime}"
-                       Grid.ColumnSpan="2"
-                       Grid.RowSpan="2" />
-                
-                <Label Content="{Binding Path=Title, Mode=OneTime}"
-                       Style="{StaticResource GBUpcomingEventLabelStyle}"
-                       VerticalContentAlignment="Bottom"
-                       Grid.ColumnSpan="2"
-                       Grid.Row="0" />
-
-                <Label Content="{Binding Path=EventType, Mode=OneTime, Converter={StaticResource addSpacesToEnumConverter}}"
-                       Style="{StaticResource GBUpcomingEventLabelStyle}"
-                       VerticalContentAlignment="Top"
-                       Grid.Column="0"
-                       Grid.Row="1" />
-                
-                <Label Content="{Binding Path=Time, Mode=OneWay, Converter={StaticResource formatDateTimeString}}"
-                       Style="{StaticResource GBUpcomingEventLabelStyle}"
-                       VerticalContentAlignment="Top"
-                       Grid.Column="1"
-                       Grid.Row="1" />
-
-            </Grid>
-            
-        </DataTemplate>
-        
     </Window.Resources>
+    
+    <Window.InputBindings>
+        <KeyBinding Key="Escape"
+                    Command="{Binding Path=ExitCommand}" />
+        <KeyBinding Key="F5"
+                    Command="{Binding Path=RefreshCommandAsync}" />
+    </Window.InputBindings>
     
     <Grid>
         
@@ -77,9 +53,13 @@
         </Grid.RowDefinitions>
         
         <Label Grid.Row="0"
-               MouseDoubleClick="Label_MouseDoubleClick"
                Content="{Binding Path=IsLive, Mode=OneWay, Converter={StaticResource booleanToLiveStatusStringConverter}}"
-               Style="{Binding Path=IsLive, Mode=OneWay, Converter={StaticResource booleanToLabelStyleConverter}}" />
+               Style="{Binding Path=IsLive, Mode=OneWay, Converter={StaticResource booleanToLabelStyleConverter}}">
+            <Label.InputBindings>
+                <MouseBinding MouseAction="LeftDoubleClick"
+                              Command="{Binding Path=GoToChatPageInBrowserCommand}" />
+            </Label.InputBindings>
+        </Label>
         
         <ItemsControl Grid.Row="1"
                       ItemsSource="{Binding Source={StaticResource sortEventsByTime}}">
@@ -95,7 +75,55 @@
                     <StackPanel />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
+            
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type this:GBUpcomingEvent}">
 
+                    <DataTemplate.Resources>
+                        <this:AddSpacesToEnumConverter x:Key="addSpacesToEnumConverter" />
+                        <this:FormatDateTimeString x:Key="formatDateTimeString" />
+                    </DataTemplate.Resources>
+
+                    <Grid>
+                        
+                        <Grid.InputBindings>
+                            <MouseBinding MouseAction="LeftDoubleClick"
+                                          Command="{Binding Path=GoToHomePageInBrowserCommand, ElementName=vm}" />
+                        </Grid.InputBindings>
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="55" />
+                            <RowDefinition Height="55" />
+                        </Grid.RowDefinitions>
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="180" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        
+                        <Image Grid.ColumnSpan="2" Grid.RowSpan="2"
+                               Source="{Binding Path=BackgroundImageUrl, Mode=OneTime}" />
+                        
+                        <Label Grid.ColumnSpan="2" Grid.Row="0"
+                               Style="{StaticResource GBUpcomingEventLabelStyle}"
+                               Content="{Binding Path=Title, Mode=OneTime}"
+                               VerticalContentAlignment="Bottom" />
+                        
+                        <Label Grid.Column="0" Grid.Row="1"
+                               Style="{StaticResource GBUpcomingEventLabelStyle}"
+                               Content="{Binding Path=EventType, Mode=OneTime, Converter={StaticResource addSpacesToEnumConverter}}"
+                               VerticalContentAlignment="Top" />
+                        
+                        <Label Grid.Column="1" Grid.Row="1"
+                               Style="{StaticResource GBUpcomingEventLabelStyle}"
+                               Content="{Binding Path=Time, Mode=OneTime}"
+                               ContentStringFormat="{}{0:ddd MMM dd  -  HH:mm}"
+                               VerticalContentAlignment="Top" />
+
+                    </Grid>
+
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
         </ItemsControl>
     </Grid>
 </Window>
