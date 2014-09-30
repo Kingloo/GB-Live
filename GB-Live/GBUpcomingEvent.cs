@@ -16,7 +16,20 @@ namespace GB_Live
         private DispatcherTimer _countdownTimer = new DispatcherTimer();
 
         public string Title { get; private set; }
-        public DateTime Time { get; private set; }
+        private DateTime _time = DateTime.MinValue;
+        public DateTime Time
+        {
+            get
+            {
+                return this._time;
+            }
+            set
+            {
+                this._time = value;
+
+                OnNotifyPropertyChanged();
+            }
+        }
         public bool Premium { get; private set; }
         public GBEventType EventType { get; private set; }
         public Uri BackgroundImageUrl { get; private set; }
