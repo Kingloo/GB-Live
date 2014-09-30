@@ -116,7 +116,7 @@
                         
                         <Label Grid.Column="1" Grid.Row="1"
                                Style="{StaticResource GBUpcomingEventLabelStyle}"
-                               Content="{Binding Path=Time, Mode=OneTime}"
+                               Content="{Binding Path=Time}"
                                ContentStringFormat="{}{0:ddd MMM dd  -  HH:mm}"
                                VerticalContentAlignment="Top" />
 
