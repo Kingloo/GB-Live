@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -332,6 +333,8 @@ namespace GB_Live
 
             foreach (GBUpcomingEvent each in eventsToRemove)
             {
+                each.Update();
+
                 this.Events.Remove(each);
             }
         }

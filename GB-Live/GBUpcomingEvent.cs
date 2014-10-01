@@ -9,7 +9,7 @@ using System.Windows.Threading;
 
 namespace GB_Live
 {
-    public enum GBEventType { Unknown, Article, Podcast, Video, LiveShow };
+    public enum GBEventType { Unknown, Article, Review, Podcast, Video, LiveShow };
 
     public class GBUpcomingEvent : ViewModelBase, IComparable<GBUpcomingEvent>, IEquatable<GBUpcomingEvent>
     {
@@ -141,19 +141,23 @@ namespace GB_Live
 
             string actualText = HttpUtility.HtmlDecode(s.Substring(beginning, length));
 
-            if (actualText.StartsWith("Article"))
+            if (actualText.StartsWith("Article", StringComparison.InvariantCultureIgnoreCase))
             {
                 return GBEventType.Article;
             }
-            else if (actualText.StartsWith("Podcast"))
+            else if (actualText.StartsWith("Review", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return GBEventType.Review;
+            }
+            else if (actualText.StartsWith("Podcast", StringComparison.InvariantCultureIgnoreCase))
             {
                 return GBEventType.Podcast;
             }
-            else if (actualText.StartsWith("Video"))
+            else if (actualText.StartsWith("Video", StringComparison.InvariantCultureIgnoreCase))
             {
                 return GBEventType.Video;
             }
-            else if (actualText.StartsWith("Live Show"))
+            else if (actualText.StartsWith("Live Show", StringComparison.InvariantCultureIgnoreCase))
             {
                 return GBEventType.LiveShow;
             }
