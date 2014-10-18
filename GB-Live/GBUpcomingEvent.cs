@@ -13,7 +13,7 @@ namespace GB_Live
 
     public class GBUpcomingEvent : ViewModelBase, IComparable<GBUpcomingEvent>, IEquatable<GBUpcomingEvent>
     {
-        private DispatcherTimer _countdownTimer = new DispatcherTimer();
+        private DispatcherTimer _countdownTimer = null;
 
         public string Title { get; private set; }
         private DateTime _time = DateTime.MinValue;
@@ -73,35 +73,34 @@ namespace GB_Live
 
         public void Update()
         {
-            if (this.Time == DateTime.MaxValue)
+            if (this._countdownTimer == null)
             {
-                StopCountdownTimer();
-            }
-            else if (this.Time > DateTime.MinValue)
-            {
-                if (this._countdownTimer.IsEnabled == false)
+                Int64 ticks = CalculateTicks();
+
+                if (CanStartDispatcherTimerWithTicks(ticks))
                 {
-                    TimeSpan fromNowToEventTime = this.Time - DateTime.Now;
-                    TimeSpan addedOneMinute = fromNowToEventTime.Add(new TimeSpan(600000000L)); // 1 tick == 10,000 milliseconds => 60,000,000 ticks == 1 minute
-
-                    Int64 ticksUntilEvent = addedOneMinute.Ticks;
-                    Int64 millisecondsUntilEvent = ticksUntilEvent / 10000;
-
-                    /*
-                    * even though you can start a DispatcherTimer with a ticks type of Int64,
-                    * the equivalent number of milliseconds cannot exceed Int32.MaxValue
-                    */
-                    if (millisecondsUntilEvent < Convert.ToInt64(Int32.MaxValue) && millisecondsUntilEvent > 0)
-                    {
-                        StartCountdownTimer(ticksUntilEvent);
-                    }
+                    StartCountdownTimer(ticks);
                 }
             }
-
-            Debug.WriteLine(this.ToString());
         }
 
-        private void StartCountdownTimer(Int64 ticks)
+        public void StartCountdownTimer()
+        {
+            Int64 ticks = CalculateTicks();
+
+            if (CanStartDispatcherTimerWithTicks(ticks))
+            {
+                this._countdownTimer = new DispatcherTimer
+                {
+                    Interval = new TimeSpan(ticks)
+                };
+
+                this._countdownTimer.Tick += _countdownTimer_Tick;
+                this._countdownTimer.IsEnabled = true;
+            }
+        }
+
+        private void StartCountdownTimer(long ticks)
         {
             this._countdownTimer = new DispatcherTimer
             {
@@ -109,22 +108,56 @@ namespace GB_Live
             };
 
             this._countdownTimer.Tick += _countdownTimer_Tick;
-            this._countdownTimer.Start();
+            this._countdownTimer.IsEnabled = true;
         }
 
-        private void StopCountdownTimer()
+        private Int64 CalculateTicks()
         {
-            this._countdownTimer.Stop();
-            this._countdownTimer.Tick -= _countdownTimer_Tick;
+            TimeSpan fromNowToEvent = this.Time - DateTime.Now;
+            TimeSpan oneMinuteInTicks = new TimeSpan(600000000L); // 1 tick == 10,000 milliseconds => 60,000,000 ticks == 1 minute
+
+            TimeSpan addedOneMinute = fromNowToEvent.Add(oneMinuteInTicks);
+
+            Int64 ticksUntilEvent = addedOneMinute.Ticks;
+
+            return ticksUntilEvent;
+        }
+
+        private bool CanStartDispatcherTimerWithTicks(Int64 ticks)
+        {
+            if (ticks == 0L)
+            {
+                return false;
+            }
+
+            /*
+            * even though you can start a DispatcherTimer with a ticks type of Int64,
+            * the equivalent number of milliseconds cannot exceed Int32.MaxValue
+            * http://referencesource.microsoft.com/#WindowsBase/src/Base/System/Windows/Threading/DispatcherTimer.cs -> ctor
+            */
+
+            Int64 millisecondsUntilEvent = ticks / 10000;
+
+            if (millisecondsUntilEvent > Convert.ToInt64(Int32.MaxValue))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public void StopCountdownTimer()
+        {
+            if (this._countdownTimer != null)
+            {
+                this._countdownTimer.IsEnabled = false;
+                this._countdownTimer.Tick -= _countdownTimer_Tick;
+                this._countdownTimer = null;
+            }
         }
 
         private void _countdownTimer_Tick(object sender, EventArgs e)
         {
-            //await Application.Current.MainWindow.Dispatcher.BeginInvoke(new Action(() =>
-            //    {
-            //        NotificationService.Send(this.Title, App.gbHome);
-            //    }), DispatcherPriority.Background);
-
             Application.Current.MainWindow.Dispatcher.Invoke(() =>
                 {
                     NotificationService.Send(this.Title, App.gbHome);

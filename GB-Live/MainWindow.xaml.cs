@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Diagnostics;
+using System.Windows;
 
 namespace GB_Live
 {
@@ -20,6 +21,17 @@ namespace GB_Live
             else
             {
                 e.Cancel = true;
+            }
+        }
+
+        private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.F1)
+            {
+                foreach (GBUpcomingEvent each in vm.Events)
+                {
+                    Debug.WriteLine(each.ToString());
+                }
             }
         }
     }

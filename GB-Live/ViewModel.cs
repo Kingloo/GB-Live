@@ -161,11 +161,34 @@ namespace GB_Live
 
         public ViewModel()
         {
+            this.Events.CollectionChanged += Events_CollectionChanged;
+
             this._updateTimer.Tick += _updateTimer_Tick;
             this._updateTimer.Interval = new TimeSpan(0, 5, 0);
-            this._updateTimer.Start();
+            this._updateTimer.IsEnabled = true;
 
             UpdateAsync();
+        }
+
+        private void Events_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    foreach (GBUpcomingEvent each in e.NewItems)
+                    {
+                        each.StartCountdownTimer();
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (GBUpcomingEvent each in e.OldItems)
+                    {
+                        each.StopCountdownTimer();
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
 
         private async void _updateTimer_Tick(object sender, EventArgs e)
@@ -227,12 +250,12 @@ namespace GB_Live
                 {
                     this.Events.AddMissingItems<GBUpcomingEvent>(eventsFromHtml);
 
+                    RemoveOldEvents(eventsFromHtml);
+
                     foreach (GBUpcomingEvent each in this.Events)
                     {
                         each.Update();
                     }
-
-                    RemoveOldEvents(eventsFromHtml);
                 }
             }
         }
@@ -268,14 +291,14 @@ namespace GB_Live
             return websiteAsString.Substring(index_upcomingBegins, length_upcomingHtml);
         }
 
-        private List<GBUpcomingEvent> ParseHtmlForEvents(string s)
+        private List<GBUpcomingEvent> ParseHtmlForEvents(string upcomingHtml)
         {
             List<GBUpcomingEvent> events = new List<GBUpcomingEvent>();
 
             string dd = string.Empty;
             bool shouldConcat = false;
 
-            using (StringReader sr = new StringReader(s))
+            using (StringReader sr = new StringReader(upcomingHtml))
             {
                 string line = string.Empty;
 
@@ -333,8 +356,6 @@ namespace GB_Live
 
             foreach (GBUpcomingEvent each in eventsToRemove)
             {
-                each.Update();
-
                 this.Events.Remove(each);
             }
         }
