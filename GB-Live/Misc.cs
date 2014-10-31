@@ -216,6 +216,43 @@ namespace GB_Live
         }
 
         /// <summary>
+        /// Returns the string from between two parts of a string.
+        /// </summary>
+        /// <param name="whole">The string to search within.</param>
+        /// <param name="beginning">Should end immediately before what we want back.</param>
+        /// <param name="ending">Should begin immediately after what we want back.</param>
+        /// <returns></returns>
+        public static string FromBetween(this string whole, string beginning, string ending)
+        {
+            if (whole.Contains(beginning) == false)
+            {
+                throw new ArgumentException("beginning does not appear within whole");
+            }
+
+            if (whole.Contains(ending) == false)
+            {
+                throw new ArgumentException("ending does not appear within whole");
+            }
+
+            if (whole.IndexOf(beginning) < 0)
+            {
+                throw new ArgumentOutOfRangeException("beginning");
+            }
+
+            if (whole.IndexOf(ending) < 0)
+            {
+                throw new ArgumentOutOfRangeException("ending");
+            }
+
+            int beginningOfString = whole.IndexOf(beginning) + beginning.Length;
+            int endingOfString = whole.IndexOf(ending);
+
+            int length = endingOfString - beginningOfString;
+
+            return whole.Substring(beginningOfString, length);
+        }
+
+        /// <summary>
         /// Returns a HttpWebResponse that deals with WebException inside.
         /// </summary>
         /// <param name="req">The HttpWebRequest to perform.</param>

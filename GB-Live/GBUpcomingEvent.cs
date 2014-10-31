@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Web;
 using System.Windows;
-using System.Windows.Data;
 using System.Windows.Threading;
 
 namespace GB_Live
@@ -13,8 +11,11 @@ namespace GB_Live
 
     public class GBUpcomingEvent : ViewModelBase, IComparable<GBUpcomingEvent>, IEquatable<GBUpcomingEvent>
     {
+        #region Fields
         private DispatcherTimer _countdownTimer = null;
+        #endregion
 
+        #region Properties
         public string Title { get; private set; }
         private DateTime _time = DateTime.MinValue;
         public DateTime Time
@@ -33,25 +34,57 @@ namespace GB_Live
         public bool Premium { get; private set; }
         public GBEventType EventType { get; private set; }
         public Uri BackgroundImageUrl { get; private set; }
+        #endregion
 
-        public GBUpcomingEvent(string s)
+        private GBUpcomingEvent(string s)
         {
-            this.Title = GetTitleFromString(s);
-            this.Time = GetTimeFromString(s);
-            this.Premium = GetPremiumStatus(s);
-            this.BackgroundImageUrl = GetBackgroundImageUrlFromString(s);
+            this.Title = GetTitle(s);
+            this.Premium = GetPremium(s);
+            this.BackgroundImageUrl = GetBackgroundImageUrl(s);
+
+            this.Time = GetTime(s);
+            this.EventType = GetEventType(s);
 
             if (Premium)
             {
-                this.EventType = GetEventTypeFromString(s.Substring(9));
+                string raw = s.FromBetween("</span>", "</p>");
+                string between = raw.Trim();
+
+                this.Time = GetTime(between);
+                this.EventType = GetEventType(between);
             }
             else
             {
-                this.EventType = GetEventTypeFromString(s);
+                string raw = s.FromBetween("ime\">", "</p>");
+                string between = raw.Trim();
+
+                this.Time = GetTime(between);
+                this.EventType = GetEventType(between);
             }
         }
 
-        private string GetTitleFromString(string s)
+        public static bool TryCreate(string html, out GBUpcomingEvent outEvent)
+        {
+            if (String.IsNullOrEmpty(html)
+                || String.IsNullOrWhiteSpace(html)
+                || html.Contains("<") == false
+                || html.Contains(">") == false
+                || html.Contains("title") == false
+                || html.Contains("time") == false)
+            {
+                outEvent = null;
+
+                return false;
+            }
+
+            outEvent = new GBUpcomingEvent(html);
+
+            Debug.WriteLine(outEvent.ToString());
+
+            return true;
+        }
+
+        private string GetTitle(string s)
         {
             int beginning = s.IndexOf("itle\">") + 6; // + 6 to move past the > and into the actual content
             int ending = s.IndexOf("<", beginning);
@@ -60,15 +93,64 @@ namespace GB_Live
             return HttpUtility.HtmlDecode(s.Substring(beginning, length));
         }
 
-        private DateTime GetTimeFromString(string s)
+        private bool GetPremium(string s)
         {
-            int beginning = s.IndexOf("ime\">") + 5; // + 5 to move past the > and into the actual content
-            int ending = s.IndexOf("<", beginning);
-            int length = ending - beginning;
+            if (s.Contains("content--premium"))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
-            string stringToParse = HttpUtility.HtmlDecode(s.Substring(beginning, length));
+        private Uri GetBackgroundImageUrl(string s)
+        {
+            string raw = s.FromBetween("background-image:url(", ")");
+            Uri uri = null;
 
-            return TryParseAndTrim(stringToParse, false);
+            if (Uri.TryCreate(raw, UriKind.Absolute, out uri))
+            {
+                return uri;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private DateTime GetTime(string s)
+        {
+            return TryParseAndTrim(s, false);
+        }
+
+        private GBEventType GetEventType(string s)
+        {
+            if (s.StartsWith("Article", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return GBEventType.Article;
+            }
+            else if (s.StartsWith("Review", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return GBEventType.Review;
+            }
+            else if (s.StartsWith("Podcast", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return GBEventType.Podcast;
+            }
+            else if (s.StartsWith("Video", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return GBEventType.Video;
+            }
+            else if (s.StartsWith("Live Show", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return GBEventType.LiveShow;
+            }
+            else
+            {
+                return GBEventType.Unknown;
+            }
         }
 
         public void Update()
@@ -166,74 +248,6 @@ namespace GB_Live
             this.Time = DateTime.MaxValue;
         }
 
-        private GBEventType GetEventTypeFromString(string s)
-        {
-            int beginning = s.IndexOf("ime\">") + 5;
-            int ending = s.IndexOf("<", beginning);
-            int length = ending - beginning;
-
-            string actualText = HttpUtility.HtmlDecode(s.Substring(beginning, length));
-
-            if (actualText.StartsWith("Article", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return GBEventType.Article;
-            }
-            else if (actualText.StartsWith("Review", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return GBEventType.Review;
-            }
-            else if (actualText.StartsWith("Podcast", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return GBEventType.Podcast;
-            }
-            else if (actualText.StartsWith("Video", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return GBEventType.Video;
-            }
-            else if (actualText.StartsWith("Live Show", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return GBEventType.LiveShow;
-            }
-            else
-            {
-                return GBEventType.Unknown;
-            }
-        }
-
-        private bool GetPremiumStatus(string s)
-        {
-            int beginning = s.IndexOf("itle\">") + 6; // + 6 to move past the > and into the actual content
-            int ending = s.IndexOf("<", beginning);
-            int length = ending - beginning;
-
-            string actualText = HttpUtility.HtmlDecode(s.Substring(beginning, length));
-
-            if (actualText.Contains("Premium"))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        private Uri GetBackgroundImageUrlFromString(string s)
-        {
-            int beginning = s.IndexOf("(") + 1;
-            int ending = s.IndexOf(")", beginning);
-            int length = ending - beginning;
-
-            if (beginning == 0)
-            {
-                return null;
-            }
-            else
-            {
-                return new Uri(s.Substring(beginning, length));
-            }
-        }
-
         private DateTime TryParseAndTrim(string s, bool fromEnd)
         {
             DateTime dt = DateTime.MinValue;
@@ -318,87 +332,10 @@ namespace GB_Live
             }
 
             sb.AppendLine(string.Format("Event type: {0}", this.EventType.ToString()));
+            sb.AppendLine(string.Format("Premium: {0}", this.Premium.ToString()));
             sb.AppendLine(string.Format("Image url: {0}", this.BackgroundImageUrl.AbsoluteUri));
 
             return sb.ToString();
-        }
-    }
-
-    public class AddSpacesToEnumConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            GBEventType eventType = (GBEventType)value;
-            string eventTypeAsString = eventType.ToString();
-
-            if (StringHasExtraUppercaseCharacters(eventTypeAsString))
-            {
-                List<int> listExtraUppercaseIndices = new List<int>();
-
-                for (int i = 1; i < eventTypeAsString.Length; i++)
-                {
-                    if (Char.IsUpper(eventTypeAsString[i]))
-                    {
-                        listExtraUppercaseIndices.Add(i);
-                    }
-                }
-
-                StringBuilder sb = new StringBuilder();
-                sb.Append(eventTypeAsString);
-
-                for (int i = listExtraUppercaseIndices.Count - 1; i >= 0; i--)
-                {
-                    sb.Insert(listExtraUppercaseIndices[i], " ");
-                }
-
-                return sb.ToString();
-            }
-            else
-            {
-                return eventTypeAsString;
-            }
-        }
-
-        private bool StringHasExtraUppercaseCharacters(string s)
-        {
-            char[] array = s.ToCharArray();
-
-            for (int i = 1; i < array.Length; i++)
-            {
-                if (Char.IsUpper(array[i]))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            return null;
-        }
-    }
-
-    public class FormatDateTimeString : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            DateTime dt = (DateTime)value;
-
-            if (dt.Equals(DateTime.MaxValue))
-            {
-                return "Now!";
-            }
-            else
-            {
-                return dt.ToString("ddd MMM dd  -  HH:mm");
-            }
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            return DateTime.MaxValue;
         }
     }
 }

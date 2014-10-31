@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -314,14 +315,26 @@ namespace GB_Live
                     {
                         shouldConcat = false;
 
-                        GBUpcomingEvent newEvent = new GBUpcomingEvent(dd);
+                        GBUpcomingEvent newEvent = null;
 
-                        if (newEvent.Time > DateTime.Now)
+                        if (GBUpcomingEvent.TryCreate(dd, out newEvent))
                         {
-                            events.Add(newEvent);
-                        }
+                            if (newEvent.Time > DateTime.Now)
+                            {
+                                events.Add(newEvent);
+                            }
 
-                        dd = string.Empty;
+                            dd = string.Empty;
+                        }
+                        else
+                        {
+                            StringBuilder sb = new StringBuilder();
+
+                            sb.AppendLine("An event could not be created from the following HTML:");
+                            sb.AppendLine(dd);
+
+                            Misc.LogMessage(sb.ToString());
+                        }
                     }
 
                     if (shouldConcat)
