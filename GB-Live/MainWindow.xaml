@@ -83,6 +83,8 @@
                     <DataTemplate.Resources>
                         <this:AddSpacesToEnumConverter x:Key="addSpacesToEnumConverter" />
                         <this:FormatDateTimeString x:Key="formatDateTimeString" />
+                        <this:BoolToStringConverter x:Key="boolToStringConverter" />
+                        <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
                     </DataTemplate.Resources>
 
                     <Grid>
@@ -119,6 +121,13 @@
                                Style="{StaticResource GBUpcomingEventLabelStyle}"
                                Content="{Binding Path=Time, Converter={StaticResource formatDateTimeString}}"
                                VerticalContentAlignment="Top" />
+                        
+                        <Label Grid.Column="1" Grid.Row="0"
+                               Content="{Binding Path=Premium, Converter={StaticResource boolToStringConverter}}"
+                               Visibility="{Binding Path=Premium, Converter={StaticResource booleanToVisibilityConverter}}"
+                               VerticalAlignment="Top" HorizontalAlignment="Right"
+                               VerticalContentAlignment="Center" HorizontalContentAlignment="Left"
+                               FontSize="12" Foreground="Gold" />
 
                     </Grid>
 

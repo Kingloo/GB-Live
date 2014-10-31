@@ -134,4 +134,27 @@ namespace GB_Live
             return DateTime.MaxValue;
         }
     }
+
+    [ValueConversion(typeof(bool), typeof(string))]
+    public class BoolToStringConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            bool isPremium = (bool)value;
+
+            if (isPremium)
+            {
+                return "Premium";
+            }
+            else
+            {
+                return "Everyone";
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            return false;
+        }
+    }
 }

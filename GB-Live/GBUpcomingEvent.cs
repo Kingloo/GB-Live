@@ -42,9 +42,6 @@ namespace GB_Live
             this.Premium = GetPremium(s);
             this.BackgroundImageUrl = GetBackgroundImageUrl(s);
 
-            this.Time = GetTime(s);
-            this.EventType = GetEventType(s);
-
             if (Premium)
             {
                 string raw = s.FromBetween("</span>", "</p>");
@@ -78,8 +75,6 @@ namespace GB_Live
             }
 
             outEvent = new GBUpcomingEvent(html);
-
-            Debug.WriteLine(outEvent.ToString());
 
             return true;
         }
