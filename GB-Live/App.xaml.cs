@@ -5,9 +5,6 @@ namespace GB_Live
 {
     public partial class App : Application
     {
-        public static Uri gbHome = new Uri("http://www.giantbomb.com/");
-        public static Uri gbChat = new Uri("http://www.giantbomb.com/chat");
-        
         [STAThread]
         public static int Main(string[] args)
         {

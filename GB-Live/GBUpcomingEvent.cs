@@ -227,17 +227,18 @@ namespace GB_Live
         {
             if (this._countdownTimer != null)
             {
-                this._countdownTimer.IsEnabled = false;
                 this._countdownTimer.Tick -= _countdownTimer_Tick;
-                this._countdownTimer = null;
+                this._countdownTimer.IsEnabled = false;
             }
+
+            this._countdownTimer = null;
         }
 
         private void _countdownTimer_Tick(object sender, EventArgs e)
         {
             Application.Current.MainWindow.Dispatcher.Invoke(() =>
                 {
-                    NotificationService.Send(this.Title, App.gbHome);
+                    NotificationService.Send(this.Title, Globals.gbHome);
                 }, DispatcherPriority.Background);
 
             this.Time = DateTime.MaxValue;

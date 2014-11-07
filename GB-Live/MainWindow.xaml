@@ -3,8 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:this="clr-namespace:GB_Live"
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-        KeyDown="Window_KeyDown"
-        Closing="Window_Closing">
+        KeyDown="Window_KeyDown">
     
     <Window.DataContext>
         <this:ViewModel x:Name="vm" />
@@ -109,8 +108,13 @@
                         
                         <Label Grid.ColumnSpan="2" Grid.Row="0"
                                Style="{StaticResource GBUpcomingEventLabelStyle}"
-                               Content="{Binding Path=Title, Mode=OneTime}"
-                               VerticalContentAlignment="Bottom" />
+                               Padding="0,0,20,0"
+                               VerticalContentAlignment="Bottom">
+                            <Label.Content>
+                                <TextBlock Text="{Binding Path=Title, Mode=OneTime}"
+                                           TextTrimming="CharacterEllipsis" />
+                            </Label.Content>
+                        </Label>
                         
                         <Label Grid.Column="0" Grid.Row="1"
                                Style="{StaticResource GBUpcomingEventLabelStyle}"
@@ -123,7 +127,7 @@
                                VerticalContentAlignment="Top" />
                         
                         <Label Grid.Column="1" Grid.Row="0"
-                               Content="{Binding Path=Premium, Converter={StaticResource boolToStringConverter}}"
+                               Content="Premium"
                                Visibility="{Binding Path=Premium, Converter={StaticResource booleanToVisibilityConverter}}"
                                VerticalAlignment="Top" HorizontalAlignment="Right"
                                VerticalContentAlignment="Center" HorizontalContentAlignment="Left"

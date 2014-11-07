@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -50,7 +49,7 @@ namespace GB_Live
 
         private void GoToHomePageInBrowser(object _)
         {
-            Misc.OpenUrlInBrowser(App.gbHome);
+            Misc.OpenUrlInBrowser(Globals.gbHome);
         }
 
         private DelegateCommand _goToChatPageInBrowserCommand = null;
@@ -69,7 +68,7 @@ namespace GB_Live
 
         private void GoToChatPageInBrowser(object _)
         {
-            Misc.OpenUrlInBrowser(App.gbChat);
+            Misc.OpenUrlInBrowser(Globals.gbChat);
         }
 
         private DelegateCommand _exitCommand = null;
@@ -210,7 +209,7 @@ namespace GB_Live
 
         private async Task CheckForLiveShow()
         {
-            HttpWebRequest req = BuildHttpWebRequest(App.gbChat);
+            HttpWebRequest req = BuildHttpWebRequest(Globals.gbChat);
             string websiteAsString = await Misc.DownloadWebsiteAsString(req);
 
             if (String.IsNullOrEmpty(websiteAsString) == false)
@@ -226,7 +225,7 @@ namespace GB_Live
                 {
                     if (this.IsLive == false)
                     {
-                        NotificationService.Send("Giantbomb is LIVE", App.gbChat);
+                        NotificationService.Send("Giantbomb is LIVE", Globals.gbChat);
 
                         this.IsLive = true;
                     }
@@ -236,7 +235,7 @@ namespace GB_Live
 
         private async Task UpdateUpcomingEvents()
         {
-            HttpWebRequest req = BuildHttpWebRequest(App.gbHome);
+            HttpWebRequest req = BuildHttpWebRequest(Globals.gbHome);
             string websiteAsString = await Misc.DownloadWebsiteAsString(req);
 
             if (String.IsNullOrEmpty(websiteAsString) == false)

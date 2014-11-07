@@ -76,7 +76,7 @@ namespace GB_Live
 
         private class NotificationWindow : Window
         {
-            private DispatcherTimer _expirationTimer = new DispatcherTimer();
+            private DispatcherTimer _expirationTimer = null;
             private Notification _n = null;
 
             public NotificationWindow(Notification n)
@@ -92,7 +92,15 @@ namespace GB_Live
                 Grid grid = new Grid { Style = BuildGridStyle() };
                 grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-                Label labelTitle = new Label { Content = this._n.Title, Style = BuildLabelTitleStyle() };
+                Label labelTitle = new Label
+                {
+                    Content = new TextBlock
+                    {
+                        Text = this._n.Title,
+                        TextTrimming = TextTrimming.CharacterEllipsis
+                    },
+                    Style = BuildLabelTitleStyle()
+                };
 
                 Grid.SetRow(labelTitle, 0);
 
@@ -100,7 +108,16 @@ namespace GB_Live
 
                 if (!(String.IsNullOrEmpty(n.Description)))
                 {
-                    Label labelDescription = new Label { Content = this._n.Description, Style = BuildLabelDescriptionStyle() };
+                    Label labelDescription = new Label
+                    {
+                        Content = new TextBlock
+                        {
+                            Text = this._n.Description,
+                            TextTrimming = TextTrimming.CharacterEllipsis
+                        },
+                        Style = BuildLabelDescriptionStyle()
+                    };
+
                     grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
                     Grid.SetRow(labelDescription, 1);
 
@@ -114,15 +131,20 @@ namespace GB_Live
 
             private void BuildTimer()
             {
-                this._expirationTimer.Interval = new TimeSpan(0, 0, 15);
+                this._expirationTimer = new DispatcherTimer
+                {
+                    Interval = new TimeSpan(0, 0, 15)
+                };
+
                 this._expirationTimer.Tick += Expiration_Tick;
                 this._expirationTimer.IsEnabled = true;
             }
 
             private void Expiration_Tick(object sender, EventArgs e)
             {
-                this._expirationTimer.IsEnabled = false;
                 this._expirationTimer.Tick -= Expiration_Tick;
+                this._expirationTimer.IsEnabled = false;
+                this._expirationTimer = null;
                 
                 this.Close();
             }
@@ -145,11 +167,19 @@ namespace GB_Live
                 style.Setters.Add(new Setter(WindowStyleProperty, WindowStyle.None));
                 style.Setters.Add(new Setter(BorderThicknessProperty, new Thickness(0d)));
 
-                style.Setters.Add(new Setter(TopProperty, 80d));
-                style.Setters.Add(new Setter(LeftProperty, 1250d));
+                //style.Setters.Add(new Setter(TopProperty, 80d));
+                //style.Setters.Add(new Setter(LeftProperty, 1250d));
+
+                double top = SystemParameters.WorkArea.Top + 50;
+                double left = SystemParameters.WorkArea.Right - 475d - 100;
+
+                style.Setters.Add(new Setter(TopProperty, top));
+                style.Setters.Add(new Setter(LeftProperty, left));
 
                 style.Setters.Add(new Setter(SizeToContentProperty, SizeToContent.Height));
                 style.Setters.Add(new Setter(WidthProperty, 475d));
+
+                
 
                 return style;
             }
