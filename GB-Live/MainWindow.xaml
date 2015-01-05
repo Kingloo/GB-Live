@@ -84,6 +84,9 @@
                         <this:FormatDateTimeString x:Key="formatDateTimeString" />
                         <this:BoolToStringConverter x:Key="boolToStringConverter" />
                         <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
+                        <this:BoolToColourConverter x:Key="boolToColourConverter"
+                                                    True="Gold"
+                                                    False="White" />
                     </DataTemplate.Resources>
 
                     <Grid>
@@ -107,8 +110,9 @@
                                Source="{Binding Path=BackgroundImageUrl, Mode=OneTime}" />
                         
                         <Label Grid.ColumnSpan="2" Grid.Row="0"
+                               Foreground="{Binding Path=Premium, Converter={StaticResource boolToColourConverter}}"
                                Style="{StaticResource GBUpcomingEventLabelStyle}"
-                               Padding="0,0,20,0"
+                               Padding="0,0,20,5"
                                VerticalContentAlignment="Bottom">
                             <Label.Content>
                                 <TextBlock Text="{Binding Path=Title, Mode=OneTime}"
@@ -117,21 +121,18 @@
                         </Label>
                         
                         <Label Grid.Column="0" Grid.Row="1"
+                               Foreground="{Binding Path=Premium, Converter={StaticResource boolToColourConverter}}"
                                Style="{StaticResource GBUpcomingEventLabelStyle}"
                                Content="{Binding Path=EventType, Mode=OneTime, Converter={StaticResource addSpacesToEnumConverter}}"
+                               Padding="0,5,0,0"
                                VerticalContentAlignment="Top" />
                         
                         <Label Grid.Column="1" Grid.Row="1"
+                               Foreground="{Binding Path=Premium, Converter={StaticResource boolToColourConverter}}"
                                Style="{StaticResource GBUpcomingEventLabelStyle}"
                                Content="{Binding Path=Time, Converter={StaticResource formatDateTimeString}}"
+                               Padding="0,5,0,0"
                                VerticalContentAlignment="Top" />
-                        
-                        <Label Grid.Column="1" Grid.Row="0"
-                               Content="Premium"
-                               Visibility="{Binding Path=Premium, Converter={StaticResource booleanToVisibilityConverter}}"
-                               VerticalAlignment="Top" HorizontalAlignment="Right"
-                               VerticalContentAlignment="Center" HorizontalContentAlignment="Left"
-                               FontSize="12" Foreground="Gold" />
 
                     </Grid>
 

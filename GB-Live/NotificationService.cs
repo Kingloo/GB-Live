@@ -113,7 +113,8 @@ namespace GB_Live
                         Content = new TextBlock
                         {
                             Text = this._n.Description,
-                            TextTrimming = TextTrimming.CharacterEllipsis
+                            TextTrimming = TextTrimming.CharacterEllipsis,
+                            FontStyle = FontStyles.Italic
                         },
                         Style = BuildLabelDescriptionStyle()
                     };

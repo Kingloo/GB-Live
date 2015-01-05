@@ -172,22 +172,12 @@ namespace GB_Live
 
         private void Events_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            switch (e.Action)
+            if (e.Action == NotifyCollectionChangedAction.Add)
             {
-                case NotifyCollectionChangedAction.Add:
-                    foreach (GBUpcomingEvent each in e.NewItems)
-                    {
-                        each.StartCountdownTimer();
-                    }
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    foreach (GBUpcomingEvent each in e.OldItems)
-                    {
-                        each.StopCountdownTimer();
-                    }
-                    break;
-                default:
-                    break;
+                foreach (GBUpcomingEvent each in e.NewItems)
+                {
+                    each.StartCountdownTimer();
+                }
             }
         }
 

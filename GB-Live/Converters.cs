@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media;
 
 namespace GB_Live
 {
@@ -149,6 +150,32 @@ namespace GB_Live
             else
             {
                 return "Everyone";
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            return false;
+        }
+    }
+
+    [ValueConversion(typeof(bool), typeof(Brush))]
+    public class BoolToColourConverter : IValueConverter
+    {
+        public Brush True { get; set; }
+        public Brush False { get; set; }
+
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            bool isTrue = (bool)value;
+
+            if (isTrue)
+            {
+                return this.True;
+            }
+            else
+            {
+                return this.False;
             }
         }
 
