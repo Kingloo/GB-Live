@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text;
 using System.Windows;
 
 namespace GB_Live
@@ -14,11 +15,14 @@ namespace GB_Live
         {
             if (e.Key == System.Windows.Input.Key.F1)
             {
+                StringBuilder sb = new StringBuilder();
+
                 foreach (GBUpcomingEvent each in vm.Events)
                 {
-                    //Debug.WriteLine(each.ToString());
-                    Misc.LogMessage(each.ToString());
+                    sb.AppendLine(each.ToString());
                 }
+
+                Misc.LogMessage(sb.ToString());
             }
         }
     }

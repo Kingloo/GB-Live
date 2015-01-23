@@ -111,7 +111,15 @@ namespace GB_Live
             }
             else
             {
-                return null;
+                UriBuilder ub = new UriBuilder
+                {
+                    Host = "static.giantbomb.com",
+                    Path = "/bundles/phoenixsite/images/core/loose/apple-touch-icon-precomposed-gb.png",
+                    Port = 80,
+                    Scheme = "http"
+                };
+
+                return ub.Uri;
             }
         }
 

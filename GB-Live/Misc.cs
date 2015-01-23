@@ -226,22 +226,30 @@ namespace GB_Live
         {
             if (whole.Contains(beginning) == false)
             {
-                throw new ArgumentException("beginning does not appear within whole");
+                //throw new ArgumentException(string.Format("beginning ({0}) does not appear within whole ({1})", beginning, whole));
+
+                return string.Format("beginning ({0}) does not appear within whole ({1})", beginning, whole);
             }
 
             if (whole.Contains(ending) == false)
             {
-                throw new ArgumentException("ending does not appear within whole");
+                //throw new ArgumentException(string.Format("ending ({0}) does not appear within whole ({1})", ending, whole));
+
+                return string.Format("ending ({0}) does not appear within whole ({1})", ending, whole);
             }
 
             if (whole.IndexOf(beginning) < 0)
             {
-                throw new ArgumentOutOfRangeException("beginning");
+                //throw new ArgumentOutOfRangeException(string.Format("beginning ({0}) does not seem to appear in whole ({1})", beginning, whole));
+
+                return string.Format("beginning ({0}) does not seem to appear in whole ({1})", beginning, whole);
             }
 
             if (whole.IndexOf(ending) < 0)
             {
-                throw new ArgumentOutOfRangeException("ending");
+                //throw new ArgumentOutOfRangeException(string.Format("ending ({0}) does not seem to appear within whole ({1})", ending, whole));
+
+                return string.Format("ending ({0}) does not seem to appear within whole ({1})", ending, whole);
             }
 
             int beginningOfString = whole.IndexOf(beginning) + beginning.Length;
