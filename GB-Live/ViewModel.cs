@@ -28,7 +28,7 @@ namespace GB_Live
             }
         }
 
-        private async Task RefreshAsync(object _)
+        private async Task RefreshAsync()
         {
             await UpdateAsync();
         }
@@ -47,9 +47,9 @@ namespace GB_Live
             }
         }
 
-        private void GoToHomePageInBrowser(object _)
+        private void GoToHomePageInBrowser()
         {
-            Misc.OpenUrlInBrowser(Globals.gbHome);
+            Utils.OpenUriInBrowser(Globals.gbHome);
         }
 
         private DelegateCommand _goToChatPageInBrowserCommand = null;
@@ -66,9 +66,9 @@ namespace GB_Live
             }
         }
 
-        private void GoToChatPageInBrowser(object _)
+        private void GoToChatPageInBrowser()
         {
-            Misc.OpenUrlInBrowser(Globals.gbChat);
+            Utils.OpenUriInBrowser(Globals.gbChat);
         }
 
         private DelegateCommand _exitCommand = null;
@@ -85,19 +85,19 @@ namespace GB_Live
             }
         }
 
-        private void Exit(object _)
+        private void Exit()
         {
             Application.Current.MainWindow.Close();
-        }
-
-        private bool canExecuteAsync(object _)
-        {
-            return !this.IsBusy;
         }
 
         private bool canExecute(object _)
         {
             return true;
+        }
+
+        private bool canExecuteAsync(object _)
+        {
+            return !this.IsBusy;
         }
         #endregion
 
@@ -200,7 +200,7 @@ namespace GB_Live
         private async Task CheckForLiveShow()
         {
             HttpWebRequest req = BuildHttpWebRequest(Globals.gbChat);
-            string websiteAsString = await Misc.DownloadWebsiteAsString(req);
+            string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req);
 
             if (String.IsNullOrEmpty(websiteAsString) == false)
             {
@@ -226,7 +226,7 @@ namespace GB_Live
         private async Task UpdateUpcomingEvents()
         {
             HttpWebRequest req = BuildHttpWebRequest(Globals.gbHome);
-            string websiteAsString = await Misc.DownloadWebsiteAsString(req);
+            string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req);
 
             if (String.IsNullOrEmpty(websiteAsString) == false)
             {
@@ -238,7 +238,7 @@ namespace GB_Live
                 }
                 else
                 {
-                    this.Events.AddMissingItems<GBUpcomingEvent>(eventsFromHtml);
+                    this.Events.AddMissing<GBUpcomingEvent>(eventsFromHtml);
 
                     RemoveOldEvents(eventsFromHtml);
 
@@ -322,7 +322,7 @@ namespace GB_Live
                             sb.AppendLine("An event could not be created from the following HTML:");
                             sb.AppendLine(dd);
 
-                            Misc.LogMessage(sb.ToString());
+                            Utils.LogMessage(sb.ToString());
                         }
                     }
 
@@ -379,17 +379,18 @@ namespace GB_Live
             HttpWebRequest req = HttpWebRequest.CreateHttp(gbUri);
 
             req.Accept = "text/html";
-            req.Headers.Add("Accept-Language", "en-gb");
-            req.Headers.Add("DNT", "1");
+            req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
             req.Host = gbUri.DnsSafeHost;
             req.KeepAlive = false;
             req.Method = "GET";
-            req.ProtocolVersion = HttpVersion.Version10;
-            req.Referer = string.Format("http://{0}/", gbUri.DnsSafeHost);
-            req.ServicePoint.ConnectionLimit = 3;
-            req.Timeout = 1250;
-            // Firefox 32 on Win 8.1 64bit
-            req.UserAgent = "Mozilla/5.0 (Windows NT 6.3; WOW64; rv:28.0) Gecko/20100101 Firefox/32.0";
+            req.ProtocolVersion = HttpVersion.Version11;
+            req.Referer = string.Format("{0}://{1}/", gbUri.GetLeftPart(UriPartial.Scheme), gbUri.DnsSafeHost);
+            req.Timeout = 2500;
+            req.UserAgent = "IE11: Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
+
+            req.Headers.Add("DNT", "1");
+            //req.Headers.Add("Accept-Language", "en-gb");
+            req.Headers.Add("Accept-Encoding", "gzip, deflate");
 
             // 1) lu is probably country-code, returned timezone has yet to be wrong after setting this
             // 2) after months of use, the prior claim remains true

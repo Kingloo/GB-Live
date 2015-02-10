@@ -22,7 +22,7 @@ namespace GB_Live
                     sb.AppendLine(each.ToString());
                 }
 
-                Misc.LogMessage(sb.ToString());
+                Utils.LogMessage(sb.ToString());
             }
         }
     }

@@ -22,10 +22,10 @@ namespace GB_Live
 
     public class DelegateCommand : Command
     {
-        private readonly Action<object> _execute = null;
+        private readonly Action _execute = null;
         private readonly Predicate<object> _canExecute = null;
 
-        public DelegateCommand(Action<object> execute, Predicate<object> canExecute)
+        public DelegateCommand(Action execute, Predicate<object> canExecute)
         {
             if (execute == null)
             {
@@ -41,9 +41,9 @@ namespace GB_Live
             this._canExecute = canExecute;
         }
 
-        public override void Execute(object parameter)
+        public override void Execute(object _)
         {
-            this._execute(parameter);
+            this._execute();
         }
 
         public override bool CanExecute(object parameter)
@@ -86,11 +86,11 @@ namespace GB_Live
 
     public class DelegateCommandAsync : Command
     {
-        private readonly Func<object, Task> _executeAsync = null;
+        private readonly Func<Task> _executeAsync = null;
         private readonly Predicate<object> _canExecute = null;
         private bool _isExecuting = false;
 
-        public DelegateCommandAsync(Func<object, Task> executeAsync, Predicate<object> canExecute)
+        public DelegateCommandAsync(Func<Task> executeAsync, Predicate<object> canExecute)
         {
             if (executeAsync == null)
             {
@@ -108,15 +108,15 @@ namespace GB_Live
 
         public async override void Execute(object parameter)
         {
-            await ExecuteAsync(parameter);
+            await ExecuteAsync();
         }
 
-        private async Task ExecuteAsync(object parameter)
+        private async Task ExecuteAsync()
         {
             this._isExecuting = true;
             this.RaiseCanExecuteChanged();
 
-            await this._executeAsync(parameter);
+            await this._executeAsync();
 
             this._isExecuting = false;
             this.RaiseCanExecuteChanged();

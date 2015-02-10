@@ -156,6 +156,8 @@ namespace GB_Live
 
                 style.Setters.Add(new EventSetter(MouseDoubleClickEvent, new MouseButtonEventHandler((sender, e) =>
                 {
+                    // we deliberately avoid using Utils.OpenUriInBrowser to avoid the dependency
+
                     Process.Start(this._n.Uri.AbsoluteUri);
                 })));
 
@@ -163,13 +165,13 @@ namespace GB_Live
                 style.Setters.Add(new Setter(ForegroundProperty, Brushes.Transparent));
 
                 style.Setters.Add(new Setter(TopmostProperty, true));
+                style.Setters.Add(new Setter(FocusableProperty, false));
                 style.Setters.Add(new Setter(ShowInTaskbarProperty, false));
+                style.Setters.Add(new Setter(ShowActivatedProperty, false));
+                style.Setters.Add(new Setter(IsTabStopProperty, false));
                 style.Setters.Add(new Setter(ResizeModeProperty, ResizeMode.NoResize));
                 style.Setters.Add(new Setter(WindowStyleProperty, WindowStyle.None));
                 style.Setters.Add(new Setter(BorderThicknessProperty, new Thickness(0d)));
-
-                //style.Setters.Add(new Setter(TopProperty, 80d));
-                //style.Setters.Add(new Setter(LeftProperty, 1250d));
 
                 double top = SystemParameters.WorkArea.Top + 50;
                 double left = SystemParameters.WorkArea.Right - 475d - 100;
@@ -179,8 +181,6 @@ namespace GB_Live
 
                 style.Setters.Add(new Setter(SizeToContentProperty, SizeToContent.Height));
                 style.Setters.Add(new Setter(WidthProperty, 475d));
-
-                
 
                 return style;
             }

@@ -28,7 +28,7 @@
     <ProductName>GB Live</ProductName>
     <PublisherName>Kingloo Holdings Ltd.</PublisherName>
     <DisallowUrlActivation>true</DisallowUrlActivation>
-    <ApplicationRevision>60</ApplicationRevision>
+    <ApplicationRevision>61</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -65,7 +65,7 @@
     <ApplicationIcon>giantbomb_logo.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>GB_Live.App</StartupObject>
+    <StartupObject>GB_Live.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
     <SignManifests>true</SignManifests>
@@ -130,8 +130,11 @@
       <SubType>Designer</SubType>
     </Page>
     <Compile Include="DelegateCommand.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="Globals.cs" />
-    <Compile Include="Misc.cs" />
+    <Compile Include="NotificationService.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Utils.cs" />
     <Compile Include="ViewModel.cs" />
     <Compile Include="ViewModelBase.cs" />
     <Page Include="MainWindow.xaml">
@@ -150,7 +153,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="NotificationService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
