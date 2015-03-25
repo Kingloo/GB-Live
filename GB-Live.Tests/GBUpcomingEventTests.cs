@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GB_Live.Tests
@@ -37,6 +38,70 @@ namespace GB_Live.Tests
             {
                 Assert.IsNull(test);
             }
+        }
+
+        [TestMethod]
+        public void GetPremium_correctInput()
+        {
+            GBUpcomingEvent gb = new GBUpcomingEvent();
+
+            Type t = gb.GetType();
+
+            MethodInfo m = t.GetMethod("GetPremium", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            string test = "class=\"content--premium\"";
+
+            bool result = (bool)m.Invoke(gb, new object[] { (string)test });
+
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public void GetPremium_badInput()
+        {
+            GBUpcomingEvent gb = new GBUpcomingEvent();
+
+            Type t = gb.GetType();
+
+            MethodInfo m = t.GetMethod("GetPremium", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            string test = "class=\"content-premium\"";
+
+            bool result = (bool)m.Invoke(gb, new object[] { (string)test });
+
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public void CanStartDispatcherTimer_shouldWork()
+        {
+            GBUpcomingEvent gb = new GBUpcomingEvent();
+
+            Type t = gb.GetType();
+
+            MethodInfo m = t.GetMethod("CanStartDispatcherTimerWithTicks", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Int64 test = Convert.ToInt64(Int32.MaxValue) - 1;
+
+            bool result = (bool)m.Invoke(gb, new object[] { (Int64)test });
+
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public void CanStartDispatcherTimer_shouldNotWork()
+        {
+            GBUpcomingEvent gb = new GBUpcomingEvent();
+
+            Type t = gb.GetType();
+
+            MethodInfo m = t.GetMethod("CanStartDispatcherTimerWithTicks", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Int64 test = ((Convert.ToInt64(Int32.MaxValue) + 1) * 10000);
+
+            bool result = (bool)m.Invoke(gb, new object[] { (Int64)test });
+
+            Assert.IsFalse(result);
         }
     }
 }

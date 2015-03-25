@@ -36,6 +36,8 @@ namespace GB_Live
         public Uri BackgroundImageUrl { get; private set; }
         #endregion
 
+        public GBUpcomingEvent() { }
+
         private GBUpcomingEvent(string s)
         {
             this.Title = GetTitle(s);

@@ -105,7 +105,7 @@ namespace GB_Live
         private const string appName = "GB Live";
         private const string upcomingBegins = "<dl class=\"promo-upcoming\">";
         private const string upcomingEnds = "</dl>";
-        private DispatcherTimer _updateTimer = new DispatcherTimer();
+        private DispatcherTimer _updateTimer = null;
         #endregion
 
         #region Properties
@@ -163,8 +163,13 @@ namespace GB_Live
         {
             this.Events.CollectionChanged += Events_CollectionChanged;
 
+            this._updateTimer = new DispatcherTimer
+            {
+                Interval = new TimeSpan(0, 5, 0),
+                IsEnabled = false
+            };
+
             this._updateTimer.Tick += _updateTimer_Tick;
-            this._updateTimer.Interval = new TimeSpan(0, 5, 0);
             this._updateTimer.IsEnabled = true;
 
             UpdateAsync();
@@ -183,7 +188,7 @@ namespace GB_Live
 
         private async void _updateTimer_Tick(object sender, EventArgs e)
         {
-            await UpdateAsync();
+            await UpdateAsync().ConfigureAwait(false);
         }
 
         public async Task UpdateAsync()
@@ -191,7 +196,7 @@ namespace GB_Live
             this.WindowTitle = string.Format("{0}: checking ...", appName);
 
             this.IsBusy = true;
-            await Task.WhenAll(CheckForLiveShow(), UpdateUpcomingEvents());
+            await Task.WhenAll(CheckForLiveShow(), UpdateUpcomingEvents()).ConfigureAwait(false);
             this.IsBusy = false;
 
             this.WindowTitle = appName;
@@ -200,7 +205,7 @@ namespace GB_Live
         private async Task CheckForLiveShow()
         {
             HttpWebRequest req = BuildHttpWebRequest(Globals.gbChat);
-            string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req);
+            string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req).ConfigureAwait(false);
 
             if (String.IsNullOrEmpty(websiteAsString) == false)
             {
@@ -215,7 +220,11 @@ namespace GB_Live
                 {
                     if (this.IsLive == false)
                     {
-                        NotificationService.Send("Giantbomb is LIVE", Globals.gbChat);
+                        Utils.SafeDispatcher(() =>
+                            {
+                                NotificationService.Send("Giantbomb is LIVE", Globals.gbChat);
+                            },
+                            DispatcherPriority.Background);
 
                         this.IsLive = true;
                     }
@@ -226,7 +235,7 @@ namespace GB_Live
         private async Task UpdateUpcomingEvents()
         {
             HttpWebRequest req = BuildHttpWebRequest(Globals.gbHome);
-            string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req);
+            string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req); // do NOT use ConfigureAwait(false)
 
             if (String.IsNullOrEmpty(websiteAsString) == false)
             {
