@@ -233,7 +233,7 @@ namespace GB_Live
             return true;
         }
 
-        private void StopCountdownTimer()
+        public void StopCountdownTimer()
         {
             if (this._countdownTimer != null)
             {
@@ -246,12 +246,7 @@ namespace GB_Live
 
         private void _countdownTimer_Tick(object sender, EventArgs e)
         {
-            Application.Current.MainWindow.Dispatcher.Invoke(() =>
-                {
-                    NotificationService.Send(this.Title, Globals.gbHome);
-                }, DispatcherPriority.Background);
-
-            this.StopCountdownTimer();
+            Utils.SafeDispatcher(() => NotificationService.Send(this.Title, Globals.gbHome), DispatcherPriority.Background);
 
             this.Time = DateTime.MaxValue;
         }

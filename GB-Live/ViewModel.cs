@@ -184,6 +184,16 @@ namespace GB_Live
                     each.StartCountdownTimer();
                 }
             }
+            else if (e.Action == NotifyCollectionChangedAction.Remove)
+            {
+                foreach (GBUpcomingEvent each in e.OldItems)
+                {
+                    if (each != null)
+                    {
+                        each.StopCountdownTimer();
+                    }
+                }
+            }
         }
 
         private async void _updateTimer_Tick(object sender, EventArgs e)
