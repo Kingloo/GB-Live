@@ -42,11 +42,11 @@ namespace GB_Live
 
             if (isLive)
             {
-                return "Giantbomb is LIVE";
+                return "GiantBomb is LIVE";
             }
             else
             {
-                return "Giantbomb is not streaming";
+                return "GiantBomb is not streaming";
             }
         }
 
