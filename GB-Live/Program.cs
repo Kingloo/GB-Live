@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GB_Live
 {
@@ -14,7 +10,16 @@ namespace GB_Live
             App app = new App();
             app.InitializeComponent();
 
-            return app.Run();
+            int exitCode = app.Run();
+
+            if (exitCode != 0)
+            {
+                string errorMessage = string.Format("Exited with code {1}", exitCode);
+
+                Utils.LogMessage(errorMessage);
+            }
+
+            return exitCode;
         }
     }
 }

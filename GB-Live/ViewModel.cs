@@ -30,7 +30,7 @@ namespace GB_Live
 
         private async Task RefreshAsync()
         {
-            await UpdateAsync();
+            await UpdateAsync().ConfigureAwait(false);
         }
 
         private DelegateCommand _goToHomePageInBrowserCommand = null;
@@ -127,9 +127,12 @@ namespace GB_Live
             get { return this._isLive; }
             set
             {
-                this._isLive = value;
+                if (!value == _isLive) // only need to change anything if value and the field are different
+                {
+                    this._isLive = value;
 
-                OnNotifyPropertyChanged();
+                    OnNotifyPropertyChanged();
+                }
             }
         }
 
@@ -142,11 +145,14 @@ namespace GB_Live
             }
             set
             {
-                this._isBusy = value;
+                if (!value == _isBusy) // only need to change anything if value and the field are different
+                {
+                    this._isBusy = value;
 
-                OnNotifyPropertyChanged();
+                    OnNotifyPropertyChanged();
 
-                RaiseAllCommandCanExecuteChanged();
+                    RaiseAllCommandCanExecuteChanged();
+                }
             }
         }
 
@@ -161,39 +167,21 @@ namespace GB_Live
 
         public ViewModel()
         {
-            this.Events.CollectionChanged += Events_CollectionChanged;
+            Application.Current.MainWindow.Loaded += MainWindow_Loaded;
 
             this._updateTimer = new DispatcherTimer
             {
-                Interval = new TimeSpan(0, 5, 0),
+                Interval = new TimeSpan(0, 4, 0), // 0 hours, 4 minutes, 0 seconds
                 IsEnabled = false
             };
 
             this._updateTimer.Tick += _updateTimer_Tick;
             this._updateTimer.IsEnabled = true;
-
-            UpdateAsync();
         }
 
-        private void Events_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            if (e.Action == NotifyCollectionChangedAction.Add)
-            {
-                foreach (GBUpcomingEvent each in e.NewItems)
-                {
-                    each.StartCountdownTimer();
-                }
-            }
-            else if (e.Action == NotifyCollectionChangedAction.Remove)
-            {
-                foreach (GBUpcomingEvent each in e.OldItems)
-                {
-                    if (each != null)
-                    {
-                        each.StopCountdownTimer();
-                    }
-                }
-            }
+            await UpdateAsync().ConfigureAwait(false);
         }
 
         private async void _updateTimer_Tick(object sender, EventArgs e)
@@ -204,15 +192,15 @@ namespace GB_Live
         public async Task UpdateAsync()
         {
             this.WindowTitle = string.Format("{0}: checking ...", appName);
-
             this.IsBusy = true;
-            await Task.WhenAll(CheckForLiveShow(), UpdateUpcomingEvents()).ConfigureAwait(false);
-            this.IsBusy = false;
 
+            await Task.WhenAll(IsGiantBombLiveAsync(), UpdateUpcomingEventsAsync()).ConfigureAwait(false);
+
+            this.IsBusy = false;
             this.WindowTitle = appName;
         }
 
-        private async Task CheckForLiveShow()
+        private async Task IsGiantBombLiveAsync()
         {
             HttpWebRequest req = BuildHttpWebRequest(Globals.gbChat);
             string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req).ConfigureAwait(false);
@@ -221,10 +209,7 @@ namespace GB_Live
             {
                 if (websiteAsString.Contains("There is currently no show"))
                 {
-                    if (this.IsLive == true)
-                    {
-                        this.IsLive = false;
-                    }
+                    this.IsLive = false;
                 }
                 else
                 {
@@ -242,62 +227,43 @@ namespace GB_Live
             }
         }
 
-        private async Task UpdateUpcomingEvents()
+        private async Task UpdateUpcomingEventsAsync()
         {
             HttpWebRequest req = BuildHttpWebRequest(Globals.gbHome);
-            string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req); // do NOT use ConfigureAwait(false)
+
+            // do NOT use ConfigureAwait(false)
+            // or you would have to post everrything else to Dispatcher
+            string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req);
 
             if (String.IsNullOrEmpty(websiteAsString) == false)
             {
                 List<GBUpcomingEvent> eventsFromHtml = RetrieveEventsFromHtml(websiteAsString);
 
-                if (eventsFromHtml.Count == 0)
-                {
-                    this.Events.Clear();
-                }
-                else
-                {
-                    this.Events.AddMissing<GBUpcomingEvent>(eventsFromHtml);
+                this.Events.Clear();
 
-                    RemoveOldEvents(eventsFromHtml);
+                this.Events.AddList<GBUpcomingEvent>(eventsFromHtml);
+            }
 
-                    foreach (GBUpcomingEvent each in this.Events)
-                    {
-                        each.Update();
-                    }
-                }
+            foreach (GBUpcomingEvent each in this.Events)
+            {
+                each.Update();
             }
         }
 
         private List<GBUpcomingEvent> RetrieveEventsFromHtml(string websiteAsString)
         {
-            string upcomingHtml = FindUpcomingHtml(websiteAsString);
+            string upcomingHtml = string.Empty;
+
+            try
+            {
+                upcomingHtml = websiteAsString.FromBetween(upcomingBegins, upcomingEnds);
+            }
+            catch (ArgumentException)
+            {
+                return new List<GBUpcomingEvent>(0);
+            }
 
             return ParseHtmlForEvents(upcomingHtml);
-        }
-
-        private string FindUpcomingHtml(string websiteAsString)
-        {
-            if (websiteAsString.Contains(upcomingBegins) == false)
-            {
-                return string.Empty;
-            }
-
-            if (websiteAsString.Contains(upcomingEnds) == false)
-            {
-                return string.Empty;
-            }
-
-            int index_upcomingBegins = websiteAsString.IndexOf(upcomingBegins);
-            int index_upcomingEnds = websiteAsString.IndexOf(upcomingEnds, index_upcomingBegins);
-            int length_upcomingHtml = index_upcomingEnds - index_upcomingBegins;
-
-            if (index_upcomingEnds <= index_upcomingBegins)
-            {
-                return string.Empty;
-            }
-
-            return websiteAsString.Substring(index_upcomingBegins, length_upcomingHtml);
         }
 
         private List<GBUpcomingEvent> ParseHtmlForEvents(string upcomingHtml)
@@ -353,44 +319,6 @@ namespace GB_Live
             }
 
             return events;
-        }
-
-        private void RemoveOldEvents(List<GBUpcomingEvent> eventsFromHtml)
-        {
-            List<GBUpcomingEvent> eventsToRemove = new List<GBUpcomingEvent>();
-
-            foreach (GBUpcomingEvent each in this.Events)
-            {
-                /*
-                 * when the event timer expires we set Time to DateTime.MaxValue,
-                 * therefore if Time == DateTime.MaxValue we want to remove it
-                 * 
-                 * if the event in our UI is not in the list returned from GB, we want to remove it,
-                 * because they have removed it before its time came
-                 */
-                if (each.Time.Equals(DateTime.MaxValue)
-                    || EventNotFoundInList(each, eventsFromHtml))
-                {
-                    eventsToRemove.Add(each);
-                }
-            }
-
-            foreach (GBUpcomingEvent each in eventsToRemove)
-            {
-                this.Events.Remove(each);
-            }
-        }
-
-        private static bool EventNotFoundInList(GBUpcomingEvent eventToCheck, List<GBUpcomingEvent> listToCheckWithin)
-        {
-            if (listToCheckWithin.Contains(eventToCheck))
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
         }
 
         private HttpWebRequest BuildHttpWebRequest(Uri gbUri)
