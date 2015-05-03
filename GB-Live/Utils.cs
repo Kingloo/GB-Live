@@ -147,7 +147,7 @@ namespace GB_Live
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Application.Current.ToString(), DateTime.Now));
+            sb.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Process.GetCurrentProcess().MainModule.ModuleName, DateTime.Now));
             sb.AppendLine(message);
             sb.AppendLine(e.Message);
             sb.AppendLine(e.StackTrace);
@@ -166,7 +166,7 @@ namespace GB_Live
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Application.Current.ToString(), DateTime.Now));
+            sb.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Process.GetCurrentProcess().MainModule.ModuleName, DateTime.Now));
             sb.AppendLine(e.Message);
             sb.AppendLine(e.StackTrace);
             sb.AppendLine(Environment.NewLine);
@@ -184,7 +184,7 @@ namespace GB_Live
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Application.Current.ToString(), DateTime.Now));
+            sb.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Process.GetCurrentProcess().MainModule.ModuleName, DateTime.Now));
             sb.AppendLine(message);
             sb.AppendLine(e.Message);
             sb.AppendLine(e.StackTrace);
@@ -245,7 +245,7 @@ namespace GB_Live
         {
             string response = string.Empty;
 
-            using (HttpWebResponse resp = (HttpWebResponse)(await req.GetResponseAsyncExt()))
+            using (HttpWebResponse resp = (HttpWebResponse)(await req.GetResponseAsyncExt().ConfigureAwait(false)))
             {
                 if (resp == null)
                 {
