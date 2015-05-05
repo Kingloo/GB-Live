@@ -217,7 +217,7 @@ namespace GB_Live
                     {
                         Utils.SafeDispatcher(() =>
                             {
-                                NotificationService.Send("Giantbomb is LIVE", Globals.gbChat);
+                                NotificationService.Send("GiantBomb is LIVE", Globals.gbChat);
                             },
                             DispatcherPriority.Background);
 
