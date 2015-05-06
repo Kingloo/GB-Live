@@ -163,7 +163,7 @@ namespace GB_Live
 
         public void Update()
         {
-            if (this._countdownTimer == null)
+            if ((this._countdownTimer == null) || (this.Time.Equals(DateTime.MaxValue) == false))
             {
                 Int64 ticks = CalculateTicks();
 
@@ -172,17 +172,6 @@ namespace GB_Live
                     StartCountdownTimer(ticks);
                 }
             }
-        }
-
-        private void StartCountdownTimer(long ticks)
-        {
-            this._countdownTimer = new DispatcherTimer
-            {
-                Interval = new TimeSpan(ticks)
-            };
-
-            this._countdownTimer.Tick += _countdownTimer_Tick;
-            this._countdownTimer.IsEnabled = true;
         }
 
         private Int64 CalculateTicks()
@@ -199,10 +188,7 @@ namespace GB_Live
 
         private bool CanStartDispatcherTimerWithTicks(Int64 ticks)
         {
-            if (ticks == 0L)
-            {
-                return false;
-            }
+            if (ticks == 0L) return false;
 
             /*
             * even though you can start a DispatcherTimer with a ticks type of Int64,
@@ -218,6 +204,17 @@ namespace GB_Live
             }
 
             return true;
+        }
+
+        private void StartCountdownTimer(long ticks)
+        {
+            this._countdownTimer = new DispatcherTimer
+            {
+                Interval = new TimeSpan(ticks)
+            };
+
+            this._countdownTimer.Tick += _countdownTimer_Tick;
+            this._countdownTimer.IsEnabled = true;
         }
 
         private void _countdownTimer_Tick(object sender, EventArgs e)
