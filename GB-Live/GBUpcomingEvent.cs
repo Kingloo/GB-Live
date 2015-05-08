@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Text;
+using System.Threading;
 using System.Web;
 using System.Windows;
 using System.Windows.Threading;
@@ -60,9 +61,6 @@ namespace GB_Live
                 this.Time = GetTime(between);
                 this.EventType = GetEventType(between);
             }
-
-            //StartCountdownTimer();
-            Update();
         }
 
         public static bool TryCreate(string html, out GBUpcomingEvent outEvent)
@@ -161,16 +159,21 @@ namespace GB_Live
             }
         }
 
-        public void Update()
+        public void StartCountdownTimer()
         {
-            if ((this._countdownTimer == null) || (this.Time.Equals(DateTime.MaxValue) == false))
-            {
-                Int64 ticks = CalculateTicks();
+            Int64 ticks = CalculateTicks();
 
-                if (CanStartDispatcherTimerWithTicks(ticks))
+            if (CanStartDispatcherTimerWithTicks(ticks))
+            {
+                this._countdownTimer = new DispatcherTimer
                 {
-                    StartCountdownTimer(ticks);
-                }
+                    Interval = new TimeSpan(ticks),
+                    //Interval = new TimeSpan(0, 0, 25),
+                    IsEnabled = false
+                };
+
+                this._countdownTimer.Tick += countdownTimer_Tick;
+                this._countdownTimer.IsEnabled = true;
             }
         }
 
@@ -206,26 +209,23 @@ namespace GB_Live
             return true;
         }
 
-        private void StartCountdownTimer(long ticks)
+        public void StopCountdownTimer()
         {
-            this._countdownTimer = new DispatcherTimer
+            if (this._countdownTimer != null)
             {
-                Interval = new TimeSpan(ticks)
-            };
-
-            this._countdownTimer.Tick += _countdownTimer_Tick;
-            this._countdownTimer.IsEnabled = true;
+                this._countdownTimer.IsEnabled = false;
+                this._countdownTimer.Tick -= countdownTimer_Tick;
+                this._countdownTimer = null;
+            }
         }
 
-        private void _countdownTimer_Tick(object sender, EventArgs e)
+        private void countdownTimer_Tick(object sender, EventArgs e)
         {
-            this._countdownTimer.Tick -= _countdownTimer_Tick;
-            this._countdownTimer.Stop();
-            this._countdownTimer = null;
-
             this.Time = DateTime.MaxValue;
 
-            Utils.SafeDispatcher(() => NotificationService.Send(this.Title, Globals.gbHome), DispatcherPriority.Background);
+            StopCountdownTimer();
+
+            NotificationService.Send(this.Title, Globals.gbHome);
         }
 
         private DateTime TryParseAndTrim(string s, bool fromEnd)

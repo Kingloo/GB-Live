@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -168,6 +169,7 @@ namespace GB_Live
         public ViewModel()
         {
             Application.Current.MainWindow.Loaded += MainWindow_Loaded;
+            this.Events.CollectionChanged += Events_CollectionChanged;
 
             this._updateTimer = new DispatcherTimer
             {
@@ -175,7 +177,7 @@ namespace GB_Live
                 IsEnabled = false
             };
 
-            this._updateTimer.Tick += _updateTimer_Tick;
+            this._updateTimer.Tick += updateTimer_Tick;
             this._updateTimer.IsEnabled = true;
         }
 
@@ -184,7 +186,38 @@ namespace GB_Live
             await UpdateAsync().ConfigureAwait(false);
         }
 
-        private async void _updateTimer_Tick(object sender, EventArgs e)
+        private void Events_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    StartAllEventTimers(e.NewItems);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    StopAllEventTimers(e.OldItems);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void StartAllEventTimers(IList newItems)
+        {
+            foreach (GBUpcomingEvent each in newItems)
+            {
+                each.StartCountdownTimer();
+            }
+        }
+
+        private void StopAllEventTimers(IList oldItems)
+        {
+            foreach (GBUpcomingEvent each in oldItems)
+            {
+                each.StopCountdownTimer();
+            }
+        }
+
+        private async void updateTimer_Tick(object sender, EventArgs e)
         {
             await UpdateAsync().ConfigureAwait(false);
         }
@@ -215,11 +248,7 @@ namespace GB_Live
                 {
                     if (this.IsLive == false)
                     {
-                        Utils.SafeDispatcher(() =>
-                            {
-                                NotificationService.Send("GiantBomb is LIVE", Globals.gbChat);
-                            },
-                            DispatcherPriority.Background);
+                        Utils.SafeDispatcher(() => NotificationService.Send("GiantBomb is LIVE", Globals.gbChat), DispatcherPriority.Background);
 
                         this.IsLive = true;
                     }
@@ -230,23 +259,16 @@ namespace GB_Live
         private async Task UpdateUpcomingEventsAsync()
         {
             HttpWebRequest req = BuildHttpWebRequest(Globals.gbHome);
+            string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req); // Don't use ConfigureAwait(false) - you would need to dispatch several times
+            if (String.IsNullOrWhiteSpace(websiteAsString)) return;
 
-            // do NOT use ConfigureAwait(false)
-            // or you would have to post everrything else to Dispatcher
-            string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req);
+            this.Events.Clear();
 
-            if (String.IsNullOrEmpty(websiteAsString) == false)
+            List<GBUpcomingEvent> eventsFromHtml = RetrieveEventsFromHtml(websiteAsString);
+
+            if (eventsFromHtml.Count > 0)
             {
-                List<GBUpcomingEvent> eventsFromHtml = RetrieveEventsFromHtml(websiteAsString);
-
-                this.Events.Clear();
-
                 this.Events.AddList<GBUpcomingEvent>(eventsFromHtml);
-            }
-
-            foreach (GBUpcomingEvent each in this.Events)
-            {
-                each.Update();
             }
         }
 
