@@ -28,7 +28,7 @@
     <ProductName>GB Live</ProductName>
     <PublisherName>Kingloo Holdings Ltd.</PublisherName>
     <DisallowUrlActivation>true</DisallowUrlActivation>
-    <ApplicationRevision>77</ApplicationRevision>
+    <ApplicationRevision>78</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -131,6 +131,7 @@
     </Page>
     <Compile Include="DelegateCommand.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="GBEventTemplateSelector.cs" />
     <Compile Include="Globals.cs" />
     <Compile Include="NotificationService.cs" />
     <Compile Include="Program.cs" />

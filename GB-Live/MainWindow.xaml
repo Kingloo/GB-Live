@@ -21,13 +21,6 @@
     </Window.Style>
     
     <Window.Resources>
-
-        <this:BooleanToLiveStatusStringConverter x:Key="booleanToLiveStatusStringConverter" />
-        
-        <this:BooleanToLabelStyleConverter x:Key="booleanToLabelStyleConverter"
-                                           LabelLiveStyle="{StaticResource LabelLiveStyle}"
-                                           LabelOfflineStyle="{StaticResource LabelOfflineStyle}" />
-        
         <CollectionViewSource Source="{Binding Path=Events}"
                               x:Key="sortEventsByTime"
                               IsLiveSortingRequested="True">
@@ -35,7 +28,6 @@
                 <scm:SortDescription PropertyName="Time" Direction="Ascending" />
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
-        
     </Window.Resources>
     
     <Window.InputBindings>
@@ -46,6 +38,119 @@
     </Window.InputBindings>
     
     <Grid>
+        
+        <Grid.Resources>
+
+            <this:AddSpacesToEnumConverter x:Key="addSpacesToEnumConverter" />
+            <this:FormatDateTimeString x:Key="formatDateTimeString" />
+            
+            <this:BooleanToLiveStatusStringConverter x:Key="booleanToLiveStatusStringConverter"
+                                                     True="GiantBomb is LIVE"
+                                                     False="GiantBomb is not streaming" />
+            
+            <this:BooleanToLabelStyleConverter x:Key="booleanToLabelStyleConverter"
+                                               True="{StaticResource LabelLiveStyle}"
+                                               False="{StaticResource LabelOfflineStyle}" />
+
+            <DataTemplate DataType="{x:Type this:GBUpcomingEvent}" x:Key="gbEventEveryone">
+                <Grid>
+                    <Grid.InputBindings>
+                        <MouseBinding MouseAction="LeftDoubleClick"
+                                      Command="{Binding Path=GoToHomePageInBrowserCommand, ElementName=vm}" />
+                    </Grid.InputBindings>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="55" />
+                        <RowDefinition Height="55" />
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="180" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Image Grid.ColumnSpan="2" Grid.RowSpan="2"
+                           Source="{Binding Path=BackgroundImageUrl, Mode=OneTime}" />
+
+                    <Label Grid.ColumnSpan="2" Grid.Row="0"
+                           Foreground="White"
+                           Padding="0,0,20,5"
+                           VerticalContentAlignment="Bottom"
+                           Style="{StaticResource GBUpcomingEventLabelStyle}">
+                        <Label.Content>
+                            <TextBlock Text="{Binding Path=Title, Mode=OneTime}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Label.Content>
+                    </Label>
+
+                    <Label Grid.Column="0" Grid.Row="1"
+                           Foreground="White"
+                           Content="{Binding Path=EventType, Mode=OneTime, Converter={StaticResource addSpacesToEnumConverter}}"
+                           Padding="0,5,0,0"
+                           VerticalContentAlignment="Top"
+                           Style="{StaticResource GBUpcomingEventLabelStyle}" />
+
+                    <Label Grid.Column="1" Grid.Row="1"
+                           Foreground="White"
+                           Content="{Binding Path=Time, Converter={StaticResource formatDateTimeString}}"
+                           Padding="0,5,0,0"
+                           VerticalContentAlignment="Top"
+                           Style="{StaticResource GBUpcomingEventLabelStyle}" />
+                </Grid>
+            </DataTemplate>
+            
+            <DataTemplate DataType="{x:Type this:GBUpcomingEvent}" x:Key="gbEventPremium">
+                <Grid>
+                    <Grid.InputBindings>
+                        <MouseBinding MouseAction="LeftDoubleClick"
+                                      Command="{Binding Path=GoToHomePageInBrowserCommand, ElementName=vm}" />
+                    </Grid.InputBindings>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="55" />
+                        <RowDefinition Height="55" />
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="180" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Image Grid.ColumnSpan="2" Grid.RowSpan="2"
+                           Source="{Binding Path=BackgroundImageUrl, Mode=OneTime}" />
+
+                    <Label Grid.ColumnSpan="2" Grid.Row="0"
+                           Foreground="Gold"
+                           Padding="0,0,20,5"
+                           VerticalContentAlignment="Bottom"
+                           Style="{StaticResource GBUpcomingEventLabelStyle}">
+                        <Label.Content>
+                            <TextBlock Text="{Binding Path=Title, Mode=OneTime}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Label.Content>
+                    </Label>
+
+                    <Label Grid.Column="0" Grid.Row="1"
+                           Foreground="Gold"
+                           Content="{Binding Path=EventType, Mode=OneTime, Converter={StaticResource addSpacesToEnumConverter}}"
+                           Padding="0,5,0,0"
+                           VerticalContentAlignment="Top"
+                           Style="{StaticResource GBUpcomingEventLabelStyle}" />
+
+                    <Label Grid.Column="1" Grid.Row="1"
+                           Foreground="Gold"
+                           Content="{Binding Path=Time, Converter={StaticResource formatDateTimeString}}"
+                           Padding="0,5,0,0"
+                           VerticalContentAlignment="Top"
+                           Style="{StaticResource GBUpcomingEventLabelStyle}" />
+                </Grid>
+            </DataTemplate>
+
+            <this:GBEventTemplateSelector x:Key="gbEventTemplateSelector"
+                                          Everyone="{StaticResource gbEventEveryone}"
+                                          Premium="{StaticResource gbEventPremium}" />
+
+        </Grid.Resources>
         
         <Grid.RowDefinitions>
             <RowDefinition MinHeight="50" />
@@ -62,6 +167,7 @@
         </Label>
         
         <ItemsControl Grid.Row="1"
+                      ItemTemplateSelector="{StaticResource gbEventTemplateSelector}"
                       ItemsSource="{Binding Source={StaticResource sortEventsByTime}}">
 
             <ItemsControl.Template>
@@ -76,68 +182,6 @@
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             
-            <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="{x:Type this:GBUpcomingEvent}">
-
-                    <DataTemplate.Resources>
-                        <this:AddSpacesToEnumConverter x:Key="addSpacesToEnumConverter" />
-                        <this:FormatDateTimeString x:Key="formatDateTimeString" />
-                        <this:BoolToStringConverter x:Key="boolToStringConverter" />
-                        <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
-                        <this:BoolToColourConverter x:Key="boolToColourConverter"
-                                                    True="Gold"
-                                                    False="White" />
-                    </DataTemplate.Resources>
-
-                    <Grid>
-                        
-                        <Grid.InputBindings>
-                            <MouseBinding MouseAction="LeftDoubleClick"
-                                          Command="{Binding Path=GoToHomePageInBrowserCommand, ElementName=vm}" />
-                        </Grid.InputBindings>
-
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="55" />
-                            <RowDefinition Height="55" />
-                        </Grid.RowDefinitions>
-
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="180" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        
-                        <Image Grid.ColumnSpan="2" Grid.RowSpan="2"
-                               Source="{Binding Path=BackgroundImageUrl, Mode=OneTime}" />
-                        
-                        <Label Grid.ColumnSpan="2" Grid.Row="0"
-                               Foreground="{Binding Path=Premium, Converter={StaticResource boolToColourConverter}}"
-                               Style="{StaticResource GBUpcomingEventLabelStyle}"
-                               Padding="0,0,20,5"
-                               VerticalContentAlignment="Bottom">
-                            <Label.Content>
-                                <TextBlock Text="{Binding Path=Title, Mode=OneTime}"
-                                           TextTrimming="CharacterEllipsis" />
-                            </Label.Content>
-                        </Label>
-                        
-                        <Label Grid.Column="0" Grid.Row="1"
-                               Foreground="{Binding Path=Premium, Converter={StaticResource boolToColourConverter}}"
-                               Style="{StaticResource GBUpcomingEventLabelStyle}"
-                               Content="{Binding Path=EventType, Mode=OneTime, Converter={StaticResource addSpacesToEnumConverter}}"
-                               Padding="0,5,0,0"
-                               VerticalContentAlignment="Top" />
-                        
-                        <Label Grid.Column="1" Grid.Row="1"
-                               Foreground="{Binding Path=Premium, Converter={StaticResource boolToColourConverter}}"
-                               Style="{StaticResource GBUpcomingEventLabelStyle}"
-                               Content="{Binding Path=Time, Converter={StaticResource formatDateTimeString}}"
-                               Padding="0,5,0,0"
-                               VerticalContentAlignment="Top" />
-
-                    </Grid>
-
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
         </ItemsControl>
     </Grid>
 </Window>

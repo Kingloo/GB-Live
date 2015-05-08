@@ -7,54 +7,40 @@ using System.Windows.Media;
 
 namespace GB_Live
 {
-    [ValueConversion(typeof(bool), typeof(Style))]
-    public class BooleanToLabelStyleConverter : IValueConverter
+    public abstract class GenericBooleanConverter<T> : IValueConverter
     {
-        public Style LabelLiveStyle { get; set; }
-        public Style LabelOfflineStyle { get; set; }
-        
+        public T True { get; set; }
+        public T False { get; set; }
+
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            bool isLive = (bool)value;
+            bool b = (bool)value;
 
-            if (isLive)
+            if (b)
             {
-                return this.LabelLiveStyle;
+                return this.True;
             }
             else
             {
-                return this.LabelOfflineStyle;
+                return this.False;
             }
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            return false;
+            return default(T);
         }
     }
+
+    [ValueConversion(typeof(bool), typeof(Style))]
+    public class BooleanToLabelStyleConverter : GenericBooleanConverter<Style> { }
 
     [ValueConversion(typeof(bool), typeof(string))]
-    public class BooleanToLiveStatusStringConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            bool isLive = (bool)value;
+    public class BooleanToLiveStatusStringConverter : GenericBooleanConverter<string> { }
 
-            if (isLive)
-            {
-                return "GiantBomb is LIVE";
-            }
-            else
-            {
-                return "GiantBomb is not streaming";
-            }
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            return false;
-        }
-    }
+    [ValueConversion(typeof(bool), typeof(Brush))]
+    public class BooleanToColourConverter : GenericBooleanConverter<Brush> { }
+    
 
     [ValueConversion(typeof(Enum), typeof(string))]
     public class AddSpacesToEnumConverter : IValueConverter
@@ -133,55 +119,6 @@ namespace GB_Live
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             return DateTime.MaxValue;
-        }
-    }
-
-    [ValueConversion(typeof(bool), typeof(string))]
-    public class BoolToStringConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            bool isPremium = (bool)value;
-
-            if (isPremium)
-            {
-                return "Premium";
-            }
-            else
-            {
-                return "Everyone";
-            }
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            return false;
-        }
-    }
-
-    [ValueConversion(typeof(bool), typeof(Brush))]
-    public class BoolToColourConverter : IValueConverter
-    {
-        public Brush True { get; set; }
-        public Brush False { get; set; }
-
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            bool isTrue = (bool)value;
-
-            if (isTrue)
-            {
-                return this.True;
-            }
-            else
-            {
-                return this.False;
-            }
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            return false;
         }
     }
 }
