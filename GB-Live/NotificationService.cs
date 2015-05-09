@@ -76,7 +76,6 @@ namespace GB_Live
 
         private class NotificationWindow : Window
         {
-            private DispatcherTimer _expirationTimer = null;
             private Notification _n = null;
 
             public NotificationWindow(Notification n)
@@ -132,20 +131,23 @@ namespace GB_Live
 
             private void BuildTimer()
             {
-                this._expirationTimer = new DispatcherTimer
+                DispatcherTimer expirationTimer = new DispatcherTimer
                 {
                     Interval = new TimeSpan(0, 0, 15)
+                    //Interval = new TimeSpan(0, 0, 1)
                 };
 
-                this._expirationTimer.Tick += Expiration_Tick;
-                this._expirationTimer.IsEnabled = true;
+                expirationTimer.Tick += Expiration_Tick;
+                expirationTimer.Start();
             }
 
             private void Expiration_Tick(object sender, EventArgs e)
             {
-                this._expirationTimer.Tick -= Expiration_Tick;
-                this._expirationTimer.IsEnabled = false;
-                this._expirationTimer = null;
+                DispatcherTimer timer = (DispatcherTimer)sender;
+
+                timer.Stop();
+                timer.Tick -= Expiration_Tick;
+                timer = null;
                 
                 this.Close();
             }

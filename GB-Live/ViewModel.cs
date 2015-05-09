@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -174,11 +175,10 @@ namespace GB_Live
             this._updateTimer = new DispatcherTimer
             {
                 Interval = new TimeSpan(0, 4, 0), // 0 hours, 4 minutes, 0 seconds
-                IsEnabled = false
             };
 
             this._updateTimer.Tick += updateTimer_Tick;
-            this._updateTimer.IsEnabled = true;
+            this._updateTimer.Start();
         }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -188,6 +188,16 @@ namespace GB_Live
 
         private void Events_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
+            /*
+             * 
+             * DO NOT USE EVENTS.CLEAR !!!!!!!!!!!
+             * 
+             * Events.Clear() fires NotifyCollectionChangedEventsArgs.Reset - NOT .Remove
+             * 
+             * .Reset does not give you a list of what was removed
+             *
+             */
+            
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
@@ -260,15 +270,15 @@ namespace GB_Live
         {
             HttpWebRequest req = BuildHttpWebRequest(Globals.gbHome);
             string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req); // Don't use ConfigureAwait(false) - you would need to dispatch several times
-            if (String.IsNullOrWhiteSpace(websiteAsString)) return;
 
-            this.Events.Clear();
+            if (String.IsNullOrWhiteSpace(websiteAsString)) return;
 
             List<GBUpcomingEvent> eventsFromHtml = RetrieveEventsFromHtml(websiteAsString);
 
             if (eventsFromHtml.Count > 0)
             {
-                this.Events.AddList<GBUpcomingEvent>(eventsFromHtml);
+                this.Events.AddMissing<GBUpcomingEvent>(eventsFromHtml);
+                Remove(eventsFromHtml);
             }
         }
 
@@ -341,6 +351,29 @@ namespace GB_Live
             }
 
             return events;
+        }
+
+        private void Remove(List<GBUpcomingEvent> eventsFromHtml)
+        {
+            /*
+             * 
+             * DO NOT USE EVENTS.CLEAR !!!!!!!!!!!
+             * 
+             * Events.Clear() fires NotifyCollectionChangedEventsArgs.Reset - NOT .Remove
+             * 
+             * .Reset does not give you a list of what was removed
+             *
+             */
+            
+            List<GBUpcomingEvent> toRemove = (from each in this.Events
+                                              where each.Time.Equals(DateTime.MaxValue) || eventsFromHtml.Contains(each) == false
+                                              select each)
+                                              .ToList<GBUpcomingEvent>();
+
+            foreach (GBUpcomingEvent each in toRemove)
+            {
+                this.Events.Remove(each);
+            }
         }
 
         private HttpWebRequest BuildHttpWebRequest(Uri gbUri)

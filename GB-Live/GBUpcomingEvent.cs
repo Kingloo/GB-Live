@@ -37,7 +37,13 @@ namespace GB_Live
         public Uri BackgroundImageUrl { get; private set; }
         #endregion
 
-        public GBUpcomingEvent() { }
+        public GBUpcomingEvent(string title, DateTime time, bool premium, GBEventType type)
+        {
+            this.Title = title;
+            this.Time = time;
+            this.Premium = premium;
+            this.EventType = type;
+        }
 
         private GBUpcomingEvent(string s)
         {
@@ -165,15 +171,14 @@ namespace GB_Live
 
             if (CanStartDispatcherTimerWithTicks(ticks))
             {
-                this._countdownTimer = new DispatcherTimer
+                _countdownTimer = new DispatcherTimer
                 {
-                    Interval = new TimeSpan(ticks),
-                    //Interval = new TimeSpan(0, 0, 25),
-                    IsEnabled = false
+                    Interval = new TimeSpan(ticks)
+                    //Interval = new TimeSpan(0, 0, 25)
                 };
 
-                this._countdownTimer.Tick += countdownTimer_Tick;
-                this._countdownTimer.IsEnabled = true;
+                _countdownTimer.Tick += countdownTimer_Tick;
+                _countdownTimer.Start();
             }
         }
 
@@ -187,6 +192,7 @@ namespace GB_Live
             Int64 ticksUntilEvent = addedOneMinute.Ticks;
 
             return ticksUntilEvent;
+            //return fromNowToEvent.Ticks;
         }
 
         private bool CanStartDispatcherTimerWithTicks(Int64 ticks)
@@ -211,11 +217,11 @@ namespace GB_Live
 
         public void StopCountdownTimer()
         {
-            if (this._countdownTimer != null)
+            if (_countdownTimer != null)
             {
-                this._countdownTimer.IsEnabled = false;
-                this._countdownTimer.Tick -= countdownTimer_Tick;
-                this._countdownTimer = null;
+                _countdownTimer.Stop();
+                _countdownTimer.Tick -= countdownTimer_Tick;
+                _countdownTimer = null;
             }
         }
 

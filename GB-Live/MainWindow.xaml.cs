@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using System.Windows;
 
 namespace GB_Live
@@ -30,6 +31,20 @@ namespace GB_Live
 
                 await Utils.LogMessageAsync(sb.ToString()).ConfigureAwait(false);
             }
+
+            //if (e.Key == System.Windows.Input.Key.F2)
+            //{
+            //    test = new GBUpcomingEvent("test", DateTime.Now + new TimeSpan(0, 0, 3), true, GBEventType.Unknown);
+
+            //    vm.Events.Add(test);
+            //}
+
+            //if (e.Key == System.Windows.Input.Key.F3)
+            //{
+            //    vm.Events.Remove(test);
+            //}
         }
+
+        private GBUpcomingEvent test;
     }
 }
