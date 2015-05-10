@@ -269,17 +269,22 @@ namespace GB_Live
         private async Task UpdateUpcomingEventsAsync()
         {
             HttpWebRequest req = BuildHttpWebRequest(Globals.gbHome);
-            string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req); // Don't use ConfigureAwait(false) - you would need to dispatch several times
+            string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req).ConfigureAwait(false);
 
             if (String.IsNullOrWhiteSpace(websiteAsString)) return;
 
             List<GBUpcomingEvent> eventsFromHtml = RetrieveEventsFromHtml(websiteAsString);
 
-            if (eventsFromHtml.Count > 0)
-            {
-                this.Events.AddMissing<GBUpcomingEvent>(eventsFromHtml);
-                Remove(eventsFromHtml);
-            }
+            Utils.SafeDispatcher(() =>
+                {
+                    if (eventsFromHtml.Count > 0)
+                    {
+                        Events.AddMissing<GBUpcomingEvent>(eventsFromHtml);
+                    }
+
+                    Remove(eventsFromHtml);
+                },
+                DispatcherPriority.Background);
         }
 
         private List<GBUpcomingEvent> RetrieveEventsFromHtml(string websiteAsString)
