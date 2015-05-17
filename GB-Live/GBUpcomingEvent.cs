@@ -13,7 +13,7 @@ namespace GB_Live
     public class GBUpcomingEvent : ViewModelBase, IComparable<GBUpcomingEvent>, IEquatable<GBUpcomingEvent>
     {
         #region Fields
-        private DispatcherTimer _countdownTimer = null;
+        private DispatcherTimer countdownTimer = null;
         #endregion
 
         #region Properties
@@ -171,28 +171,34 @@ namespace GB_Live
 
             if (CanStartDispatcherTimerWithTicks(ticks))
             {
-                _countdownTimer = new DispatcherTimer
+                countdownTimer = new DispatcherTimer
                 {
                     Interval = new TimeSpan(ticks)
                     //Interval = new TimeSpan(0, 0, 25)
                 };
 
-                _countdownTimer.Tick += countdownTimer_Tick;
-                _countdownTimer.Start();
+                countdownTimer.Tick += countdownTimer_Tick;
+                countdownTimer.Start();
+
+                //CountdownDispatcherTimer timer = new CountdownDispatcherTimer(new TimeSpan(ticks), () =>
+                //    {
+                //        Time = DateTime.MaxValue;
+
+                //        NotificationService.Send(Title, Globals.gbHome);
+                //    });
             }
         }
 
         private Int64 CalculateTicks()
         {
             TimeSpan fromNowToEvent = this.Time - DateTime.Now;
-            TimeSpan oneMinuteInTicks = new TimeSpan(600000000L); // 1 tick == 10,000 milliseconds => 60,000,000 ticks == 1 minute
+            TimeSpan oneMinuteInTicks = new TimeSpan(600000000L); // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s => 10,000 * 1000 * 60 ticks in 1 min == 600,000,000 ticks
 
             TimeSpan addedOneMinute = fromNowToEvent.Add(oneMinuteInTicks);
 
             Int64 ticksUntilEvent = addedOneMinute.Ticks;
 
             return ticksUntilEvent;
-            //return fromNowToEvent.Ticks;
         }
 
         private bool CanStartDispatcherTimerWithTicks(Int64 ticks)
@@ -217,11 +223,11 @@ namespace GB_Live
 
         public void StopCountdownTimer()
         {
-            if (_countdownTimer != null)
+            if (countdownTimer != null)
             {
-                _countdownTimer.Stop();
-                _countdownTimer.Tick -= countdownTimer_Tick;
-                _countdownTimer = null;
+                countdownTimer.Stop();
+                countdownTimer.Tick -= countdownTimer_Tick;
+                countdownTimer = null;
             }
         }
 
@@ -308,9 +314,9 @@ namespace GB_Live
             sb.AppendLine(string.Format("Title: {0}", this.Title));
             sb.AppendLine(string.Format("Time: {0}", this.Time));
 
-            if (this._countdownTimer != null)
+            if (this.countdownTimer != null)
             {
-                sb.AppendLine(string.Format("Countdown timer enabled: {0}", this._countdownTimer.IsEnabled));
+                sb.AppendLine(string.Format("Countdown timer enabled: {0}", this.countdownTimer.IsEnabled));
             }
             else
             {
