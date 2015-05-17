@@ -3,7 +3,7 @@ using System.Windows.Threading;
 
 namespace GB_Live
 {
-	public class CountdownDispatcherTimer
+    public class CountdownDispatcherTimer
     {
         private Action tick = null;
 
@@ -25,7 +25,7 @@ namespace GB_Live
 
         public CountdownDispatcherTimer(TimeSpan span, Action tick)
         {
-			if (span.Ticks < 10000000L) throw new ArgumentException("span cannot be less than 1 second"); // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s == 10,000,000 ticks
+            if (span.Ticks < 10000000L) throw new ArgumentException("span cannot be less than 1 second"); // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s == 10,000,000 ticks
             if (tick == null) throw new ArgumentNullException("tick event is null");
 
             this.tick = tick;
