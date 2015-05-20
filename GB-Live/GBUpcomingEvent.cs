@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using System.Web;
+using System.Windows.Threading;
 
 namespace GB_Live
 {
@@ -9,7 +10,7 @@ namespace GB_Live
     public class GBUpcomingEvent : ViewModelBase, IComparable<GBUpcomingEvent>, IEquatable<GBUpcomingEvent>
     {
         #region Fields
-        //private DispatcherTimer countdownTimer = null;
+        private DispatcherTimer countdownTimer = null;
         #endregion
 
         #region Properties
@@ -169,21 +170,14 @@ namespace GB_Live
 
             if (CanStartDispatcherTimerWithTicks(ticks))
             {
-                //countdownTimer = new DispatcherTimer
-                //{
-                //    Interval = new TimeSpan(ticks)
-                //    //Interval = new TimeSpan(0, 0, 25)
-                //};
+                countdownTimer = new DispatcherTimer
+                {
+                    Interval = new TimeSpan(ticks)
+                    //Interval = new TimeSpan(0, 0, 25)
+                };
 
-                //countdownTimer.Tick += countdownTimer_Tick;
-                //countdownTimer.Start();
-
-                CountdownDispatcherTimer timer = new CountdownDispatcherTimer(new TimeSpan(ticks), () =>
-                    {
-                        Time = DateTime.MaxValue;
-
-                        NotificationService.Send(Title, Globals.gbHome);
-                    });
+                countdownTimer.Tick += countdownTimer_Tick;
+                countdownTimer.Start();
             }
         }
 
@@ -222,24 +216,24 @@ namespace GB_Live
             return true;
         }
 
-        //public void StopCountdownTimer()
-        //{
-        //    if (countdownTimer != null)
-        //    {
-        //        countdownTimer.Stop();
-        //        countdownTimer.Tick -= countdownTimer_Tick;
-        //        countdownTimer = null;
-        //    }
-        //}
+        public void StopCountdownTimer()
+        {
+            if (countdownTimer != null)
+            {
+                countdownTimer.Stop();
+                countdownTimer.Tick -= countdownTimer_Tick;
+                countdownTimer = null;
+            }
+        }
 
-        //private void countdownTimer_Tick(object sender, EventArgs e)
-        //{
-        //    this.Time = DateTime.MaxValue;
+        private void countdownTimer_Tick(object sender, EventArgs e)
+        {
+            this.Time = DateTime.MaxValue;
 
-        //    StopCountdownTimer();
+            StopCountdownTimer();
 
-        //    NotificationService.Send(this.Title, Globals.gbHome);
-        //}
+            NotificationService.Send(this.Title, Globals.gbHome);
+        }
 
         private DateTime TryParseAndTrim(string s, bool fromEnd)
         {

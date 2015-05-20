@@ -21,12 +21,12 @@ namespace GB_Live
         {
             get
             {
-                if (this._refreshCommandAsync == null)
+                if (_refreshCommandAsync == null)
                 {
-                    this._refreshCommandAsync = new DelegateCommandAsync(RefreshAsync, canExecuteAsync);
+                    _refreshCommandAsync = new DelegateCommandAsync(RefreshAsync, canExecuteAsync);
                 }
 
-                return this._refreshCommandAsync;
+                return _refreshCommandAsync;
             }
         }
 
@@ -40,12 +40,12 @@ namespace GB_Live
         {
             get
             {
-                if (this._goToHomePageInBrowserCommand == null)
+                if (_goToHomePageInBrowserCommand == null)
                 {
-                    this._goToHomePageInBrowserCommand = new DelegateCommand(GoToHomePageInBrowser, canExecute);
+                    _goToHomePageInBrowserCommand = new DelegateCommand(GoToHomePageInBrowser, canExecute);
                 }
 
-                return this._goToHomePageInBrowserCommand;
+                return _goToHomePageInBrowserCommand;
             }
         }
 
@@ -59,12 +59,12 @@ namespace GB_Live
         {
             get
             {
-                if (this._goToChatPageInBrowserCommand == null)
+                if (_goToChatPageInBrowserCommand == null)
                 {
-                    this._goToChatPageInBrowserCommand = new DelegateCommand(GoToChatPageInBrowser, canExecute);
+                    _goToChatPageInBrowserCommand = new DelegateCommand(GoToChatPageInBrowser, canExecute);
                 }
 
-                return this._goToChatPageInBrowserCommand;
+                return _goToChatPageInBrowserCommand;
             }
         }
 
@@ -78,12 +78,12 @@ namespace GB_Live
         {
             get
             {
-                if (this._exitCommand == null)
+                if (_exitCommand == null)
                 {
-                    this._exitCommand = new DelegateCommand(Exit, canExecute);
+                    _exitCommand = new DelegateCommand(Exit, canExecute);
                 }
 
-                return this._exitCommand;
+                return _exitCommand;
             }
         }
 
@@ -99,7 +99,7 @@ namespace GB_Live
 
         private bool canExecuteAsync(object _)
         {
-            return !this.IsBusy;
+            return !IsBusy;
         }
         #endregion
 
@@ -197,15 +197,15 @@ namespace GB_Live
              * .Reset does not give you a list of what was removed
              *
              */
-            
+
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
                     StartAllEventTimers(e.NewItems);
                     break;
-                //case NotifyCollectionChangedAction.Remove:
-                //    StopAllEventTimers(e.OldItems);
-                //    break;
+                case NotifyCollectionChangedAction.Remove:
+                    StopAllEventTimers(e.OldItems);
+                    break;
                 default:
                     break;
             }
@@ -219,13 +219,13 @@ namespace GB_Live
             }
         }
 
-        //private void StopAllEventTimers(IList oldItems)
-        //{
-        //    foreach (GBUpcomingEvent each in oldItems)
-        //    {
-        //        each.StopCountdownTimer();
-        //    }
-        //}
+        private void StopAllEventTimers(IList oldItems)
+        {
+            foreach (GBUpcomingEvent each in oldItems)
+            {
+                each.StopCountdownTimer();
+            }
+        }
 
         private async void updateTimer_Tick(object sender, EventArgs e)
         {
@@ -237,54 +237,56 @@ namespace GB_Live
             this.WindowTitle = string.Format("{0}: checking ...", appName);
             this.IsBusy = true;
 
-            await Task.WhenAll(IsGiantBombLiveAsync(), UpdateUpcomingEventsAsync()).ConfigureAwait(false);
+            string websiteAsString = await GetHomepage(Globals.gbHome);
+
+            if (String.IsNullOrWhiteSpace(websiteAsString)) return;
+
+            CheckIfGiantBombIsLive(websiteAsString);
+
+            UpdateUpcomingEvents(websiteAsString);
 
             this.IsBusy = false;
             this.WindowTitle = appName;
         }
 
-        private async Task IsGiantBombLiveAsync()
+        private async Task<string> GetHomepage(Uri uri)
         {
-            HttpWebRequest req = BuildHttpWebRequest(Globals.gbChat);
+            HttpWebRequest req = BuildHttpWebRequest(uri);
+
             string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req).ConfigureAwait(false);
 
-            if (String.IsNullOrEmpty(websiteAsString) == false)
-            {
-                if (websiteAsString.Contains("There is currently no show"))
-                {
-                    this.IsLive = false;
-                }
-                else
-                {
-                    if (this.IsLive == false)
-                    {
-                        Utils.SafeDispatcher(() => NotificationService.Send("GiantBomb is LIVE", Globals.gbChat), DispatcherPriority.Background);
+            return websiteAsString;
+        }
 
-                        this.IsLive = true;
-                    }
+        private void CheckIfGiantBombIsLive(string websiteAsString)
+        {
+            if (websiteAsString.Contains("Live on Giant Bomb!"))
+            {
+                if (IsLive == false)
+                {
+                    IsLive = true;
+
+                    Utils.SafeDispatcher(() =>
+                        NotificationService.Send("GiantBomb is LIVE", Globals.gbChat),
+                        DispatcherPriority.Background);
                 }
+            }
+            else
+            {
+                IsLive = false;
             }
         }
 
-        private async Task UpdateUpcomingEventsAsync()
+        private void UpdateUpcomingEvents(string websiteAsString)
         {
-            HttpWebRequest req = BuildHttpWebRequest(Globals.gbHome);
-            string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req).ConfigureAwait(false);
-
-            if (String.IsNullOrWhiteSpace(websiteAsString)) return;
-
             List<GBUpcomingEvent> eventsFromHtml = RetrieveEventsFromHtml(websiteAsString);
 
-            Utils.SafeDispatcher(() =>
-                {
-                    if (eventsFromHtml.Count > 0)
-                    {
-                        Events.AddMissing<GBUpcomingEvent>(eventsFromHtml);
-                    }
+            if (eventsFromHtml.Count > 0)
+            {
+                Events.AddMissing<GBUpcomingEvent>(eventsFromHtml);
+            }
 
-                    Remove(eventsFromHtml);
-                },
-                DispatcherPriority.Background);
+            Remove(eventsFromHtml);
         }
 
         private List<GBUpcomingEvent> RetrieveEventsFromHtml(string websiteAsString)
