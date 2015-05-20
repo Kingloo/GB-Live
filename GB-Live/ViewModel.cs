@@ -203,9 +203,9 @@ namespace GB_Live
                 case NotifyCollectionChangedAction.Add:
                     StartAllEventTimers(e.NewItems);
                     break;
-                case NotifyCollectionChangedAction.Remove:
-                    StopAllEventTimers(e.OldItems);
-                    break;
+                //case NotifyCollectionChangedAction.Remove:
+                //    StopAllEventTimers(e.OldItems);
+                //    break;
                 default:
                     break;
             }
@@ -219,13 +219,13 @@ namespace GB_Live
             }
         }
 
-        private void StopAllEventTimers(IList oldItems)
-        {
-            foreach (GBUpcomingEvent each in oldItems)
-            {
-                each.StopCountdownTimer();
-            }
-        }
+        //private void StopAllEventTimers(IList oldItems)
+        //{
+        //    foreach (GBUpcomingEvent each in oldItems)
+        //    {
+        //        each.StopCountdownTimer();
+        //    }
+        //}
 
         private async void updateTimer_Tick(object sender, EventArgs e)
         {
@@ -250,6 +250,8 @@ namespace GB_Live
 
             if (String.IsNullOrEmpty(websiteAsString) == false)
             {
+                Utils.LogMessage(websiteAsString);
+                
                 if (websiteAsString.Contains("There is currently no show"))
                 {
                     this.IsLive = false;

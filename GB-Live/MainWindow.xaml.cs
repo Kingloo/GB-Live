@@ -34,7 +34,7 @@ namespace GB_Live
 
             //if (e.Key == System.Windows.Input.Key.F2)
             //{
-            //    test = new GBUpcomingEvent("test", DateTime.Now + new TimeSpan(0, 0, 3), true, GBEventType.Unknown);
+            //    test = new GBUpcomingEvent("test", DateTime.Now + new TimeSpan(0, 0, 4), true, GBEventType.Unknown);
 
             //    vm.Events.Add(test);
             //}
@@ -45,6 +45,6 @@ namespace GB_Live
             //}
         }
 
-        private GBUpcomingEvent test;
+        //private GBUpcomingEvent test;
     }
 }
