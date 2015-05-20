@@ -173,7 +173,6 @@ namespace GB_Live
                 countdownTimer = new DispatcherTimer
                 {
                     Interval = new TimeSpan(ticks)
-                    //Interval = new TimeSpan(0, 0, 25)
                 };
 
                 countdownTimer.Tick += countdownTimer_Tick;
@@ -190,8 +189,11 @@ namespace GB_Live
 
             Int64 ticksUntilEvent = addedOneMinute.Ticks;
 
-            //return ticksUntilEvent; // real
-            return fromNowToEvent.Ticks; // test
+#if DEBUG
+            return fromNowToEvent.Ticks;
+#else
+            return ticksUntilEvent;
+#endif
         }
 
         private bool CanStartDispatcherTimerWithTicks(Int64 ticks)
@@ -309,14 +311,14 @@ namespace GB_Live
             sb.AppendLine(string.Format("Title: {0}", this.Title));
             sb.AppendLine(string.Format("Time: {0}", this.Time));
 
-            //if (this.countdownTimer != null)
-            //{
-            //    sb.AppendLine(string.Format("Countdown timer enabled: {0}", this.countdownTimer.IsEnabled));
-            //}
-            //else
-            //{
-            //    sb.AppendLine("Countdown timer not created");
-            //}
+            if (this.countdownTimer != null)
+            {
+                sb.AppendLine(string.Format("Countdown timer enabled: {0}, time remaining: {1}", countdownTimer.IsEnabled, countdownTimer.Interval.ToString()));
+            }
+            else
+            {
+                sb.AppendLine("Countdown timer not created");
+            }
 
             sb.AppendLine(string.Format("Event type: {0}", this.EventType.ToString()));
             sb.AppendLine(string.Format("Premium: {0}", this.Premium.ToString()));

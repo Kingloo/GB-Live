@@ -77,8 +77,11 @@ namespace GB_Live
 
                 this.AddChild(grid);
 
-                //CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 15), () => this.Close()); // real
-                CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 2), () => this.Close()); // test
+#if DEBUG
+                CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 2), () => this.Close());
+#else
+                CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 15), () => this.Close());
+#endif
 
                 DisplayThisWindow();
             }

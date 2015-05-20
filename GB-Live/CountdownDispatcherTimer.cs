@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Windows.Threading;
 
 namespace GB_Live

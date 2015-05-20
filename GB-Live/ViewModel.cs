@@ -107,7 +107,7 @@ namespace GB_Live
         private const string appName = "GB Live";
         private const string upcomingBegins = "<dl class=\"promo-upcoming\">";
         private const string upcomingEnds = "</dl>";
-        private DispatcherTimer _updateTimer = null;
+        private DispatcherTimer updateTimer = null;
         #endregion
 
         #region Properties
@@ -164,21 +164,21 @@ namespace GB_Live
         }
 
         private ObservableCollection<GBUpcomingEvent> _events = new ObservableCollection<GBUpcomingEvent>();
-        public ObservableCollection<GBUpcomingEvent> Events { get { return this._events; } }
+        public ObservableCollection<GBUpcomingEvent> Events { get { return _events; } }
         #endregion
 
         public ViewModel()
         {
             Application.Current.MainWindow.Loaded += MainWindow_Loaded;
-            this.Events.CollectionChanged += Events_CollectionChanged;
+            Events.CollectionChanged += Events_CollectionChanged;
 
-            this._updateTimer = new DispatcherTimer
+            updateTimer = new DispatcherTimer
             {
                 Interval = new TimeSpan(0, 4, 0), // 0 hours, 4 minutes, 0 seconds
             };
 
-            this._updateTimer.Tick += updateTimer_Tick;
-            this._updateTimer.Start();
+            updateTimer.Tick += updateTimer_Tick;
+            updateTimer.Start();
         }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
