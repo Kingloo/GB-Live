@@ -250,8 +250,6 @@ namespace GB_Live
 
             if (String.IsNullOrEmpty(websiteAsString) == false)
             {
-                Utils.LogMessage(websiteAsString);
-                
                 if (websiteAsString.Contains("There is currently no show"))
                 {
                     this.IsLive = false;
