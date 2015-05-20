@@ -43,6 +43,11 @@ namespace GB_Live
             //{
             //    vm.Events.Remove(test);
             //}
+
+            //if (e.Key == System.Windows.Input.Key.F4)
+            //{
+            //    NotificationService.Send("test2", "desc");
+            //}
         }
 
         //private GBUpcomingEvent test;

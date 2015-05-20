@@ -190,8 +190,8 @@ namespace GB_Live
 
             Int64 ticksUntilEvent = addedOneMinute.Ticks;
 
-            return ticksUntilEvent;
-            //return fromNowToEvent.Ticks;
+            //return ticksUntilEvent; // real
+            return fromNowToEvent.Ticks; // test
         }
 
         private bool CanStartDispatcherTimerWithTicks(Int64 ticks)

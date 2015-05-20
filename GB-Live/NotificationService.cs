@@ -4,104 +4,28 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Threading;
 
 namespace GB_Live
 {
     public static class NotificationService
     {
-        public static void Send(string send)
+        public static void Send(string title, Uri uri = null)
         {
-            Notification n = new Notification(send);
-            n.Send();
+            NotificationWindow window = new NotificationWindow(title, string.Empty, uri);
         }
 
-        public static void Send(string send, string description)
+        public static void Send(string title, string description, Uri uri = null)
         {
-            Notification n = new Notification(send, description);
-            n.Send();
-        }
-
-        public static void Send(string send, Uri uri)
-        {
-            Notification n = new Notification(send, uri);
-            n.Send();
-        }
-
-        public static void Send(string send, string description, Uri uri)
-        {
-            Notification n = new Notification(send, description, uri);
-            n.Send();
-        }
-
-        private class Notification
-        {
-            #region Properties
-            private string _title = string.Empty;
-            public string Title
-            {
-                get
-                {
-                    return this._title;
-                }
-            }
-
-            private string _description = string.Empty;
-            public string Description
-            {
-                get
-                {
-                    return this._description;
-                }
-            }
-
-            private Uri _uri = null;
-            public Uri Uri
-            {
-                get
-                {
-                    return this._uri;
-                }
-            }
-            #endregion
-
-            public Notification(string title)
-            {
-                this._title = title;
-            }
-
-            public Notification(string title, string description)
-            {
-                this._title = title;
-                this._description = description;
-            }
-
-            public Notification(string title, Uri doubleClickUri)
-            {
-                this._title = title;
-                this._uri = doubleClickUri;
-            }
-
-            public Notification(string title, string description, Uri doubleClickUri)
-            {
-                this._title = title;
-                this._description = description;
-                this._uri = doubleClickUri;
-            }
-
-            public void Send()
-            {
-                NotificationWindow notificationWindow = new NotificationWindow(this);
-            }
+            NotificationWindow window = new NotificationWindow(title, description, uri);
         }
 
         private class NotificationWindow : Window
         {
-            private Notification n = null;
+            private Uri uri = null;
 
-            public NotificationWindow(Notification n)
+            internal NotificationWindow(string title, string description, Uri uri)
             {
-                this.n = n;
+                this.uri = uri;
 
                 this.Owner = Application.Current.MainWindow;
                 this.Style = BuildWindowStyle();
@@ -121,7 +45,7 @@ namespace GB_Live
                     Style = BuildLabelTitleStyle(),
                     Content = new TextBlock
                     {
-                        Text = n.Title,
+                        Text = title,
                         TextTrimming = TextTrimming.CharacterEllipsis
                     }
                 };
@@ -129,14 +53,14 @@ namespace GB_Live
                 Grid.SetRow(lbl_Title, 0);
                 grid.Children.Add(lbl_Title);
 
-                if (String.IsNullOrEmpty(n.Description) == false)
+                if (String.IsNullOrEmpty(description) == false)
                 {
                     Label lbl_Description = new Label
                     {
                         Style = BuildLabelDescriptionStyle(),
                         Content = new TextBlock
                         {
-                            Text = n.Description,
+                            Text = description,
                             TextTrimming = TextTrimming.CharacterEllipsis,
                             FontStyle = FontStyles.Italic
                         }
@@ -153,7 +77,8 @@ namespace GB_Live
 
                 this.AddChild(grid);
 
-                CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 15), () => this.Close());
+                //CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 15), () => this.Close()); // real
+                CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 2), () => this.Close()); // test
 
                 DisplayThisWindow();
             }
@@ -162,12 +87,14 @@ namespace GB_Live
             {
                 Style style = new Style(typeof(NotificationWindow));
 
-                style.Setters.Add(new EventSetter(MouseDoubleClickEvent, new MouseButtonEventHandler((sender, e) =>
+                if (uri != null)
                 {
-                    // we deliberately avoid using Utils.OpenUriInBrowser to avoid the dependency
+                    MouseButtonEventHandler doubleClickAction = (sender, e) => Process.Start(uri.AbsoluteUri);
 
-                    Process.Start(this.n.Uri.AbsoluteUri);
-                })));
+                    EventSetter leftMouseDoubleClick = new EventSetter(MouseDoubleClickEvent, doubleClickAction);
+
+                    style.Setters.Add(leftMouseDoubleClick);
+                }
 
                 style.Setters.Add(new Setter(BackgroundProperty, Brushes.Black));
                 style.Setters.Add(new Setter(ForegroundProperty, Brushes.Transparent));
