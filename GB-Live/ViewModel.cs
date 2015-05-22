@@ -260,7 +260,8 @@ namespace GB_Live
 
         private void CheckIfGiantBombIsLive(string websiteAsString)
         {
-            if (websiteAsString.Contains("Live on Giant Bomb!"))
+            //if (websiteAsString.Contains("Live on Giant Bomb!"))
+            if (websiteAsString.Contains("<span class=\"header-promo live show header-promo--pop"))
             {
                 if (IsLive == false)
                 {
