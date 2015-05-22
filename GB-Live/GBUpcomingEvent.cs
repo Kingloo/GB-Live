@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text;
-using System.Web;
 using System.Windows.Threading;
 
 namespace GB_Live
@@ -20,11 +19,11 @@ namespace GB_Live
         {
             get
             {
-                return this._time;
+                return _time;
             }
             set
             {
-                this._time = value;
+                _time = value;
 
                 OnNotifyPropertyChanged();
             }
@@ -52,19 +51,35 @@ namespace GB_Live
 
             if (Premium)
             {
-                string raw = s.FromBetween("</span>", "</p>");
-                string between = raw.Trim();
+                string beginning = "</span>";
+                string ending = "</p>";
 
-                this.Time = GetTime(between);
-                this.EventType = GetEventType(between);
+                SetTimeAndEventType(s, beginning, ending);
             }
             else
             {
-                string raw = s.FromBetween("ime\">", "</p>");
+                string beginning = "ime\">";
+                string ending = "</p>";
+
+                SetTimeAndEventType(s, beginning, ending);
+            }
+        }
+
+        private void SetTimeAndEventType(string whole, string beginning, string ending)
+        {
+            FromBetweenResult res = whole.FromBetween(beginning, ending);
+
+            if (res.Result == Result.Success)
+            {
+                string raw = res.ResultString;
                 string between = raw.Trim();
 
-                this.Time = GetTime(between);
-                this.EventType = GetEventType(between);
+                Time = GetTime(between);
+                EventType = GetEventType(between);
+            }
+            else
+            {
+                Utils.LogMessage(string.Format("{0} occurred while looking between {1} and {2}", res.Result.ToString(), beginning, ending));
             }
         }
 
@@ -89,46 +104,53 @@ namespace GB_Live
 
         private string GetTitle(string s)
         {
-            int beginning = s.IndexOf("itle\">") + 6; // + 6 to move past the > and into the actual content
-            int ending = s.IndexOf("<", beginning);
-            int length = ending - beginning;
+            string beginning = "itle\">";
+            string ending = "<";
 
-            return HttpUtility.HtmlDecode(s.Substring(beginning, length));
+            FromBetweenResult res = s.FromBetween(beginning, ending);
+
+            if (res.Result == Result.Success)
+            {
+                return res.ResultString;
+            }
+            else
+            {
+                return "Title Unknown";
+            }
         }
 
         private bool GetPremium(string s)
         {
-            if (s.Contains("content--premium"))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return s.Contains("content--premium");
         }
 
         private Uri GetBackgroundImageUrl(string s)
         {
-            string raw = s.FromBetween("background-image:url(", ")");
-            Uri uri = null;
+            string beginning = "background-image:url(";
+            string ending = ")";
 
-            if (Uri.TryCreate(raw, UriKind.Absolute, out uri))
+            FromBetweenResult res = s.FromBetween(beginning, ending);
+
+            if (res.Result == Result.Success)
             {
-                return uri;
-            }
-            else
-            {
-                UriBuilder ub = new UriBuilder
+                string raw = res.ResultString;
+
+                Uri uri = null;
+                if (Uri.TryCreate(raw, UriKind.Absolute, out uri))
                 {
-                    Host = "static.giantbomb.com",
-                    Path = "/bundles/phoenixsite/images/core/loose/apple-touch-icon-precomposed-gb.png",
-                    Port = 80,
-                    Scheme = "http"
-                };
-
-                return ub.Uri;
+                    return uri; // desired scenario
+                }
             }
+
+            // fallback
+            return new UriBuilder
+            {
+                Scheme = "http",
+                Host = "static.giantbomb.com",
+                Path = "/bundles/phoenixsite/images/core/loose/apple-touch-icon-precomposed-gb.png",
+                Port = 80,
+            }
+            .Uri;
         }
 
         private DateTime GetTime(string s)
@@ -308,10 +330,10 @@ namespace GB_Live
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(string.Format("Title: {0}", this.Title));
-            sb.AppendLine(string.Format("Time: {0}", this.Time));
+            sb.AppendLine(string.Format("Title: {0}", Title));
+            sb.AppendLine(string.Format("Time: {0}", Time));
 
-            if (this.countdownTimer != null)
+            if (countdownTimer != null)
             {
                 sb.AppendLine(string.Format("Countdown timer enabled: {0}, time remaining: {1}", countdownTimer.IsEnabled, countdownTimer.Interval.ToString()));
             }
@@ -320,9 +342,9 @@ namespace GB_Live
                 sb.AppendLine("Countdown timer not created");
             }
 
-            sb.AppendLine(string.Format("Event type: {0}", this.EventType.ToString()));
-            sb.AppendLine(string.Format("Premium: {0}", this.Premium.ToString()));
-            sb.AppendLine(string.Format("Image url: {0}", this.BackgroundImageUrl.AbsoluteUri));
+            sb.AppendLine(string.Format("Event type: {0}", EventType.ToString()));
+            sb.AppendLine(string.Format("Premium: {0}", Premium.ToString()));
+            sb.AppendLine(string.Format("Image url: {0}", BackgroundImageUrl.AbsoluteUri));
 
             return sb.ToString();
         }

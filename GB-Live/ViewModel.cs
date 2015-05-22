@@ -292,18 +292,16 @@ namespace GB_Live
 
         private List<GBUpcomingEvent> RetrieveEventsFromHtml(string websiteAsString)
         {
-            string upcomingHtml = string.Empty;
+            FromBetweenResult res = websiteAsString.FromBetween(upcomingBegins, upcomingEnds);
 
-            try
+            if (res.Result == Result.Success)
             {
-                upcomingHtml = websiteAsString.FromBetween(upcomingBegins, upcomingEnds);
+                return ParseHtmlForEvents(res.ResultString);
             }
-            catch (ArgumentException)
+            else
             {
                 return new List<GBUpcomingEvent>(0);
             }
-
-            return ParseHtmlForEvents(upcomingHtml);
         }
 
         private List<GBUpcomingEvent> ParseHtmlForEvents(string upcomingHtml)
@@ -316,6 +314,7 @@ namespace GB_Live
             using (StringReader sr = new StringReader(upcomingHtml))
             {
                 string line = string.Empty;
+                StringBuilder sb_Log = new StringBuilder();
 
                 while ((line = sr.ReadLine()) != null)
                 {
@@ -342,12 +341,7 @@ namespace GB_Live
                         }
                         else
                         {
-                            StringBuilder sb = new StringBuilder();
-
-                            sb.AppendLine("An event could not be created from the following HTML:");
-                            sb.AppendLine(dd);
-
-                            Utils.LogMessage(sb.ToString());
+                            sb_Log.AppendLine(string.Format("Event could not be created from:{0}{1}", Environment.NewLine, dd));
                         }
                     }
 
@@ -355,6 +349,11 @@ namespace GB_Live
                     {
                         dd += line;
                     }
+                }
+
+                if (sb_Log.Length > 0)
+                {
+                    Utils.LogMessage(sb_Log.ToString());
                 }
             }
 
@@ -378,10 +377,12 @@ namespace GB_Live
                                               select each)
                                               .ToList<GBUpcomingEvent>();
 
-            foreach (GBUpcomingEvent each in toRemove)
-            {
-                this.Events.Remove(each);
-            }
+            Events.RemoveList<GBUpcomingEvent>(toRemove);
+
+            //foreach (GBUpcomingEvent each in toRemove)
+            //{
+            //    this.Events.Remove(each);
+            //}
         }
 
         private HttpWebRequest BuildHttpWebRequest(Uri gbUri)
@@ -415,9 +416,9 @@ namespace GB_Live
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine(this.GetType().ToString());
-            sb.AppendLine(this.WindowTitle);
-            sb.AppendLine(string.Format("IsLive: {0}", this.IsLive));
-            sb.AppendLine(string.Format("Number of events: {0}", this.Events.Count));
+            sb.AppendLine(WindowTitle);
+            sb.AppendLine(string.Format("IsLive: {0}", IsLive));
+            sb.AppendLine(string.Format("Number of events: {0}", Events.Count));
 
             return sb.ToString();
         }

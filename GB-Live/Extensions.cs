@@ -6,19 +6,49 @@ using System.Threading.Tasks;
 
 namespace GB_Live
 {
+    public enum Result
+    {
+        None,
+        Success,
+        BeginningNotFound,
+        BeginningNotUnique,
+        EndingNotFound,
+        EndingBeforeBeginning
+    };
+
+    public class FromBetweenResult
+    {
+        private Result _result = Result.None;
+        public Result Result
+        {
+            get
+            {
+                return _result;
+            }
+        }
+
+        private string _resultString = string.Empty;
+        public string ResultString
+        {
+            get
+            {
+                return _resultString;
+            }
+        }
+
+        public FromBetweenResult(Result result, string resultString)
+        {
+            this._result = result;
+            this._resultString = resultString;
+        }
+    }
+
     public static class Extensions
     {
         // string
         public static bool ContainsExt(this string target, string toFind, StringComparison comparison)
         {
-            if (target.IndexOf(toFind, comparison) >= 0)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return target.IndexOf(toFind, comparison) > -1;
         }
 
         public static string RemoveNewLines(this string s)
@@ -48,11 +78,11 @@ namespace GB_Live
             return toReturn;
         }
 
-        public static string FromBetween(this string whole, string beginning, string ending)
+        public static FromBetweenResult FromBetween(this string whole, string beginning, string ending)
         {
             if (whole.Contains(beginning) == false)
             {
-                throw new ArgumentException("beginning does not appear within whole", "beginning");
+                return new FromBetweenResult(Result.BeginningNotFound, string.Empty);
             }
 
             int firstAppearanceOfBeginning = whole.IndexOf(beginning);
@@ -60,23 +90,33 @@ namespace GB_Live
 
             if (firstAppearanceOfBeginning != lastAppearanceOfBeginning)
             {
-                throw new ArgumentException("beginning appears more than once within whole, it must be globally unique", "beginning");
+                return new FromBetweenResult(Result.BeginningNotUnique, string.Empty);
             }
+
+            int indexOfBeginning = firstAppearanceOfBeginning;
 
             if (whole.Contains(ending) == false)
             {
-                throw new ArgumentException("ending does not appear within whole", "ending");
+                return new FromBetweenResult(Result.EndingNotFound, string.Empty);
             }
 
-            int indexOfBeginning = whole.IndexOf(beginning) + beginning.Length;
+            int indexOfEnding = 0;
 
-            // we start searching after beginning ends
-            // in case ending is also within beginning
-            int indexOfEnding = whole.IndexOf(ending, indexOfBeginning);
+            try
+            {
+                indexOfEnding = whole.IndexOf(ending, indexOfBeginning);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return new FromBetweenResult(Result.EndingBeforeBeginning, string.Empty);
+            }
+            
+            int indexOfResult = indexOfBeginning + beginning.Length;
+            int lengthOfResult = indexOfEnding - indexOfResult;
 
-            int length = indexOfEnding - indexOfBeginning;
+            string result = whole.Substring(indexOfResult, lengthOfResult);
 
-            return whole.Substring(indexOfBeginning, length);
+            return new FromBetweenResult(Result.Success, result);
         }
 
 
@@ -183,14 +223,19 @@ namespace GB_Live
         // Task
         public static async Task TimeoutAfter(this Task task, TimeSpan timeout)
         {
-            if (task == Task.WhenAny(task, Task.Delay(timeout)))
-            {
-                await task;
-            }
-            else
+            if (task == await Task.WhenAny(task, Task.Delay(timeout)) == false)
             {
                 throw new TimeoutException(string.Format("Task timed out: {0}", task.Status.ToString()));
             }
+
+            //if (task == Task.WhenAny(task, Task.Delay(timeout)))
+            //{
+            //    await task;
+            //}
+            //else
+            //{
+            //    throw new TimeoutException(string.Format("Task timed out: {0}", task.Status.ToString()));
+            //}
         }
 
         public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout)
