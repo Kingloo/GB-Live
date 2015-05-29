@@ -110,7 +110,10 @@ namespace GB_Live
         private const string appName = "GB Live";
         private const string upcomingBegins = "<dl class=\"promo-upcoming\">";
         private const string upcomingEnds = "</dl>";
-        private DispatcherTimer updateTimer = null;
+        private readonly DispatcherTimer updateTimer = new DispatcherTimer
+        {
+            Interval = new TimeSpan(0, 4, 0)
+        };
         #endregion
 
         #region Properties
@@ -178,11 +181,6 @@ namespace GB_Live
         {
             Application.Current.MainWindow.Loaded += MainWindow_Loaded;
             Events.CollectionChanged += Events_CollectionChanged;
-
-            updateTimer = new DispatcherTimer
-            {
-                Interval = new TimeSpan(0, 4, 0), // 0 hours, 4 minutes, 0 seconds
-            };
 
             updateTimer.Tick += updateTimer_Tick;
             updateTimer.Start();

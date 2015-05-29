@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text;
-using System.Windows.Threading;
 
 namespace GB_Live
 {
@@ -9,7 +8,7 @@ namespace GB_Live
     public class GBUpcomingEvent : ViewModelBase, IComparable<GBUpcomingEvent>, IEquatable<GBUpcomingEvent>
     {
         #region Fields
-        private DispatcherTimer countdownTimer = null;
+        private CountdownDispatcherTimer countdown = null;
         private readonly DateTime creationDate = DateTime.Now;
         #endregion
 
@@ -191,16 +190,17 @@ namespace GB_Live
         {
             Int64 ticks = CalculateTicks();
 
-            if (CanStartDispatcherTimerWithTicks(ticks))
+            if (CanStartCountdownWithTicks(ticks))
             {
-                countdownTimer = new DispatcherTimer
-                {
-                    Interval = new TimeSpan(ticks)
-                };
-
-                countdownTimer.Tick += countdownTimer_Tick;
-                countdownTimer.Start();
+                countdown = new CountdownDispatcherTimer(new TimeSpan(ticks), countdown_Fire);
             }
+        }
+
+        private void countdown_Fire()
+        {
+            Time = DateTime.MaxValue;
+
+            NotificationService.Send(Title, Globals.gbHome);
         }
 
         private Int64 CalculateTicks()
@@ -219,7 +219,7 @@ namespace GB_Live
 #endif
         }
 
-        private bool CanStartDispatcherTimerWithTicks(Int64 ticks)
+        private bool CanStartCountdownWithTicks(Int64 ticks)
         {
             if (ticks <= 0L) return false;
 
@@ -245,21 +245,10 @@ namespace GB_Live
 
         public void StopCountdownTimer()
         {
-            if (countdownTimer != null)
+            if (countdown.IsActive)
             {
-                countdownTimer.Stop();
-                countdownTimer.Tick -= countdownTimer_Tick;
-                countdownTimer = null;
+                countdown.Stop();
             }
-        }
-
-        private void countdownTimer_Tick(object sender, EventArgs e)
-        {
-            this.Time = DateTime.MaxValue;
-
-            StopCountdownTimer();
-
-            NotificationService.Send(this.Title, Globals.gbHome);
         }
 
         private DateTime TryParseAndTrim(string s, bool fromEnd)
@@ -336,16 +325,8 @@ namespace GB_Live
             sb.AppendLine(string.Format("Title: {0}", Title));
             sb.AppendLine(string.Format("Time: {0}", Time));
             sb.AppendLine(string.Format("Created: {0}", creationDate.ToString()));
-
-            if (countdownTimer != null)
-            {
-                sb.AppendLine(string.Format("Countdown timer enabled: {0}, time remaining: {1}", countdownTimer.IsEnabled, countdownTimer.Interval.ToString()));
-            }
-            else
-            {
-                sb.AppendLine("Countdown timer not created");
-            }
-
+            sb.AppendLine("Countdown:");
+            sb.Append(countdown.ToString());
             sb.AppendLine(string.Format("Event type: {0}", EventType.ToString()));
             sb.AppendLine(string.Format("Premium: {0}", Premium.ToString()));
             sb.AppendLine(string.Format("Image url: {0}", BackgroundImageUrl.AbsoluteUri));

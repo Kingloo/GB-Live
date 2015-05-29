@@ -1,11 +1,43 @@
 using System;
+using System.Text;
 using System.Windows.Threading;
 
 namespace GB_Live
 {
     public class CountdownDispatcherTimer
     {
+        #region Fields
+        private DateTime created = DateTime.Now;
         private Action tick = null;
+        private DispatcherTimer timer = new DispatcherTimer();
+        #endregion
+
+        #region Properties
+        public bool IsActive
+        {
+            get
+            {
+                // when timer is NOT null, IsActive == true; when timer IS null, isActive == false
+                return (timer != null);
+            }
+        }
+
+        public TimeSpan TimeLeft
+        {
+            get
+            {
+                if (timer == null)
+                {
+                    return TimeSpan.Zero;
+                }
+                else
+                {
+                    // created + timer.Interval is the time in the future when it fires, so minus DateTime.Now is how much time is left between now and then
+                    return ((created + timer.Interval) - DateTime.Now);
+                }
+            }
+        }
+        #endregion
 
         public CountdownDispatcherTimer(DateTime time, Action tick)
         {
@@ -14,12 +46,9 @@ namespace GB_Live
 
             this.tick = tick;
 
-            DispatcherTimer timer = new DispatcherTimer
-            {
-                Interval = new TimeSpan((time - DateTime.Now).Ticks)
-            };
-
             timer.Tick += timer_Tick;
+            timer.Interval = new TimeSpan((time - DateTime.Now).Ticks);
+
             timer.Start();
         }
 
@@ -30,12 +59,9 @@ namespace GB_Live
 
             this.tick = tick;
 
-            DispatcherTimer timer = new DispatcherTimer
-            {
-                Interval = span
-            };
-
             timer.Tick += timer_Tick;
+            timer.Interval = span;
+
             timer.Start();
         }
 
@@ -43,12 +69,33 @@ namespace GB_Live
         {
             tick();
 
-            DispatcherTimer timer = (DispatcherTimer)sender;
+            if (IsActive)
+            {
+                Stop();
+            }
+        }
 
-            timer.Stop();
-            timer.Tick -= timer_Tick;
+        public void Stop()
+        {
+            if (IsActive)
+            {
+                timer.Stop();
+                timer.Tick -= timer_Tick;
 
-            timer = null;
+                timer = null;
+            }
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine(this.GetType().ToString());
+            sb.AppendLine(string.Format("Created at: {0}", created.ToString()));
+            sb.AppendLine(string.Format("Active: {0}", IsActive));
+            sb.AppendLine(string.Format("Time left: {0}", TimeLeft.ToString()));
+
+            return sb.ToString();
         }
     }
 }
