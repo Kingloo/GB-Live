@@ -10,6 +10,7 @@ namespace GB_Live
     {
         #region Fields
         private DispatcherTimer countdownTimer = null;
+        private readonly DateTime creationDate = DateTime.Now;
         #endregion
 
         #region Properties
@@ -334,6 +335,7 @@ namespace GB_Live
 
             sb.AppendLine(string.Format("Title: {0}", Title));
             sb.AppendLine(string.Format("Time: {0}", Time));
+            sb.AppendLine(string.Format("Created: {0}", creationDate.ToString()));
 
             if (countdownTimer != null)
             {
