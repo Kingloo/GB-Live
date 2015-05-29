@@ -204,7 +204,7 @@ namespace GB_Live
 
         private Int64 CalculateTicks()
         {
-            TimeSpan fromNowToEvent = this.Time - DateTime.Now;
+            TimeSpan fromNowToEvent = Time - DateTime.Now;
             TimeSpan oneMinuteInTicks = new TimeSpan(600000000L); // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s => 10,000 * 1000 * 60 ticks in 1 min == 600,000,000 ticks
 
             TimeSpan addedOneMinute = fromNowToEvent.Add(oneMinuteInTicks);
@@ -220,7 +220,7 @@ namespace GB_Live
 
         private bool CanStartDispatcherTimerWithTicks(Int64 ticks)
         {
-            if (ticks == 0L) return false;
+            if (ticks <= 0L) return false;
 
             /*
             * even though you can start a DispatcherTimer with a ticks type of Int64,
@@ -236,8 +236,10 @@ namespace GB_Live
             {
                 return false;
             }
-
-            return true;
+            else
+            {
+                return true;
+            }
         }
 
         public void StopCountdownTimer()

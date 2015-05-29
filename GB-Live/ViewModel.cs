@@ -6,10 +6,13 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Cache;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace GB_Live
 {
@@ -111,15 +114,18 @@ namespace GB_Live
         #endregion
 
         #region Properties
-        private string _windowTitle = appName;
         public string WindowTitle
         {
-            get { return this._windowTitle; }
-            set
+            get
             {
-                this._windowTitle = value;
-
-                OnNotifyPropertyChanged();
+                if (IsBusy)
+                {
+                    return string.Format("{0}: checking ...", appName);
+                }
+                else
+                {
+                    return appName;
+                }
             }
         }
 
@@ -152,6 +158,7 @@ namespace GB_Live
                     this._isBusy = value;
 
                     OnNotifyPropertyChanged();
+                    OnNotifyPropertyChanged("WindowTitle");
 
                     RaiseAllCommandCanExecuteChanged();
                 }
@@ -234,47 +241,71 @@ namespace GB_Live
 
         public async Task UpdateAsync()
         {
-            this.WindowTitle = string.Format("{0}: checking ...", appName);
             this.IsBusy = true;
 
-            string websiteAsString = await GetHomepage(Globals.gbHome);
+            await Task.WhenAll(UpdateEventsAsync(), IsGiantBombLiveAsync());
+
+            this.IsBusy = false;
+        }
+
+        private async Task UpdateEventsAsync()
+        {
+            HttpWebRequest req = BuildHttpWebRequest(Globals.gbHome);
+            string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req).ConfigureAwait(false);
 
             if (String.IsNullOrWhiteSpace(websiteAsString)) return;
 
-            CheckIfGiantBombIsLive(websiteAsString);
+            List<GBUpcomingEvent> eventsFromHtml = RetrieveEventsFromHtml(websiteAsString);
 
-            UpdateUpcomingEvents(websiteAsString);
+            Utils.SafeDispatcher(() =>
+                {
+                    if (eventsFromHtml.Count > 0)
+                    {
+                        Events.AddMissing<GBUpcomingEvent>(eventsFromHtml);
+                    }
 
-            this.IsBusy = false;
-            this.WindowTitle = appName;
+                    Remove(eventsFromHtml);
+                },
+                DispatcherPriority.Background);
         }
 
-        private async Task<string> GetHomepage(Uri uri)
+        private async Task IsGiantBombLiveAsync()
         {
-            HttpWebRequest req = BuildHttpWebRequest(uri);
-
+            HttpWebRequest req = BuildHttpWebRequest(Globals.gbUpcomingJson);
             string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req).ConfigureAwait(false);
 
-            return websiteAsString;
-        }
+            if (String.IsNullOrWhiteSpace(websiteAsString)) return;
 
-        private void CheckIfGiantBombIsLive(string websiteAsString)
-        {
-            //if (websiteAsString.Contains("Live on Giant Bomb!"))
-            if (websiteAsString.Contains("<span class=\"header-promo live show header-promo--pop"))
+            JObject json = null;
+
+            try
             {
-                if (IsLive == false)
-                {
-                    IsLive = true;
-
-                    Utils.SafeDispatcher(() =>
-                        NotificationService.Send("GiantBomb is LIVE", Globals.gbChat),
-                        DispatcherPriority.Background);
-                }
+                json = JObject.Parse(websiteAsString);
             }
-            else
+            catch (JsonReaderException e)
             {
-                IsLive = false;
+                Utils.LogException(e);
+
+                return;
+            }
+
+            if (json != null)
+            {
+                if (json["liveNow"].HasValues)
+                {
+                    if (IsLive == false)
+                    {
+                        IsLive = true;
+
+                        Utils.SafeDispatcher(() =>
+                            NotificationService.Send("GiantBomb is LIVE", Globals.gbChat),
+                            DispatcherPriority.Background);
+                    }
+                }
+                else
+                {
+                    IsLive = false;
+                }
             }
         }
 
@@ -360,37 +391,32 @@ namespace GB_Live
             return events;
         }
 
-        private void Remove(List<GBUpcomingEvent> eventsFromHtml)
+        private void Remove(IEnumerable<GBUpcomingEvent> eventsFromHtml)
         {
             /*
              * 
-             * DO NOT USE EVENTS.CLEAR !!!!!!!!!!!
+             * DO NOT USE EVENTS.CLEAR !!!!!!!!!!
              * 
              * Events.Clear() fires NotifyCollectionChangedEventsArgs.Reset - NOT .Remove
              * 
              * .Reset does not give you a list of what was removed
              *
              */
-            
-            List<GBUpcomingEvent> toRemove = (from each in this.Events
+
+            List<GBUpcomingEvent> toRemove = (from each in Events
                                               where each.Time.Equals(DateTime.MaxValue) || eventsFromHtml.Contains(each) == false
                                               select each)
                                               .ToList<GBUpcomingEvent>();
 
             Events.RemoveList<GBUpcomingEvent>(toRemove);
-
-            //foreach (GBUpcomingEvent each in toRemove)
-            //{
-            //    this.Events.Remove(each);
-            //}
         }
 
         private HttpWebRequest BuildHttpWebRequest(Uri gbUri)
         {
             HttpWebRequest req = HttpWebRequest.CreateHttp(gbUri);
 
-            req.Accept = "text/html";
             req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+            req.CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
             req.Host = gbUri.DnsSafeHost;
             req.KeepAlive = false;
             req.Method = "GET";
@@ -400,7 +426,6 @@ namespace GB_Live
             req.UserAgent = "IE11: Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
 
             req.Headers.Add("DNT", "1");
-            //req.Headers.Add("Accept-Language", "en-gb");
             req.Headers.Add("Accept-Encoding", "gzip, deflate");
 
             // 1) lu is probably country-code, returned timezone has yet to be wrong after setting this
