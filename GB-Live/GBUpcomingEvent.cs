@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Web;
 
 namespace GB_Live
 {
@@ -45,41 +46,25 @@ namespace GB_Live
 
         private GBUpcomingEvent(string s)
         {
-            this.Title = GetTitle(s);
-            this.Premium = GetPremium(s);
-            this.BackgroundImageUrl = GetBackgroundImageUrl(s);
+            string f = HttpUtility.HtmlDecode(s);
+
+            this.Title = GetTitle(f);
+            this.Premium = GetPremium(f);
+            this.BackgroundImageUrl = GetBackgroundImageUrl(f);
 
             if (Premium)
             {
                 string beginning = "</span>";
                 string ending = "</p>";
 
-                SetTimeAndEventType(s, beginning, ending);
+                SetTimeAndEventType(f, beginning, ending);
             }
             else
             {
                 string beginning = "ime\">";
                 string ending = "</p>";
 
-                SetTimeAndEventType(s, beginning, ending);
-            }
-        }
-
-        private void SetTimeAndEventType(string whole, string beginning, string ending)
-        {
-            FromBetweenResult res = whole.FromBetween(beginning, ending);
-
-            if (res.Result == Result.Success)
-            {
-                string raw = res.ResultString;
-                string between = raw.Trim();
-
-                Time = GetTime(between);
-                EventType = GetEventType(between);
-            }
-            else
-            {
-                Utils.LogMessage(string.Format("{0} occurred while looking between {1} and {2}", res.Result.ToString(), beginning, ending));
+                SetTimeAndEventType(f, beginning, ending);
             }
         }
 
@@ -151,6 +136,24 @@ namespace GB_Live
                 Port = 80,
             }
             .Uri;
+        }
+
+        private void SetTimeAndEventType(string whole, string beginning, string ending)
+        {
+            FromBetweenResult res = whole.FromBetween(beginning, ending);
+
+            if (res.Result == Result.Success)
+            {
+                string raw = res.ResultString;
+                string between = raw.Trim();
+
+                Time = GetTime(between);
+                EventType = GetEventType(between);
+            }
+            else
+            {
+                Utils.LogMessage(string.Format("{0} occurred while looking between {1} and {2}", res.Result.ToString(), beginning, ending));
+            }
         }
 
         private DateTime GetTime(string s)
