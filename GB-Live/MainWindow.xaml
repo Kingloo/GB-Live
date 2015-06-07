@@ -183,5 +183,22 @@
             </ItemsControl.ItemsPanel>
             
         </ItemsControl>
+
+        <!--<Button VerticalAlignment="Top"
+                HorizontalAlignment="Right"
+                FontFamily="WebDings"
+                FontSize="25"
+                Content="i"
+                Click="Button_Click"
+                ToolTip="Options"
+                ToolTipService.InitialShowDelay="500" />
+
+        <StackPanel x:Name="timeZoneCmbx"
+                    VerticalAlignment="Top"
+                    Orientation="Horizontal"
+                    Visibility="Collapsed">
+            <Label Content="Select your timezone " />
+            <ComboBox ItemsSource="{Binding Path=TimeZones}" />
+        </StackPanel>-->
     </Grid>
 </Window>

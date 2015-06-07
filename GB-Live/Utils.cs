@@ -108,7 +108,6 @@ namespace GB_Live
 
             sb.AppendLine(string.Format("{0} logged the following message at {1}", Process.GetCurrentProcess().MainModule.ModuleName, DateTime.Now));
             sb.AppendLine(message);
-            sb.AppendLine(Environment.NewLine);
 
             await WriteTextToFileAsync(sb.ToString(), loggingRounds).ConfigureAwait(false);
         }
@@ -318,6 +317,8 @@ namespace GB_Live
 
         public static async Task<string> DownloadWebsiteAsStringAsync(HttpWebRequest req)
         {
+            StringBuilder sb_Log = new StringBuilder();
+
             string response = string.Empty;
 
             using (HttpWebResponse resp = (HttpWebResponse)(await req.GetResponseAsyncExt().ConfigureAwait(false)))
@@ -326,6 +327,8 @@ namespace GB_Live
                 {
                     if (req != null)
                     {
+                        sb_Log.AppendLine(string.Format("Request aborted: {0}", req.RequestUri.AbsoluteUri));
+
                         req.Abort();
                     }
                 }
@@ -339,19 +342,24 @@ namespace GB_Live
                             {
                                 response = await sr.ReadToEndAsync().ConfigureAwait(false);
                             }
-                            catch (IOException)
+                            catch (IOException e)
                             {
+                                Utils.LogException(e);
+
                                 response = string.Empty;
                             }
                         }
                     }
                     else
                     {
-                        string errorMessage = string.Format("Getting website {0} failed with code: {1}, desc: {2}", req.RequestUri.AbsoluteUri, resp.StatusCode.ToString(), resp.StatusDescription);
-
-                        await Utils.LogMessageAsync(errorMessage).ConfigureAwait(false);
+                        sb_Log.AppendLine(string.Format("Response from {0} had HTTP status code {1}: {2}", req.RequestUri.AbsoluteUri, resp.StatusCode.ToString(), resp.StatusDescription));
                     }
                 }
+            }
+
+            if (sb_Log.Length > 0)
+            {
+                await Utils.LogMessageAsync(sb_Log.ToString()).ConfigureAwait(false);
             }
 
             return response;

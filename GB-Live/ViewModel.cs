@@ -264,7 +264,7 @@ namespace GB_Live
 
                     Remove(eventsFromHtml);
                 },
-                DispatcherPriority.Background);
+                DispatcherPriority.ApplicationIdle);
         }
 
         private async Task IsGiantBombLiveAsync()
@@ -297,7 +297,7 @@ namespace GB_Live
 
                         Utils.SafeDispatcher(() =>
                             NotificationService.Send("GiantBomb is LIVE", Globals.gbChat),
-                            DispatcherPriority.Background);
+                            DispatcherPriority.ApplicationIdle);
                     }
                 }
                 else
@@ -426,10 +426,12 @@ namespace GB_Live
             req.Headers.Add("DNT", "1");
             req.Headers.Add("Accept-Encoding", "gzip, deflate");
 
+            // It seems that even without cookies this stuff seems to still work
+
             // 1) lu is probably country-code, returned timezone has yet to be wrong after setting this
             // 2) after months of use, the prior claim remains true
-            req.CookieContainer = new CookieContainer();
-            req.CookieContainer.Add(gbUri, new Cookie("xcg", "lu"));
+            //req.CookieContainer = new CookieContainer();
+            //req.CookieContainer.Add(gbUri, new Cookie("xcg", countryCode));
 
             return req;
         }
