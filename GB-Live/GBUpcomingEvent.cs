@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using System.Web;
+using System.Windows.Threading;
 
 namespace GB_Live
 {
@@ -203,7 +204,9 @@ namespace GB_Live
         {
             Time = DateTime.MaxValue;
 
-            NotificationService.Send(Title, Globals.gbHome);
+            Utils.SafeDispatcher(() =>
+                NotificationService.Send(Title, Globals.gbHome),
+                DispatcherPriority.Background);
         }
 
         private Int64 CalculateTicks()

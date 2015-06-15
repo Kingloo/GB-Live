@@ -12,7 +12,7 @@ namespace GB_Live
 {
     public static class Utils
     {
-        private static int loggingRounds = 3;
+        private static int loggingRounds = 5;
         private static string logFilePath = string.Format(@"C:\Users\{0}\Documents\logfile.txt", Environment.UserName);
         
 
@@ -55,7 +55,7 @@ namespace GB_Live
             }
             else
             {
-                await disp.InvokeAsync(action, DispatcherPriority.Background);
+                await disp.InvokeAsync(action, priority);
             }
         }
 
@@ -97,7 +97,7 @@ namespace GB_Live
 
             sb.AppendLine(string.Format("{0} logged the following message at {1}", Process.GetCurrentProcess().MainModule.ModuleName, DateTime.Now));
             sb.AppendLine(message);
-            sb.AppendLine(Environment.NewLine);
+            sb.AppendLine(string.Empty);
 
             WriteTextToFile(sb.ToString(), loggingRounds);
         }
@@ -108,6 +108,7 @@ namespace GB_Live
 
             sb.AppendLine(string.Format("{0} logged the following message at {1}", Process.GetCurrentProcess().MainModule.ModuleName, DateTime.Now));
             sb.AppendLine(message);
+            sb.AppendLine(string.Empty);
 
             await WriteTextToFileAsync(sb.ToString(), loggingRounds).ConfigureAwait(false);
         }
@@ -118,10 +119,9 @@ namespace GB_Live
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Process.GetCurrentProcess().MainModule.ModuleName, DateTime.Now));
-
             sb.AppendLine(e.Message);
             sb.AppendLine(e.StackTrace);
-            sb.AppendLine(Environment.NewLine);
+            sb.AppendLine(string.Empty);
 
             WriteTextToFile(sb.ToString(), loggingRounds);
         }
@@ -134,7 +134,7 @@ namespace GB_Live
             sb.AppendLine(message);
             sb.AppendLine(e.Message);
             sb.AppendLine(e.StackTrace);
-            sb.AppendLine(Environment.NewLine);
+            sb.AppendLine(string.Empty);
 
             WriteTextToFile(sb.ToString(), loggingRounds);
         }
@@ -146,7 +146,7 @@ namespace GB_Live
             sb.AppendLine(string.Format("{0} occurred in {1} at {2}", e.GetType().ToString(), Process.GetCurrentProcess().MainModule.ModuleName, DateTime.Now));
             sb.AppendLine(e.Message);
             sb.AppendLine(e.StackTrace);
-            sb.AppendLine(Environment.NewLine);
+            sb.AppendLine(string.Empty);
 
             await WriteTextToFileAsync(sb.ToString(), loggingRounds).ConfigureAwait(false);
         }
@@ -159,7 +159,7 @@ namespace GB_Live
             sb.AppendLine(message);
             sb.AppendLine(e.Message);
             sb.AppendLine(e.StackTrace);
-            sb.AppendLine(Environment.NewLine);
+            sb.AppendLine(string.Empty);
 
             await WriteTextToFileAsync(sb.ToString(), loggingRounds).ConfigureAwait(false);
         }
@@ -171,45 +171,9 @@ namespace GB_Live
 
             bool tryAgain = false;
 
-            FileStream fs = null;
-            
             try
             {
-                fs = new FileStream(logFilePath, FileMode.Append, FileAccess.Write, FileShare.None, 1024, false);
-            }
-            catch (IOException)
-            {
-                tryAgain = (rounds > 1);
-
-                if (fs != null)
-                {
-                    fs.Close();
-                }
-            }
-
-            if (tryAgain)
-            {
-                int variation = DateTime.UtcNow.Millisecond;
-
-                /*
-                 * we want the delay to increase as the number of attempts left decreases
-                 * as rounds increases, (1 / rounds) decreases
-                 * => as (1 / rounds) decreases, (150 / (1 / rounds)) increases 
-                 * 
-                 * we convert rounds to decimal because otherwise it would do integer division
-                 * e.g. 1 / 3 = 0
-                 */
-                decimal fixedWait = 150 / (1 / Convert.ToDecimal(rounds));
-
-                int toWait = Convert.ToInt32(fixedWait) + variation;
-
-                Thread.Sleep(toWait);
-
-                WriteTextToFile(text, rounds - 1);
-            }
-            else
-            {
-                using (fs)
+                using (FileStream fs = new FileStream(logFilePath, FileMode.Append, FileAccess.Write, FileShare.None, 1024, false))
                 {
                     using (StreamWriter sw = new StreamWriter(fs))
                     {
@@ -217,28 +181,9 @@ namespace GB_Live
                     }
                 }
             }
-        }
-
-        private static async Task WriteTextToFileAsync(string text, int rounds = 1)
-        {
-            if (rounds < 1) throw new ArgumentException("WriteTextToFile: rounds cannot be < 1");
-
-            bool tryAgain = false;
-
-            FileStream fsAsync = null;
-
-            try
-            {
-                fsAsync = new FileStream(logFilePath, FileMode.Append, FileAccess.Write, FileShare.None, 1024, true);
-            }
             catch (IOException)
             {
                 tryAgain = (rounds > 1);
-
-                if (fsAsync != null)
-                {
-                    fsAsync.Close();
-                }
             }
 
             if (tryAgain)
@@ -248,22 +193,30 @@ namespace GB_Live
                 /*
                  * we want the delay to increase as the number of attempts left decreases
                  * as rounds increases, (1 / rounds) decreases
-                 * => as (1 / rounds) decreases, (150 / (1 / rounds)) increases 
+                 * => as (1 / rounds) decreases, (25 / (1 / rounds)) increases 
                  * 
                  * we convert rounds to decimal because otherwise it would do integer division
                  * e.g. 1 / 3 = 0
                  */
-                decimal fixedWait = 150 / (1 / Convert.ToDecimal(rounds));
+                decimal fixedWait = 25 / (1 / Convert.ToDecimal(rounds));
 
                 int toWait = Convert.ToInt32(fixedWait) + variation;
 
-                await Task.Delay(toWait).ConfigureAwait(false);
+                Thread.Sleep(toWait);
 
-                await WriteTextToFileAsync(text, rounds - 1).ConfigureAwait(false);
+                WriteTextToFile(text, rounds - 1);
             }
-            else
+        }
+
+        private static async Task WriteTextToFileAsync(string text, int rounds = 1)
+        {
+            if (rounds < 1) throw new ArgumentException("WriteTextToFileAsync: rounds cannot be < 1");
+
+            bool tryAgain = false;
+
+            try
             {
-                using (fsAsync)
+                using (FileStream fsAsync = new FileStream(logFilePath, FileMode.Append, FileAccess.Write, FileShare.None, 1024, true))
                 {
                     using (StreamWriter sw = new StreamWriter(fsAsync))
                     {
@@ -271,11 +224,38 @@ namespace GB_Live
                     }
                 }
             }
+            catch (IOException)
+            {
+                tryAgain = (rounds > 1);
+            }
+
+            if (tryAgain)
+            {
+                int variation = DateTime.UtcNow.Millisecond;
+
+                /*
+                 * we want the delay to increase as the number of attempts left decreases
+                 * as rounds increases, (1 / rounds) decreases
+                 * => as (1 / rounds) decreases, (25 / (1 / rounds)) increases 
+                 * 
+                 * we convert rounds to decimal because otherwise it would do integer division
+                 * e.g. 1 / 3 = 0
+                 */
+                decimal fixedWait = 25 / (1 / Convert.ToDecimal(rounds));
+
+                int toWait = Convert.ToInt32(fixedWait) + variation;
+
+                await Task.Delay(toWait).ConfigureAwait(false);
+
+                await WriteTextToFileAsync(text, rounds - 1).ConfigureAwait(false);
+            }
         }
 
 
         public static string DownloadWebsiteAsString(HttpWebRequest req)
         {
+            StringBuilder sbLog = new StringBuilder();
+
             string response = string.Empty;
 
             using (HttpWebResponse resp = (HttpWebResponse)req.GetResponseExt())
@@ -284,6 +264,8 @@ namespace GB_Live
                 {
                     if (req != null)
                     {
+                        sbLog.AppendLine(string.Format("Request for {0} was aborted", req.RequestUri.AbsoluteUri));
+
                         req.Abort();
                     }
                 }
@@ -297,19 +279,26 @@ namespace GB_Live
                             {
                                 response = sr.ReadToEnd();
                             }
-                            catch (IOException)
+                            catch (IOException e)
                             {
+                                sbLog.AppendLine("Reading the response failed with IOException");
+                                sbLog.AppendLine(e.Message);
+                                sbLog.AppendLine(e.StackTrace);
+
                                 response = string.Empty;
                             }
                         }
                     }
                     else
                     {
-                        string errorMessage = string.Format("Getting website {0} failed with code {1}", req.RequestUri.AbsoluteUri, resp.StatusCode.ToString());
-
-                        Utils.LogMessage(errorMessage);
+                        sbLog.AppendLine(string.Format("Getting website {0} failed: {1}", req.RequestUri.AbsoluteUri, resp.StatusCode.ToString()));
                     }
                 }
+            }
+
+            if (sbLog.Length > 0)
+            {
+                Utils.LogMessage(sbLog.ToString());
             }
 
             return response;
@@ -317,7 +306,7 @@ namespace GB_Live
 
         public static async Task<string> DownloadWebsiteAsStringAsync(HttpWebRequest req)
         {
-            StringBuilder sb_Log = new StringBuilder();
+            StringBuilder sbLog = new StringBuilder();
 
             string response = string.Empty;
 
@@ -327,7 +316,7 @@ namespace GB_Live
                 {
                     if (req != null)
                     {
-                        sb_Log.AppendLine(string.Format("Request aborted: {0}", req.RequestUri.AbsoluteUri));
+                        sbLog.AppendLine(string.Format("Request for {0} was aborted", req.RequestUri.AbsoluteUri));
 
                         req.Abort();
                     }
@@ -344,7 +333,9 @@ namespace GB_Live
                             }
                             catch (IOException e)
                             {
-                                Utils.LogException(e);
+                                sbLog.AppendLine("Reading the response failed with IOException");
+                                sbLog.AppendLine(e.Message);
+                                sbLog.AppendLine(e.StackTrace);
 
                                 response = string.Empty;
                             }
@@ -352,14 +343,14 @@ namespace GB_Live
                     }
                     else
                     {
-                        sb_Log.AppendLine(string.Format("Response from {0} had HTTP status code {1}: {2}", req.RequestUri.AbsoluteUri, resp.StatusCode.ToString(), resp.StatusDescription));
+                        sbLog.AppendLine(string.Format("Getting website {0} failed: {1}", req.RequestUri.AbsoluteUri, resp.StatusCode.ToString()));
                     }
                 }
             }
 
-            if (sb_Log.Length > 0)
+            if (sbLog.Length > 0)
             {
-                await Utils.LogMessageAsync(sb_Log.ToString()).ConfigureAwait(false);
+                await Utils.LogMessageAsync(sbLog.ToString()).ConfigureAwait(false);
             }
 
             return response;
