@@ -12,7 +12,6 @@
             <Setter Property="SnapsToDevicePixels" Value="True" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
-            <Setter Property="Language" Value="en-GB" />
         </Style>
         
         <Style TargetType="{x:Type Window}" BasedOn="{StaticResource {x:Type FrameworkElement}}" />
@@ -20,7 +19,7 @@
         <Style TargetType="{x:Type Grid}" BasedOn="{StaticResource {x:Type FrameworkElement}}" />
         
         <Style TargetType="{x:Type Control}" BasedOn="{StaticResource {x:Type FrameworkElement}}">
-            <Setter Property="FontFamily" Value="Calibri" /><!-- used to be Calibri -->
+            <Setter Property="FontFamily" Value="Segoe UI Symbol" /><!-- used to be Calibri -->
             <Setter Property="FontSize" Value="15" />
             <Setter Property="Foreground" Value="White" />
             <Setter Property="IsTabStop" Value="False" />

@@ -35,7 +35,7 @@ namespace GB_Live
 
         private async Task RefreshAsync()
         {
-            await UpdateAsync().ConfigureAwait(false);
+            await UpdateAllAsync().ConfigureAwait(false);
         }
 
         private DelegateCommand _goToHomePageInBrowserCommand = null;
@@ -110,7 +110,13 @@ namespace GB_Live
         private const string appName = "GB Live";
         private const string upcomingBegins = "<dl class=\"promo-upcoming\">";
         private const string upcomingEnds = "</dl>";
-        private readonly DispatcherTimer updateTimer = new DispatcherTimer
+
+        private readonly DispatcherTimer updateEventsTimer = new DispatcherTimer
+        {
+            Interval = new TimeSpan(0, 25, 0)
+        };
+
+        private readonly DispatcherTimer updateLiveTimer = new DispatcherTimer
         {
             Interval = new TimeSpan(0, 4, 0)
         };
@@ -182,13 +188,16 @@ namespace GB_Live
             Application.Current.MainWindow.Loaded += MainWindow_Loaded;
             Events.CollectionChanged += Events_CollectionChanged;
 
-            updateTimer.Tick += updateTimer_Tick;
-            updateTimer.Start();
+            updateEventsTimer.Tick += updateEventsTimer_Tick;
+            updateEventsTimer.Start();
+
+            updateLiveTimer.Tick += updateLiveTimer_Tick;
+            updateLiveTimer.Start();
         }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            await UpdateAsync().ConfigureAwait(false);
+            await UpdateAllAsync().ConfigureAwait(false);
         }
 
         private void Events_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -232,18 +241,23 @@ namespace GB_Live
             }
         }
 
-        private async void updateTimer_Tick(object sender, EventArgs e)
+        private async void updateEventsTimer_Tick(object sender, EventArgs e)
         {
-            await UpdateAsync().ConfigureAwait(false);
+            await UpdateEventsAsync().ConfigureAwait(false);
         }
 
-        public async Task UpdateAsync()
+        private async void updateLiveTimer_Tick(object sender, EventArgs e)
         {
-            this.IsBusy = true;
+            await UpdateLiveAsync().ConfigureAwait(false);
+        }
 
-            await Task.WhenAll(UpdateEventsAsync(), IsGiantBombLiveAsync());
+        public async Task UpdateAllAsync()
+        {
+            IsBusy = true;
 
-            this.IsBusy = false;
+            await Task.WhenAll(UpdateEventsAsync(), UpdateLiveAsync());
+
+            IsBusy = false;
         }
 
         private async Task UpdateEventsAsync()
@@ -263,11 +277,10 @@ namespace GB_Live
                     }
 
                     Remove(eventsFromHtml);
-                },
-                DispatcherPriority.ApplicationIdle);
+                });
         }
 
-        private async Task IsGiantBombLiveAsync()
+        private async Task UpdateLiveAsync()
         {
             HttpWebRequest req = BuildHttpWebRequest(Globals.gbUpcomingJson);
             string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req).ConfigureAwait(false);
@@ -295,9 +308,7 @@ namespace GB_Live
                     {
                         IsLive = true;
 
-                        Utils.SafeDispatcher(() =>
-                            NotificationService.Send("GiantBomb is LIVE", Globals.gbChat),
-                            DispatcherPriority.ApplicationIdle);
+                        Utils.SafeDispatcher(() => NotificationService.Send("GiantBomb is LIVE", Globals.gbChat));
                     }
                 }
                 else

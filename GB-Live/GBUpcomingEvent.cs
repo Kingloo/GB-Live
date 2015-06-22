@@ -204,19 +204,18 @@ namespace GB_Live
         {
             Time = DateTime.MaxValue;
 
-            Utils.SafeDispatcher(() =>
-                NotificationService.Send(Title, Globals.gbHome),
-                DispatcherPriority.Background);
+            Utils.SafeDispatcher(() => NotificationService.Send(Title, Globals.gbHome));
         }
 
         private Int64 CalculateTicks()
         {
             TimeSpan fromNowToEvent = Time - DateTime.Now;
-            TimeSpan oneMinuteInTicks = new TimeSpan(600000000L); // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s => 10,000 * 1000 * 60 ticks in 1 min == 600,000,000 ticks
+            //TimeSpan oneMinuteInTicks = new TimeSpan(600000000L); // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s => 10,000 * 1000 * 60 ticks in 1 min == 600,000,000 ticks
+            TimeSpan twentySecondsInTicks = new TimeSpan(200000000L); // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s => 10,000 * 1000 * 20 ticks in 20 secs == 200,000,000 ticks
 
-            TimeSpan addedOneMinute = fromNowToEvent.Add(oneMinuteInTicks);
+            TimeSpan addedExtraTime = fromNowToEvent.Add(twentySecondsInTicks);
 
-            Int64 ticksUntilEvent = addedOneMinute.Ticks;
+            Int64 ticksUntilEvent = addedExtraTime.Ticks;
 
 #if DEBUG
             return fromNowToEvent.Ticks;
