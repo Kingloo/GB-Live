@@ -75,6 +75,7 @@
                     <Label Grid.ColumnSpan="2" Grid.Row="0"
                            Foreground="White"
                            Padding="0,0,20,5"
+                           FontSize="20"
                            VerticalContentAlignment="Bottom"
                            Style="{StaticResource GBUpcomingEventLabelStyle}">
                         <Label.Content>
@@ -86,7 +87,8 @@
                     <Label Grid.Column="0" Grid.Row="1"
                            Foreground="White"
                            Content="{Binding Path=EventType, Mode=OneTime, Converter={StaticResource addSpacesToEnumConverter}}"
-                           Padding="0,5,0,0"
+                           Padding="15,5,0,0"
+                           FontSize="17"
                            VerticalContentAlignment="Top"
                            Style="{StaticResource GBUpcomingEventLabelStyle}" />
 
@@ -94,6 +96,7 @@
                            Foreground="White"
                            Content="{Binding Path=Time, Converter={StaticResource formatDateTimeString}}"
                            Padding="0,5,0,0"
+                           FontSize="17"
                            VerticalContentAlignment="Top"
                            Style="{StaticResource GBUpcomingEventLabelStyle}" />
                 </Grid>
@@ -122,6 +125,7 @@
                     <Label Grid.ColumnSpan="2" Grid.Row="0"
                            Foreground="Gold"
                            Padding="0,0,20,5"
+                           FontSize="20"
                            VerticalContentAlignment="Bottom"
                            Style="{StaticResource GBUpcomingEventLabelStyle}">
                         <Label.Content>
@@ -133,7 +137,8 @@
                     <Label Grid.Column="0" Grid.Row="1"
                            Foreground="Gold"
                            Content="{Binding Path=EventType, Mode=OneTime, Converter={StaticResource addSpacesToEnumConverter}}"
-                           Padding="0,5,0,0"
+                           Padding="15,5,0,0"
+                           FontSize="17"
                            VerticalContentAlignment="Top"
                            Style="{StaticResource GBUpcomingEventLabelStyle}" />
 
@@ -141,6 +146,7 @@
                            Foreground="Gold"
                            Content="{Binding Path=Time, Converter={StaticResource formatDateTimeString}}"
                            Padding="0,5,0,0"
+                           FontSize="17"
                            VerticalContentAlignment="Top"
                            Style="{StaticResource GBUpcomingEventLabelStyle}" />
                 </Grid>

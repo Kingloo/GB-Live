@@ -53,7 +53,7 @@
             
             <Setter Property="Margin" Value="15,0,0,0" />
             <Setter Property="Opacity" Value="0.75" />
-            <Setter Property="FontSize" Value="20" />
+            <!--<Setter Property="FontSize" Value="20" />-->
             <Setter Property="HorizontalContentAlignment" Value="Left" />
             
         </Style>
