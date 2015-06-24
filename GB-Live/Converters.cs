@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Markup;
 using System.Windows.Media;
 
 namespace GB_Live
@@ -43,7 +44,7 @@ namespace GB_Live
     
 
     [ValueConversion(typeof(Enum), typeof(string))]
-    public class AddSpacesToEnumConverter : IValueConverter
+    public class AddSpacesToEnumConverter : MarkupExtension, IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
@@ -97,10 +98,15 @@ namespace GB_Live
         {
             return null;
         }
+
+        public override object ProvideValue(IServiceProvider serviceProvider)
+        {
+            return this;
+        }
     }
 
     [ValueConversion(typeof(DateTime), typeof(string))]
-    public class FormatDateTimeString : IValueConverter
+    public class FormatDateTimeString : MarkupExtension, IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
@@ -119,6 +125,11 @@ namespace GB_Live
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             return DateTime.MaxValue;
+        }
+
+        public override object ProvideValue(IServiceProvider serviceProvider)
+        {
+            return this;
         }
     }
 }
