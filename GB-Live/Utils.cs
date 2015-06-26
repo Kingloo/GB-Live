@@ -27,7 +27,7 @@ namespace GB_Live
             window.Left = (screenWidth / 2) - (windowWidth / 2);
         }
 
-        public static void SafeDispatcher(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
+        public static void SafeDispatcher(Action action, DispatcherPriority priority = DispatcherPriority.Background)
         {
             if (action == null) throw new ArgumentNullException("Utils.SafeDispatcher: action was null");
 
@@ -43,7 +43,7 @@ namespace GB_Live
             }
         }
 
-        public static async Task SafeDispatcherAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
+        public static async Task SafeDispatcherAsync(Action action, DispatcherPriority priority = DispatcherPriority.Background)
         {
             if (action == null) throw new ArgumentNullException("Utils.SafeDispatcherAsync: action was null");
 
