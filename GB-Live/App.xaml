@@ -31,7 +31,7 @@
 
             <Setter Property="Margin" Value="0,10,0,10" />
             <Setter Property="Opacity" Value="1.0" />
-            <Setter Property="FontSize" Value="25" />
+            <Setter Property="FontSize" Value="26" />
             <Setter Property="Foreground" Value="Green" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
