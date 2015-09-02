@@ -267,11 +267,11 @@ namespace GB_Live
 
             if (String.IsNullOrWhiteSpace(websiteAsString)) return;
 
-            List<GBUpcomingEvent> eventsFromHtml = RetrieveEventsFromHtml(websiteAsString);
+            IEnumerable<GBUpcomingEvent> eventsFromHtml = RetrieveEventsFromHtml(websiteAsString);
 
             Utils.SafeDispatcher(() =>
                 {
-                    if (eventsFromHtml.Count > 0)
+                    if (eventsFromHtml.Count() > 0)
                     {
                         Events.AddMissing<GBUpcomingEvent>(eventsFromHtml);
                     }
@@ -318,19 +318,7 @@ namespace GB_Live
             }
         }
 
-        private void UpdateUpcomingEvents(string websiteAsString)
-        {
-            List<GBUpcomingEvent> eventsFromHtml = RetrieveEventsFromHtml(websiteAsString);
-
-            if (eventsFromHtml.Count > 0)
-            {
-                Events.AddMissing<GBUpcomingEvent>(eventsFromHtml);
-            }
-
-            Remove(eventsFromHtml);
-        }
-
-        private List<GBUpcomingEvent> RetrieveEventsFromHtml(string websiteAsString)
+        private IEnumerable<GBUpcomingEvent> RetrieveEventsFromHtml(string websiteAsString)
         {
             FromBetweenResult res = websiteAsString.FromBetween(upcomingBegins, upcomingEnds);
 
@@ -340,7 +328,7 @@ namespace GB_Live
             }
             else
             {
-                return new List<GBUpcomingEvent>(0);
+                return Enumerable.Empty<GBUpcomingEvent>();
             }
         }
 
