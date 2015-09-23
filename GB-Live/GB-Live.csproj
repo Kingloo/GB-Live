@@ -28,7 +28,7 @@
     <ProductName>GB Live</ProductName>
     <PublisherName>Kingloo Holdings Ltd.</PublisherName>
     <DisallowUrlActivation>true</DisallowUrlActivation>
-    <ApplicationRevision>109</ApplicationRevision>
+    <ApplicationRevision>110</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -114,6 +114,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
@@ -135,9 +136,10 @@
     </Page>
     <Compile Include="CountdownDispatcherTimer.cs" />
     <Compile Include="DelegateCommand.cs" />
-    <Compile Include="Extensions.cs" />
+    <Compile Include="Extensions\HttpWebRequest.cs" />
+    <Compile Include="Extensions\ICollectionT.cs" />
+    <Compile Include="Extensions\String.cs" />
     <Compile Include="GBEventTemplateSelector.cs" />
-    <Compile Include="Globals.cs" />
     <Compile Include="NotificationService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Utils.cs" />

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Configuration;
 using System.Text;
 using System.Web;
 using System.Windows.Threading;
+using GB_Live.Extensions;
 
 namespace GB_Live
 {
@@ -206,7 +208,7 @@ namespace GB_Live
 
             NotificationService.Send(Title, () =>
                 {
-                    Utils.OpenUriInBrowser(Globals.gbHome);
+                    Utils.OpenUriInBrowser(ConfigurationManager.AppSettings["GBHomepage"]);
                 });
         }
 

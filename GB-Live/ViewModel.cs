@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -11,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using GB_Live.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -54,7 +56,7 @@ namespace GB_Live
 
         private void GoToHomePageInBrowser()
         {
-            Utils.OpenUriInBrowser(Globals.gbHome);
+            Utils.OpenUriInBrowser(ConfigurationManager.AppSettings["GBHomepage"]);
         }
 
         private DelegateCommand _goToChatPageInBrowserCommand = null;
@@ -73,7 +75,7 @@ namespace GB_Live
 
         private void GoToChatPageInBrowser()
         {
-            Utils.OpenUriInBrowser(Globals.gbChat);
+            Utils.OpenUriInBrowser(ConfigurationManager.AppSettings["GBChat"]);
         }
 
         private DelegateCommand _exitCommand = null;
@@ -262,7 +264,7 @@ namespace GB_Live
 
         private async Task UpdateEventsAsync()
         {
-            HttpWebRequest req = BuildHttpWebRequest(Globals.gbHome);
+            HttpWebRequest req = BuildHttpWebRequest(new Uri(ConfigurationManager.AppSettings["GBHomepage"]));
             string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req).ConfigureAwait(false);
 
             if (String.IsNullOrWhiteSpace(websiteAsString)) return;
@@ -282,7 +284,7 @@ namespace GB_Live
 
         private async Task UpdateLiveAsync()
         {
-            HttpWebRequest req = BuildHttpWebRequest(Globals.gbUpcomingJson);
+            HttpWebRequest req = BuildHttpWebRequest(new Uri(ConfigurationManager.AppSettings["GBUpcomingJson"]));
             string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req).ConfigureAwait(false);
 
             if (String.IsNullOrWhiteSpace(websiteAsString)) return;
@@ -310,10 +312,12 @@ namespace GB_Live
 
                         Utils.SafeDispatcher(() =>
                             {
-                                NotificationService.Send("GiantBomb is LIVE", () =>
-                                {
-                                    Utils.OpenUriInBrowser(Globals.gbChat);
-                                });
+                                NameValueCollection appSettings = ConfigurationManager.AppSettings;
+
+                                NotificationService.Send(appSettings["GBIsLiveMessage"], () =>
+                                    {
+                                        Utils.OpenUriInBrowser(appSettings["GBChat"]);
+                                    });
                             });
                     }
                 }
