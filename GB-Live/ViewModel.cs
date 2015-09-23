@@ -308,7 +308,13 @@ namespace GB_Live
                     {
                         IsLive = true;
 
-                        Utils.SafeDispatcher(() => NotificationService.Send("GiantBomb is LIVE", Globals.gbChat));
+                        Utils.SafeDispatcher(() =>
+                            {
+                                NotificationService.Send("GiantBomb is LIVE", () =>
+                                {
+                                    Utils.OpenUriInBrowser(Globals.gbChat);
+                                });
+                            });
                     }
                 }
                 else

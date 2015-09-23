@@ -9,25 +9,24 @@ namespace GB_Live
 {
     public static class NotificationService
     {
-        public static void Send(string title, Uri uri = null)
+        public static void Send(string title, Action action)
         {
-            NotificationWindow window = new NotificationWindow(title, string.Empty, uri);
+            NotificationWindow window = new NotificationWindow(title, string.Empty, action);
         }
 
-        public static void Send(string title, string description, Uri uri = null)
+        public static void Send(string title, string description, Action action)
         {
-            NotificationWindow window = new NotificationWindow(title, description, uri);
+            NotificationWindow window = new NotificationWindow(title, description, action);
         }
 
         private class NotificationWindow : Window
         {
-            private Uri uri = null;
+            private Action action = null;
 
-            internal NotificationWindow(string title, string description, Uri uri)
+            internal NotificationWindow(string title, string description, Action action)
             {
-                this.uri = uri;
+                this.action = action;
 
-                this.Owner = Application.Current.MainWindow;
                 this.Style = BuildWindowStyle();
 
                 Grid grid = new Grid
@@ -78,15 +77,9 @@ namespace GB_Live
                 this.AddChild(grid);
 
 #if DEBUG
-                CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(
-                    new TimeSpan(0, 0, 2),
-                    () => this.Close()
-                    );
+                CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 2), () => this.Close());
 #else
-                CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(
-                    new TimeSpan(0, 0, 15),
-                    () => this.Close()
-                    );
+                CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 15), () => this.Close());
 #endif
 
                 DisplayThisWindow();
@@ -96,9 +89,9 @@ namespace GB_Live
             {
                 Style style = new Style(typeof(NotificationWindow));
 
-                if (uri != null)
+                if (action != null)
                 {
-                    MouseButtonEventHandler doubleClickAction = (sender, e) => Process.Start(uri.AbsoluteUri);
+                    MouseButtonEventHandler doubleClickAction = (sender, e) => action();
 
                     EventSetter leftMouseDoubleClick = new EventSetter(MouseDoubleClickEvent, doubleClickAction);
 

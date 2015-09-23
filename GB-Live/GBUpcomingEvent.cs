@@ -204,7 +204,10 @@ namespace GB_Live
         {
             Time = DateTime.MaxValue;
 
-            Utils.SafeDispatcher(() => NotificationService.Send(Title, Globals.gbHome));
+            NotificationService.Send(Title, () =>
+                {
+                    Utils.OpenUriInBrowser(Globals.gbHome);
+                });
         }
 
         private Int64 CalculateTicks()
