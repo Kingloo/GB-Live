@@ -14,11 +14,11 @@ namespace GB_Live
 
             if (gbEvent.Premium)
             {
-                return this.Premium;
+                return Premium;
             }
             else
             {
-                return this.Everyone;
+                return Everyone;
             }
         }
     }
