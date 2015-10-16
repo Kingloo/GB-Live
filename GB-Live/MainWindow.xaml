@@ -41,9 +41,7 @@
         
         <Grid.Resources>
 
-            <this:BooleanToLiveStatusStringConverter x:Key="booleanToLiveStatusStringConverter"
-                                                     True="Giant Bomb is LIVE"
-                                                     False="Giant Bomb is not streaming" />
+            <this:BooleanToLiveStatusStringConverter x:Key="booleanToLiveStatusStringConverter" />
 
             <this:BooleanToLabelStyleConverter x:Key="booleanToLabelStyleConverter"
                                                True="{StaticResource LabelLiveStyle}"

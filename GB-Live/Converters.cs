@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Text;
 using System.Windows;
 using System.Windows.Data;
@@ -36,12 +37,32 @@ namespace GB_Live
     [ValueConversion(typeof(bool), typeof(Style))]
     public class BooleanToLabelStyleConverter : GenericBooleanConverter<Style> { }
 
-    [ValueConversion(typeof(bool), typeof(string))]
-    public class BooleanToLiveStatusStringConverter : GenericBooleanConverter<string> { }
-
     [ValueConversion(typeof(bool), typeof(Brush))]
     public class BooleanToColourConverter : GenericBooleanConverter<Brush> { }
-    
+
+
+    [ValueConversion(typeof(bool), typeof(string))]
+    public class BooleanToLiveStatusStringConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            bool b = (bool)value;
+
+            if (b)
+            {
+                return ConfigurationManager.AppSettings["GBIsLiveMessage"];
+            }
+            else
+            {
+                return ConfigurationManager.AppSettings["GBIsNotLiveMessage"];
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            return null;
+        }
+    }
 
     [ValueConversion(typeof(Enum), typeof(string))]
     public class AddSpacesToEnumConverter : MarkupExtension, IValueConverter
