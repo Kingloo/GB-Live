@@ -53,8 +53,9 @@
             
             <Setter Property="Margin" Value="15,0,0,0" />
             <Setter Property="Opacity" Value="0.75" />
-            <!--<Setter Property="FontSize" Value="20" />-->
             <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="ToolTipService.InitialShowDelay" Value="800" />
+            <Setter Property="ToolTipService.ShowDuration" Value="2000" />
             
         </Style>
 
