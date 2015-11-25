@@ -5,7 +5,7 @@ namespace GB_Live
     public class Program
     {
         [STAThread]
-        public static int Main(string[] args)
+        public static int Main()
         {
             App app = new App();
             app.InitializeComponent();
