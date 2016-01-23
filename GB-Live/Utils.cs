@@ -349,6 +349,7 @@ namespace GB_Live
             }
 
             return response;
+            //return WebUtility.HtmlDecode(response);
         }
     }
 }

@@ -181,27 +181,21 @@ namespace GB_Live
             this.RefreshCommandAsync.RaiseCanExecuteChanged();
         }
 
-        private ObservableCollection<GBUpcomingEvent> _events = new ObservableCollection<GBUpcomingEvent>();
+        private readonly ObservableCollection<GBUpcomingEvent> _events = new ObservableCollection<GBUpcomingEvent>();
         public ObservableCollection<GBUpcomingEvent> Events { get { return _events; } }
         #endregion
 
         public ViewModel()
         {
-            Application.Current.MainWindow.Loaded += MainWindow_Loaded;
             Events.CollectionChanged += Events_CollectionChanged;
-
-            updateEventsTimer.Tick += updateEventsTimer_Tick;
+            
+            updateEventsTimer.Tick += async (sender, e) => await UpdateEventsAsync();
             updateEventsTimer.Start();
-
-            updateLiveTimer.Tick += updateLiveTimer_Tick;
+            
+            updateLiveTimer.Tick += async (sender, e) => await UpdateLiveAsync();
             updateLiveTimer.Start();
         }
-
-        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            await UpdateAllAsync().ConfigureAwait(false);
-        }
-
+        
         private void Events_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             /*
@@ -242,17 +236,7 @@ namespace GB_Live
                 each.StopCountdownTimer();
             }
         }
-
-        private async void updateEventsTimer_Tick(object sender, EventArgs e)
-        {
-            await UpdateEventsAsync().ConfigureAwait(false);
-        }
-
-        private async void updateLiveTimer_Tick(object sender, EventArgs e)
-        {
-            await UpdateLiveAsync().ConfigureAwait(false);
-        }
-
+        
         public async Task UpdateAllAsync()
         {
             IsBusy = true;
@@ -265,35 +249,32 @@ namespace GB_Live
         private async Task UpdateEventsAsync()
         {
             HttpWebRequest req = BuildHttpWebRequest(new Uri(ConfigurationManager.AppSettings["GBHomepage"]));
-            string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req).ConfigureAwait(false);
+            string website = await Utils.DownloadWebsiteAsStringAsync(req);
 
-            if (String.IsNullOrWhiteSpace(websiteAsString)) return;
+            if (String.IsNullOrWhiteSpace(website)) return;
 
-            IEnumerable<GBUpcomingEvent> eventsFromHtml = RetrieveEventsFromHtml(websiteAsString);
+            IEnumerable<GBUpcomingEvent> eventsFromHtml = await RetrieveEventsFromHtmlAsync(website);
 
-            Utils.SafeDispatcher(() =>
-                {
-                    if (eventsFromHtml.Count() > 0)
-                    {
-                        Events.AddMissing<GBUpcomingEvent>(eventsFromHtml);
-                    }
+            if (eventsFromHtml.Count() > 0)
+            {
+                Events.AddMissing<GBUpcomingEvent>(eventsFromHtml);
+            }
 
-                    Remove(eventsFromHtml);
-                });
+            Remove(eventsFromHtml);
         }
 
         private async Task UpdateLiveAsync()
         {
             HttpWebRequest req = BuildHttpWebRequest(new Uri(ConfigurationManager.AppSettings["GBUpcomingJson"]));
-            string websiteAsString = await Utils.DownloadWebsiteAsStringAsync(req).ConfigureAwait(false);
+            string website = await Utils.DownloadWebsiteAsStringAsync(req);
 
-            if (String.IsNullOrWhiteSpace(websiteAsString)) return;
+            if (String.IsNullOrWhiteSpace(website)) return;
 
             JObject json = null;
 
             try
             {
-                json = JObject.Parse(websiteAsString);
+                json = JObject.Parse(website);
             }
             catch (JsonReaderException e)
             {
@@ -310,15 +291,12 @@ namespace GB_Live
                     {
                         IsLive = true;
 
-                        Utils.SafeDispatcher(() =>
-                            {
-                                NameValueCollection appSettings = ConfigurationManager.AppSettings;
+                        NameValueCollection appSettings = ConfigurationManager.AppSettings;
 
-                                NotificationService.Send(appSettings["GBIsLiveMessage"], () =>
-                                    {
-                                        Utils.OpenUriInBrowser(appSettings["GBChat"]);
-                                    });
-                            });
+                        NotificationService.Send(appSettings["GBIsLiveMessage"], () =>
+                        {
+                            Utils.OpenUriInBrowser(appSettings["GBChat"]);
+                        });
                     }
                 }
                 else
@@ -328,13 +306,13 @@ namespace GB_Live
             }
         }
 
-        private IEnumerable<GBUpcomingEvent> RetrieveEventsFromHtml(string websiteAsString)
+        private async Task<IEnumerable<GBUpcomingEvent>> RetrieveEventsFromHtmlAsync(string website)
         {
-            FromBetweenResult res = websiteAsString.FromBetween(upcomingBegins, upcomingEnds);
+            FromBetweenResult res = website.FromBetween(upcomingBegins, upcomingEnds);
 
             if (res.Result == Result.Success)
             {
-                return ParseHtmlForEvents(res.ResultString);
+                return await ParseHtmlForEventsAsync(res.ResultString);
             }
             else
             {
@@ -342,7 +320,7 @@ namespace GB_Live
             }
         }
 
-        private List<GBUpcomingEvent> ParseHtmlForEvents(string upcomingHtml)
+        private async Task<IEnumerable<GBUpcomingEvent>> ParseHtmlForEventsAsync(string upcomingHtml)
         {
             List<GBUpcomingEvent> events = new List<GBUpcomingEvent>();
 
@@ -352,9 +330,8 @@ namespace GB_Live
             using (StringReader sr = new StringReader(upcomingHtml))
             {
                 string line = string.Empty;
-                StringBuilder sb_Log = new StringBuilder();
 
-                while ((line = sr.ReadLine()) != null)
+                while ((line = await sr.ReadLineAsync()) != null)
                 {
                     line = line.Trim();
 
@@ -377,21 +354,12 @@ namespace GB_Live
 
                             dd = string.Empty;
                         }
-                        else
-                        {
-                            sb_Log.AppendLine(string.Format("Event could not be created from:{0}{1}", Environment.NewLine, dd));
-                        }
                     }
 
                     if (shouldConcat)
                     {
                         dd += line;
                     }
-                }
-
-                if (sb_Log.Length > 0)
-                {
-                    Utils.LogMessage(sb_Log.ToString());
                 }
             }
 
@@ -431,6 +399,7 @@ namespace GB_Live
             req.Referer = string.Format("{0}{1}/", gbUri.GetLeftPart(UriPartial.Scheme), gbUri.DnsSafeHost);
             req.Timeout = 2500;
             req.UserAgent = "IE11: Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
+            req.UserAgent = ConfigurationManager.AppSettings["UserAgent"];
 
             req.Headers.Add("DNT", "1");
             req.Headers.Add("Accept-Encoding", "gzip, deflate");
