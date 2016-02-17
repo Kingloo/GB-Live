@@ -50,7 +50,7 @@
                 <Grid>
                     <Grid.InputBindings>
                         <MouseBinding MouseAction="LeftDoubleClick"
-                                      Command="{Binding Path=GoToHomePageInBrowserCommand, ElementName=vm}" />
+                                      Command="{Binding Path=GoToHomepageInBrowserCommand, ElementName=vm}" />
                     </Grid.InputBindings>
 
                     <Grid.RowDefinitions>
@@ -103,7 +103,7 @@
                 <Grid>
                     <Grid.InputBindings>
                         <MouseBinding MouseAction="LeftDoubleClick"
-                                      Command="{Binding Path=GoToHomePageInBrowserCommand, ElementName=vm}" />
+                                      Command="{Binding Path=GoToHomepageInBrowserCommand, ElementName=vm}" />
                     </Grid.InputBindings>
 
                     <Grid.RowDefinitions>

@@ -26,7 +26,7 @@ namespace GB_Live
             {
                 this.action = action;
 
-                this.Style = BuildWindowStyle();
+                Style = BuildWindowStyle();
 
                 Grid grid = new Grid
                 {
@@ -73,12 +73,12 @@ namespace GB_Live
                     grid.Children.Add(lbl_Description);
                 }
 
-                this.AddChild(grid);
+                AddChild(grid);
 
 #if DEBUG
-                CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 2), () => this.Close());
+                CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 2), () => Close());
 #else
-                CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 15), () => this.Close());
+                CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 15), () => Close());
 #endif
 
                 DisplayThisWindow();
@@ -121,7 +121,7 @@ namespace GB_Live
                 return style;
             }
 
-            private Style BuildGridStyle()
+            private static Style BuildGridStyle()
             {
                 Style style = new Style(typeof(Grid));
 
@@ -138,7 +138,7 @@ namespace GB_Live
                 return style;
             }
 
-            private Style BuildLabelTitleStyle()
+            private static Style BuildLabelTitleStyle()
             {
                 Style style = new Style(typeof(Label));
 
@@ -156,7 +156,7 @@ namespace GB_Live
                 return style;
             }
 
-            private Style BuildLabelDescriptionStyle()
+            private static Style BuildLabelDescriptionStyle()
             {
                 Style style = new Style(typeof(Label));
 

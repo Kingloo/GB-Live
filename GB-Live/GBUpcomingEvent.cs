@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.Globalization;
 using System.Text;
 using System.Web;
 using System.Windows.Threading;
@@ -90,7 +91,7 @@ namespace GB_Live
             return true;
         }
 
-        private string GetTitle(string s)
+        private static string GetTitle(string s)
         {
             string beginning = "itle\">";
             string ending = "<";
@@ -99,7 +100,7 @@ namespace GB_Live
 
             if (res.Result == Result.Success)
             {
-                return res.ResultString;
+                return res.ResultValue;
             }
             else
             {
@@ -107,12 +108,12 @@ namespace GB_Live
             }
         }
 
-        private bool GetPremium(string s)
+        private static bool GetPremium(string s)
         {
             return s.Contains("content--premium");
         }
 
-        private Uri GetBackgroundImageUrl(string s)
+        private static Uri GetBackgroundImageUrl(string s)
         {
             string beginning = "background-image:url(";
             string ending = ")";
@@ -121,7 +122,7 @@ namespace GB_Live
 
             if (res.Result == Result.Success)
             {
-                string raw = res.ResultString;
+                string raw = res.ResultValue;
 
                 Uri uri = null;
                 if (Uri.TryCreate(raw, UriKind.Absolute, out uri))
@@ -147,7 +148,7 @@ namespace GB_Live
 
             if (res.Result == Result.Success)
             {
-                string raw = res.ResultString;
+                string raw = res.ResultValue;
                 string between = raw.Trim();
 
                 Time = GetTime(between);
@@ -155,7 +156,7 @@ namespace GB_Live
             }
             else
             {
-                Utils.LogMessage(string.Format("{0} occurred while looking between {1} and {2}", res.Result.ToString(), beginning, ending));
+                Utils.LogMessage(string.Format(CultureInfo.CurrentCulture, "{0} occurred while looking between {1} and {2}", res.Result.ToString(), beginning, ending));
             }
         }
 
@@ -164,25 +165,25 @@ namespace GB_Live
             return TryParseAndTrim(s, false);
         }
 
-        private GBEventType GetEventType(string s)
+        private static GBEventType GetEventType(string s)
         {
-            if (s.StartsWith("Article", StringComparison.InvariantCultureIgnoreCase))
+            if (s.StartsWith("Article", StringComparison.OrdinalIgnoreCase))
             {
                 return GBEventType.Article;
             }
-            else if (s.StartsWith("Review", StringComparison.InvariantCultureIgnoreCase))
+            else if (s.StartsWith("Review", StringComparison.OrdinalIgnoreCase))
             {
                 return GBEventType.Review;
             }
-            else if (s.StartsWith("Podcast", StringComparison.InvariantCultureIgnoreCase))
+            else if (s.StartsWith("Podcast", StringComparison.OrdinalIgnoreCase))
             {
                 return GBEventType.Podcast;
             }
-            else if (s.StartsWith("Video", StringComparison.InvariantCultureIgnoreCase))
+            else if (s.StartsWith("Video", StringComparison.OrdinalIgnoreCase))
             {
                 return GBEventType.Video;
             }
-            else if (s.StartsWith("Live Show", StringComparison.InvariantCultureIgnoreCase))
+            else if (s.StartsWith("Live Show", StringComparison.OrdinalIgnoreCase))
             {
                 return GBEventType.LiveShow;
             }
@@ -229,7 +230,7 @@ namespace GB_Live
 #endif
         }
 
-        private bool CanStartCountdownWithTicks(Int64 ticks)
+        private static bool CanStartCountdownWithTicks(Int64 ticks)
         {
             if (ticks <= 0L) return false;
 
@@ -289,6 +290,8 @@ namespace GB_Live
 
         public int CompareTo(GBUpcomingEvent other)
         {
+            if (other == null) throw new ArgumentNullException(nameof(other));
+
             if (this.Time > other.Time)
             {
                 return 1;
@@ -302,44 +305,34 @@ namespace GB_Live
                 return 0;
             }
         }
-
+        
         public bool Equals(GBUpcomingEvent other)
         {
-            if (this.Title.Equals(other.Title) == false)
-            {
-                return false;
-            }
+            if (other == null) return false;
 
-            if (this.Time.Equals(other.Time) == false)
-            {
-                return false;
-            }
+            if (Title.Equals(other.Title) == false) return false;
 
-            if (this.Premium.Equals(other.Premium) == false)
-            {
-                return false;
-            }
+            if (Time.Equals(other.Time) == false) return false;
 
-            if (this.EventType.Equals(other.EventType) == false)
-            {
-                return false;
-            }
+            if (Premium.Equals(other.Premium) == false) return false;
+
+            if (EventType.Equals(other.EventType) == false) return false;
 
             return true;
         }
-
+        
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(string.Format("Title: {0}", Title));
-            sb.AppendLine(string.Format("Time: {0}", Time));
-            sb.AppendLine(string.Format("Created: {0}", creationDate.ToString()));
+            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Title: {0}", Title));
+            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Time: {0}", Time));
+            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Created: {0}", creationDate.ToString()));
             sb.AppendLine("Countdown:");
             sb.Append(countdown.ToString());
-            sb.AppendLine(string.Format("Event type: {0}", EventType.ToString()));
-            sb.AppendLine(string.Format("Premium: {0}", Premium.ToString()));
-            sb.AppendLine(string.Format("Image url: {0}", BackgroundImageUrl.AbsoluteUri));
+            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Event type: {0}", EventType.ToString()));
+            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Premium: {0}", Premium.ToString()));
+            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Image url: {0}", BackgroundImageUrl.AbsoluteUri));
 
             return sb.ToString();
         }

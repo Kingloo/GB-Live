@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -40,21 +41,21 @@ namespace GB_Live
             await UpdateAllAsync().ConfigureAwait(false);
         }
 
-        private DelegateCommand _goToHomePageInBrowserCommand = null;
-        public DelegateCommand GoToHomePageInBrowserCommand
+        private DelegateCommand _goToHomepageInBrowserCommand = null;
+        public DelegateCommand GoToHomepageInBrowserCommand
         {
             get
             {
-                if (_goToHomePageInBrowserCommand == null)
+                if (_goToHomepageInBrowserCommand == null)
                 {
-                    _goToHomePageInBrowserCommand = new DelegateCommand(GoToHomePageInBrowser, canExecute);
+                    _goToHomepageInBrowserCommand = new DelegateCommand(GoToHomepageInBrowser, canExecute);
                 }
 
-                return _goToHomePageInBrowserCommand;
+                return _goToHomepageInBrowserCommand;
             }
         }
 
-        private void GoToHomePageInBrowser()
+        private void GoToHomepageInBrowser()
         {
             Utils.OpenUriInBrowser(ConfigurationManager.AppSettings["GBHomepage"]);
         }
@@ -131,7 +132,7 @@ namespace GB_Live
             {
                 if (IsBusy)
                 {
-                    return string.Format("{0}: checking ...", appName);
+                    return string.Format(CultureInfo.CurrentCulture, "{0}: checking ...", appName);
                 }
                 else
                 {
@@ -221,7 +222,7 @@ namespace GB_Live
             }
         }
 
-        private void StartAllEventTimers(IList newItems)
+        private static void StartAllEventTimers(IList newItems)
         {
             foreach (GBUpcomingEvent each in newItems)
             {
@@ -229,7 +230,7 @@ namespace GB_Live
             }
         }
 
-        private void StopAllEventTimers(IList oldItems)
+        private static void StopAllEventTimers(IList oldItems)
         {
             foreach (GBUpcomingEvent each in oldItems)
             {
@@ -306,13 +307,13 @@ namespace GB_Live
             }
         }
 
-        private async Task<IEnumerable<GBUpcomingEvent>> RetrieveEventsFromHtmlAsync(string website)
+        private static async Task<IEnumerable<GBUpcomingEvent>> RetrieveEventsFromHtmlAsync(string website)
         {
             FromBetweenResult res = website.FromBetween(upcomingBegins, upcomingEnds);
 
             if (res.Result == Result.Success)
             {
-                return await ParseHtmlForEventsAsync(res.ResultString);
+                return await ParseHtmlForEventsAsync(res.ResultValue);
             }
             else
             {
@@ -320,7 +321,7 @@ namespace GB_Live
             }
         }
 
-        private async Task<IEnumerable<GBUpcomingEvent>> ParseHtmlForEventsAsync(string upcomingHtml)
+        private static async Task<IEnumerable<GBUpcomingEvent>> ParseHtmlForEventsAsync(string upcomingHtml)
         {
             List<GBUpcomingEvent> events = new List<GBUpcomingEvent>();
 
@@ -386,9 +387,9 @@ namespace GB_Live
             Events.RemoveList<GBUpcomingEvent>(toRemove);
         }
 
-        private HttpWebRequest BuildHttpWebRequest(Uri gbUri)
+        private static HttpWebRequest BuildHttpWebRequest(Uri gbUri)
         {
-            HttpWebRequest req = HttpWebRequest.CreateHttp(gbUri);
+            HttpWebRequest req = WebRequest.CreateHttp(gbUri);
 
             req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
             req.CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
@@ -396,9 +397,9 @@ namespace GB_Live
             req.KeepAlive = false;
             req.Method = "GET";
             req.ProtocolVersion = HttpVersion.Version11;
-            req.Referer = string.Format("{0}{1}/", gbUri.GetLeftPart(UriPartial.Scheme), gbUri.DnsSafeHost);
+            req.Referer = string.Format(CultureInfo.CurrentCulture, "{0}{1}/", gbUri.GetLeftPart(UriPartial.Scheme), gbUri.DnsSafeHost);
             req.Timeout = 2500;
-            req.UserAgent = "IE11: Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
+            //req.UserAgent = "IE11: Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
             req.UserAgent = ConfigurationManager.AppSettings["UserAgent"];
 
             req.Headers.Add("DNT", "1");
@@ -420,8 +421,8 @@ namespace GB_Live
 
             sb.AppendLine(this.GetType().ToString());
             sb.AppendLine(WindowTitle);
-            sb.AppendLine(string.Format("IsLive: {0}", IsLive));
-            sb.AppendLine(string.Format("Number of events: {0}", Events.Count));
+            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "IsLive: {0}", IsLive));
+            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Number of events: {0}", Events.Count));
 
             return sb.ToString();
         }

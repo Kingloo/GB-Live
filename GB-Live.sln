@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 2012 for Windows Desktop
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GB-Live", "GB-Live\GB-Live.csproj", "{D83122BC-737B-4F95-B0F9-E27352736FF3}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GB-Live.Tests", "GB-Live.Tests\GB-Live.Tests.csproj", "{39708521-BB8C-4C62-B1DB-4168DBD61335}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,17 +27,6 @@ Global
 		{D83122BC-737B-4F95-B0F9-E27352736FF3}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{D83122BC-737B-4F95-B0F9-E27352736FF3}.Release|x64.ActiveCfg = Release|x64
 		{D83122BC-737B-4F95-B0F9-E27352736FF3}.Release|x64.Build.0 = Release|x64
-		{39708521-BB8C-4C62-B1DB-4168DBD61335}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{39708521-BB8C-4C62-B1DB-4168DBD61335}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{39708521-BB8C-4C62-B1DB-4168DBD61335}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{39708521-BB8C-4C62-B1DB-4168DBD61335}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{39708521-BB8C-4C62-B1DB-4168DBD61335}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{39708521-BB8C-4C62-B1DB-4168DBD61335}.Debug|x64.Build.0 = Debug|Any CPU
-		{39708521-BB8C-4C62-B1DB-4168DBD61335}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{39708521-BB8C-4C62-B1DB-4168DBD61335}.Release|Any CPU.Build.0 = Release|Any CPU
-		{39708521-BB8C-4C62-B1DB-4168DBD61335}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{39708521-BB8C-4C62-B1DB-4168DBD61335}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{39708521-BB8C-4C62-B1DB-4168DBD61335}.Release|x64.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

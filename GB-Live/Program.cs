@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Globalization;
 
+[assembly:CLSCompliant(true)]
 namespace GB_Live
 {
-    public class Program
+    public static class Program
     {
         [STAThread]
         public static int Main()
@@ -14,7 +16,7 @@ namespace GB_Live
 
             if (exitCode != 0)
             {
-                string errorMessage = string.Format("Exited with code {1}", exitCode);
+                string errorMessage = string.Format(CultureInfo.CurrentCulture, "Exited with code {0}", exitCode);
 
                 Utils.LogMessage(errorMessage);
             }

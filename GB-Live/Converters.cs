@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Globalization;
 using System.Text;
 using System.Windows;
 using System.Windows.Data;
@@ -14,21 +15,21 @@ namespace GB_Live
         public T True { get; set; }
         public T False { get; set; }
 
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             bool b = (bool)value;
 
             if (b)
             {
-                return this.True;
+                return True;
             }
             else
             {
-                return this.False;
+                return False;
             }
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return default(T);
         }
@@ -44,7 +45,7 @@ namespace GB_Live
     [ValueConversion(typeof(bool), typeof(string))]
     public class BooleanToLiveStatusStringConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             bool b = (bool)value;
 
@@ -58,7 +59,7 @@ namespace GB_Live
             }
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return null;
         }
@@ -67,7 +68,7 @@ namespace GB_Live
     [ValueConversion(typeof(Enum), typeof(string))]
     public class AddSpacesToEnumConverter : MarkupExtension, IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             GBEventType eventType = (GBEventType)value;
             string eventTypeAsString = eventType.ToString();
@@ -100,7 +101,7 @@ namespace GB_Live
             }
         }
 
-        private bool StringHasExtraUppercaseCharacters(string s)
+        private static bool StringHasExtraUppercaseCharacters(string s)
         {
             char[] array = s.ToCharArray();
 
@@ -115,7 +116,7 @@ namespace GB_Live
             return false;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return null;
         }
@@ -129,7 +130,7 @@ namespace GB_Live
     [ValueConversion(typeof(DateTime), typeof(string))]
     public class FormatDateTimeString : MarkupExtension, IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             DateTime dt = (DateTime)value;
 
@@ -139,11 +140,11 @@ namespace GB_Live
             }
             else
             {
-                return dt.ToString("ddd MMM dd  -  HH:mm");
+                return dt.ToString("ddd MMM dd  -  HH:mm", CultureInfo.CurrentCulture);
             }
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return DateTime.MaxValue;
         }
