@@ -5,7 +5,6 @@ using System.Text;
 using System.Web;
 using System.Windows.Threading;
 using GB_Live.Extensions;
-using Newtonsoft.Json.Linq;
 
 namespace GB_Live
 {
@@ -38,105 +37,162 @@ namespace GB_Live
         public GBEventType EventType { get; private set; }
         public Uri BackgroundImageUrl { get; private set; }
         #endregion
-        
-        private GBUpcomingEvent(string title, DateTime time, bool premium, GBEventType type, Uri imageUri)
-        {
-            Title = title;
-            Time = time;
-            Premium = premium;
-            EventType = type;
-            BackgroundImageUrl = imageUri;
-        }
-        
-        public static bool TryCreateFromJson(JObject token, out GBUpcomingEvent outEvent)
-        {
-            if (token == null) throw new ArgumentNullException(nameof(token));
 
-            if (token.HasValues == false)
+        public GBUpcomingEvent() { }
+
+        public GBUpcomingEvent(string title, DateTime time, bool premium, GBEventType type)
+        {
+            this.Title = title;
+            this.Time = time;
+            this.Premium = premium;
+            this.EventType = type;
+        }
+
+        private GBUpcomingEvent(string s)
+        {
+            string f = HttpUtility.HtmlDecode(s);
+
+            this.Title = GetTitle(f);
+            this.Premium = GetPremium(f);
+            this.BackgroundImageUrl = GetBackgroundImageUrl(f);
+
+            if (Premium)
+            {
+                string beginning = "</span>";
+                string ending = "</p>";
+
+                SetTimeAndEventType(f, beginning, ending);
+            }
+            else
+            {
+                string beginning = "ime\">";
+                string ending = "</p>";
+
+                SetTimeAndEventType(f, beginning, ending);
+            }
+        }
+
+        public static bool TryCreate(string html, out GBUpcomingEvent outEvent)
+        {
+            if (String.IsNullOrEmpty(html)
+                || String.IsNullOrWhiteSpace(html)
+                || html.Contains("<") == false
+                || html.Contains(">") == false
+                || html.Contains("title") == false
+                || html.Contains("time") == false)
             {
                 outEvent = null;
 
                 return false;
             }
 
-            string title = (string)token["title"];
-            DateTime time = GetTimeFromJson(token);
-            bool premium = (bool)token["premium"];
-            GBEventType type = GetEventTypeFromJson(token);
-            Uri imageUri = GetBackgroundImageUrlFromJson(token);
-
-            outEvent = new GBUpcomingEvent(title, time, premium, type, imageUri);
+            outEvent = new GBUpcomingEvent(html);
 
             return true;
         }
 
-        private static Uri GetBackgroundImageUrlFromJson(JObject token)
+        private static string GetTitle(string s)
         {
-            string uri = HttpUtility.HtmlDecode((string)token["image"]);
+            string beginning = "itle\">";
+            string ending = "<";
 
-            if (String.IsNullOrWhiteSpace(uri))
+            FromBetweenResult res = s.FromBetween(beginning, ending);
+
+            if (res.Result == Result.Success)
             {
-                return new UriBuilder
+                return res.ResultValue;
+            }
+            else
+            {
+                return "Title Unknown";
+            }
+        }
+
+        private static bool GetPremium(string s)
+        {
+            return s.Contains("content--premium");
+        }
+
+        private static Uri GetBackgroundImageUrl(string s)
+        {
+            string beginning = "background-image:url(";
+            string ending = ")";
+
+            FromBetweenResult res = s.FromBetween(beginning, ending);
+
+            if (res.Result == Result.Success)
+            {
+                string raw = res.ResultValue;
+
+                Uri uri = null;
+                if (Uri.TryCreate(raw, UriKind.Absolute, out uri))
                 {
-                    Scheme = "http",
-                    Host = "static.giantbomb.com",
-                    Path = "/bundles/phoenixsite/images/core/loose/apple-touch-icon-precomposed-gb.png",
-                    Port = 80,
+                    return uri; // desired scenario
                 }
-                .Uri;
+            }
+
+            // fallback
+            return new UriBuilder
+            {
+                Scheme = "http",
+                Host = "static.giantbomb.com",
+                Path = "/bundles/phoenixsite/images/core/loose/apple-touch-icon-precomposed-gb.png",
+                Port = 80,
+            }
+            .Uri;
+        }
+
+        private void SetTimeAndEventType(string whole, string beginning, string ending)
+        {
+            FromBetweenResult res = whole.FromBetween(beginning, ending);
+
+            if (res.Result == Result.Success)
+            {
+                string raw = res.ResultValue;
+                string between = raw.Trim();
+
+                Time = GetTime(between);
+                EventType = GetEventType(between);
             }
             else
             {
-                return new Uri(uri);
+                Utils.LogMessage(string.Format(CultureInfo.CurrentCulture, "{0} occurred while looking between {1} and {2}", res.Result.ToString(), beginning, ending));
             }
         }
 
-        private static DateTime GetTimeFromJson(JToken token)
+        private DateTime GetTime(string s)
         {
-            string time = (string)token["date"];
+            return TryParseAndTrim(s, false);
+        }
 
-            DateTime dt = DateTime.MinValue;
-
-            if (DateTime.TryParse(time, out dt))
+        private static GBEventType GetEventType(string s)
+        {
+            if (s.StartsWith("Article", StringComparison.OrdinalIgnoreCase))
             {
-                return dt;
+                return GBEventType.Article;
+            }
+            else if (s.StartsWith("Review", StringComparison.OrdinalIgnoreCase))
+            {
+                return GBEventType.Review;
+            }
+            else if (s.StartsWith("Podcast", StringComparison.OrdinalIgnoreCase))
+            {
+                return GBEventType.Podcast;
+            }
+            else if (s.StartsWith("Video", StringComparison.OrdinalIgnoreCase))
+            {
+                return GBEventType.Video;
+            }
+            else if (s.StartsWith("Live Show", StringComparison.OrdinalIgnoreCase))
+            {
+                return GBEventType.LiveShow;
             }
             else
             {
-                return DateTime.MinValue;
+                return GBEventType.Unknown;
             }
         }
 
-        private static GBEventType GetEventTypeFromJson(JToken token)
-        {
-            GBEventType toReturn = GBEventType.Unknown;
-            string type = (string)token["type"];
-
-            switch (type)
-            {
-                case "Video":
-                    toReturn = GBEventType.Video;
-                    break;
-                case "Live Show":
-                    toReturn = GBEventType.LiveShow;
-                    break;
-                case "Article":
-                    toReturn = GBEventType.Article;
-                    break;
-                case "Podcast":
-                    toReturn = GBEventType.Podcast;
-                    break;
-                case "Review":
-                    toReturn = GBEventType.Review;
-                    break;
-                default:
-                    toReturn = GBEventType.Unknown;
-                    break;
-            }
-
-            return toReturn;
-        }
-        
         public void StartCountdownTimer()
         {
             Int64 ticks = CalculateTicks();
@@ -160,9 +216,8 @@ namespace GB_Live
         private Int64 CalculateTicks()
         {
             TimeSpan fromNowToEvent = Time - DateTime.Now;
-
-            // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s => 10,000 * 1000 * 20 ticks in 20 secs == 200,000,000 ticks
-            TimeSpan twentySecondsInTicks = new TimeSpan(10000 * 1000 * 20);
+            //TimeSpan oneMinuteInTicks = new TimeSpan(600000000L); // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s => 10,000 * 1000 * 60 ticks in 1 min == 600,000,000 ticks
+            TimeSpan twentySecondsInTicks = new TimeSpan(200000000L); // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s => 10,000 * 1000 * 20 ticks in 20 secs == 200,000,000 ticks
 
             TimeSpan addedExtraTime = fromNowToEvent.Add(twentySecondsInTicks);
 
@@ -237,11 +292,11 @@ namespace GB_Live
         {
             if (other == null) throw new ArgumentNullException(nameof(other));
 
-            if (Time > other.Time)
+            if (this.Time > other.Time)
             {
                 return 1;
             }
-            else if (Time < other.Time)
+            else if (this.Time < other.Time)
             {
                 return -1;
             }

@@ -11,22 +11,11 @@ namespace GB_Live
         public static void Send(string title, Action action)
         {
             NotificationWindow window = new NotificationWindow(title, string.Empty, action);
-
-            Display(window);
         }
-        
+
         public static void Send(string title, string description, Action action)
         {
             NotificationWindow window = new NotificationWindow(title, description, action);
-
-            Display(window);
-        }
-
-        private static void Display(NotificationWindow window)
-        {
-            window.Show();
-
-            System.Media.SystemSounds.Hand.Play();
         }
 
         private class NotificationWindow : Window
@@ -91,6 +80,8 @@ namespace GB_Live
 #else
                 CountdownDispatcherTimer expirationTimer = new CountdownDispatcherTimer(new TimeSpan(0, 0, 15), () => Close());
 #endif
+
+                DisplayThisWindow();
             }
 
             private Style BuildWindowStyle()
@@ -99,7 +90,7 @@ namespace GB_Live
 
                 if (action != null)
                 {
-                    MouseButtonEventHandler doubleClickAction = (s, e) => action();
+                    MouseButtonEventHandler doubleClickAction = (sender, e) => action();
 
                     EventSetter leftMouseDoubleClick = new EventSetter(MouseDoubleClickEvent, doubleClickAction);
 
@@ -181,6 +172,13 @@ namespace GB_Live
                 style.Setters.Add(new Setter(HorizontalContentAlignmentProperty, HorizontalAlignment.Right));
 
                 return style;
+            }
+
+            private void DisplayThisWindow()
+            {
+                this.Show();
+
+                System.Media.SystemSounds.Hand.Play();
             }
         }
     }

@@ -9,7 +9,7 @@ namespace GB_Live
 
         protected void OnNotifyPropertyChanged([CallerMemberName] string propertyName = default(string))
         {
-            PropertyChangedEventHandler pceh = PropertyChanged;
+            PropertyChangedEventHandler pceh = this.PropertyChanged;
 
             if (pceh != null)
             {

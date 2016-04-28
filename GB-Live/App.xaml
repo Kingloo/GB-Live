@@ -19,7 +19,7 @@
         <Style TargetType="{x:Type Grid}" BasedOn="{StaticResource {x:Type FrameworkElement}}" />
         
         <Style TargetType="{x:Type Control}" BasedOn="{StaticResource {x:Type FrameworkElement}}">
-            <Setter Property="FontFamily" Value="Segoe UI Mono" />
+            <Setter Property="FontFamily" Value="Segoe UI Mono" /><!-- used to be Calibri -->
             <Setter Property="FontSize" Value="15" />
             <Setter Property="Foreground" Value="White" />
             <Setter Property="IsTabStop" Value="False" />

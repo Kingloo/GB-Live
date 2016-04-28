@@ -55,8 +55,7 @@ namespace GB_Live
 
         public CountdownDispatcherTimer(TimeSpan span, Action tick)
         {
-            // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s == 10,000,000 ticks
-            if (span.Ticks < (10000 * 1000)) throw new ArgumentException("span.Ticks cannot be less than 1 second", nameof(span));
+            if (span.Ticks < 10000000L) throw new ArgumentException("span cannot be less than 1 second"); // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s == 10,000,000 ticks
             if (tick == null) throw new ArgumentNullException(nameof(tick));
 
             this.tick = tick;
@@ -92,7 +91,7 @@ namespace GB_Live
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(GetType().ToString());
+            sb.AppendLine(this.GetType().ToString());
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Created at: {0}", created.ToString()));
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Active: {0}", IsActive));
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Time left: {0}", TimeLeft.ToString()));

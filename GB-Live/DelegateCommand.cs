@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using System.Windows.Input;
 
 namespace GB_Live
 {
-    public abstract class Command : ICommand
+    public abstract class Command : System.Windows.Input.ICommand
     {
         public event EventHandler CanExecuteChanged;
 
@@ -13,7 +12,11 @@ namespace GB_Live
 
         public void RaiseCanExecuteChanged()
         {
-            CanExecuteChanged?.Invoke(this, new EventArgs());
+            EventHandler handler = CanExecuteChanged;
+            if (handler != null)
+            {
+                handler(this, new EventArgs());
+            }
         }
     }
 
@@ -24,8 +27,15 @@ namespace GB_Live
 
         public DelegateCommand(Action execute, Predicate<object> canExecute)
         {
-            if (execute == null) throw new ArgumentNullException(nameof(execute));
-            if (canExecute == null) throw new ArgumentNullException(nameof(canExecute));
+            if (execute == null)
+            {
+                throw new ArgumentNullException(nameof(execute));
+            }
+
+            if (canExecute == null)
+            {
+                throw new ArgumentNullException(nameof(canExecute));
+            }
 
             _execute = execute;
             _canExecute = canExecute;
@@ -33,12 +43,12 @@ namespace GB_Live
 
         public override void Execute(object parameter)
         {
-            _execute();
+            this._execute();
         }
 
         public override bool CanExecute(object parameter)
         {
-            return _canExecute(parameter);
+            return this._canExecute(parameter);
         }
     }
 
@@ -49,11 +59,18 @@ namespace GB_Live
 
         public DelegateCommand(Action<T> execute, Predicate<T> canExecute)
         {
-            if (execute == null) throw new ArgumentNullException(nameof(execute));
-            if (canExecute == null) throw new ArgumentNullException(nameof(canExecute));
+            if (execute == null)
+            {
+                throw new ArgumentNullException("execute", "execute was null");
+            }
 
-            _execute = execute;
-            _canExecute = canExecute;
+            if (canExecute == null)
+            {
+                throw new ArgumentNullException("canExecute", "canExecute was null");
+            }
+
+            this._execute = execute;
+            this._canExecute = canExecute;
         }
 
         public override void Execute(object parameter)
@@ -75,8 +92,15 @@ namespace GB_Live
 
         public DelegateCommandAsync(Func<Task> executeAsync, Predicate<object> canExecute)
         {
-            if (executeAsync == null) throw new ArgumentNullException(nameof(executeAsync));
-            if (canExecute == null) throw new ArgumentNullException(nameof(canExecute));
+            if (executeAsync == null)
+            {
+                throw new ArgumentNullException(nameof(executeAsync));
+            }
+
+            if (canExecute == null)
+            {
+                throw new ArgumentNullException(nameof(canExecute));
+            }
 
             _executeAsync = executeAsync;
             _canExecute = canExecute;
@@ -89,24 +113,24 @@ namespace GB_Live
 
         private async Task ExecuteAsync()
         {
-            _isExecuting = true;
-            RaiseCanExecuteChanged();
+            this._isExecuting = true;
+            this.RaiseCanExecuteChanged();
 
-            await _executeAsync();
+            await this._executeAsync();
 
-            _isExecuting = false;
-            RaiseCanExecuteChanged();
+            this._isExecuting = false;
+            this.RaiseCanExecuteChanged();
         }
 
         public override bool CanExecute(object parameter)
         {
-            if (_isExecuting == true)
+            if (this._isExecuting == true)
             {
                 return false;
             }
             else
             {
-                return _canExecute(parameter);
+                return this._canExecute(parameter);
             }
         }
     }
@@ -119,38 +143,45 @@ namespace GB_Live
 
         public DelegateCommandAsync(Func<T, Task> executeAsync, Predicate<T> canExecute)
         {
-            if (executeAsync == null) throw new ArgumentNullException(nameof(executeAsync));
-            if (canExecute == null) throw new ArgumentNullException(nameof(canExecute));
+            if (executeAsync == null)
+            {
+                throw new ArgumentNullException(nameof(executeAsync));
+            }
 
-            _executeAsync = executeAsync;
-            _canExecute = canExecute;
+            if (canExecute == null)
+            {
+                throw new ArgumentNullException(nameof(canExecute));
+            }
+
+            this._executeAsync = executeAsync;
+            this._canExecute = canExecute;
         }
 
         public override async void Execute(object parameter)
         {
-            await ExecuteAsync((T)parameter);
+            await this.ExecuteAsync((T)parameter);
         }
 
         private async Task ExecuteAsync(T parameter)
         {
-            _isExecuting = true;
-            RaiseCanExecuteChanged();
+            this._isExecuting = true;
+            this.RaiseCanExecuteChanged();
 
-            await _executeAsync(parameter);
+            await this._executeAsync(parameter);
 
-            _isExecuting = false;
-            RaiseCanExecuteChanged();
+            this._isExecuting = false;
+            this.RaiseCanExecuteChanged();
         }
 
         public override bool CanExecute(object parameter)
         {
-            if (_isExecuting == true)
+            if (this._isExecuting == true)
             {
                 return false;
             }
             else
             {
-                return _canExecute((T)parameter);
+                return this._canExecute((T)parameter);
             }
         }
     }
