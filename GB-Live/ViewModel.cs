@@ -38,7 +38,7 @@ namespace GB_Live
 
         private async Task RefreshAsync()
         {
-            await UpdateAllAsync().ConfigureAwait(false);
+            await UpdateAllAsync();
         }
 
         private DelegateCommand _goToHomepageInBrowserCommand = null;
@@ -121,7 +121,7 @@ namespace GB_Live
 
         private readonly DispatcherTimer updateLiveTimer = new DispatcherTimer
         {
-            Interval = new TimeSpan(0, 4, 0)
+            Interval = new TimeSpan(0, 3, 0)
         };
         #endregion
 
@@ -249,16 +249,16 @@ namespace GB_Live
 
         private async Task UpdateEventsAsync()
         {
-            HttpWebRequest req = BuildHttpWebRequest(new Uri(ConfigurationManager.AppSettings["GBHomepage"]));
+            HttpWebRequest req = BuildRequest(new Uri(ConfigurationManager.AppSettings["GBHomepage"]));
             string website = await Utils.DownloadWebsiteAsStringAsync(req);
 
-            if (String.IsNullOrWhiteSpace(website)) return;
+            if (String.IsNullOrWhiteSpace(website)) { return; }
 
             IEnumerable<GBUpcomingEvent> eventsFromHtml = await RetrieveEventsFromHtmlAsync(website);
 
             if (eventsFromHtml.Count() > 0)
             {
-                Events.AddMissing<GBUpcomingEvent>(eventsFromHtml);
+                Events.AddMissing(eventsFromHtml);
             }
 
             Remove(eventsFromHtml);
@@ -266,10 +266,10 @@ namespace GB_Live
 
         private async Task UpdateLiveAsync()
         {
-            HttpWebRequest req = BuildHttpWebRequest(new Uri(ConfigurationManager.AppSettings["GBUpcomingJson"]));
+            HttpWebRequest req = BuildRequest(new Uri(ConfigurationManager.AppSettings["GBUpcomingJson"]));
             string website = await Utils.DownloadWebsiteAsStringAsync(req);
 
-            if (String.IsNullOrWhiteSpace(website)) return;
+            if (String.IsNullOrWhiteSpace(website)) { return; }
 
             JObject json = null;
 
@@ -382,12 +382,12 @@ namespace GB_Live
             List<GBUpcomingEvent> toRemove = (from each in Events
                                               where each.Time.Equals(DateTime.MaxValue) || eventsFromHtml.Contains(each) == false
                                               select each)
-                                              .ToList<GBUpcomingEvent>();
+                                              .ToList();
 
-            Events.RemoveList<GBUpcomingEvent>(toRemove);
+            Events.RemoveList(toRemove);
         }
 
-        private static HttpWebRequest BuildHttpWebRequest(Uri gbUri)
+        private static HttpWebRequest BuildRequest(Uri gbUri)
         {
             HttpWebRequest req = WebRequest.CreateHttp(gbUri);
 
@@ -397,21 +397,12 @@ namespace GB_Live
             req.KeepAlive = false;
             req.Method = "GET";
             req.ProtocolVersion = HttpVersion.Version11;
-            req.Referer = string.Format(CultureInfo.CurrentCulture, "{0}{1}/", gbUri.GetLeftPart(UriPartial.Scheme), gbUri.DnsSafeHost);
             req.Timeout = 2500;
-            //req.UserAgent = "IE11: Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
             req.UserAgent = ConfigurationManager.AppSettings["UserAgent"];
 
             req.Headers.Add("DNT", "1");
             req.Headers.Add("Accept-Encoding", "gzip, deflate");
-
-            // It seems that even without cookies this stuff seems to still work
-
-            // 1) lu is probably country-code, returned timezone has yet to be wrong after setting this
-            // 2) after months of use, the prior claim remains true
-            //req.CookieContainer = new CookieContainer();
-            //req.CookieContainer.Add(gbUri, new Cookie("xcg", countryCode));
-
+            
             return req;
         }
 
@@ -419,7 +410,7 @@ namespace GB_Live
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(this.GetType().ToString());
+            sb.AppendLine(GetType().ToString());
             sb.AppendLine(WindowTitle);
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "IsLive: {0}", IsLive));
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Number of events: {0}", Events.Count));

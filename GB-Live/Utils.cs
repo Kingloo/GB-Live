@@ -35,16 +35,7 @@ namespace GB_Live
         {
             if (action == null) throw new ArgumentNullException(nameof(action));
 
-            Dispatcher disp = Application.Current.Dispatcher;
-
-            if (disp.CheckAccess())
-            {
-                action();
-            }
-            else
-            {
-                disp.Invoke(action, DispatcherPriority.Normal);
-            }
+            SafeDispatcher(action, DispatcherPriority.Normal);
         }
 
         public static void SafeDispatcher(Action action, DispatcherPriority priority)
@@ -67,16 +58,7 @@ namespace GB_Live
         {
             if (action == null) throw new ArgumentNullException(nameof(action));
 
-            Dispatcher disp = Application.Current.Dispatcher;
-
-            if (disp.CheckAccess())
-            {
-                await Task.Run(() => action);
-            }
-            else
-            {
-                await disp.InvokeAsync(action, DispatcherPriority.Normal);
-            }
+            await SafeDispatcherAsync(action, DispatcherPriority.Normal);
         }
 
         public static async Task SafeDispatcherAsync(Action action, DispatcherPriority priority)
@@ -238,10 +220,7 @@ namespace GB_Live
             }
             finally
             {
-                if (fs != null)
-                {
-                    fs.Dispose();
-                }
+                fs?.Dispose();
             }
 
             if (tryAgain)
@@ -290,10 +269,7 @@ namespace GB_Live
             }
             finally
             {
-                if (fsAsync != null)
-                {
-                    fsAsync.Dispose();
-                }
+                fsAsync?.Dispose();
             }
 
             if (tryAgain)
@@ -329,10 +305,7 @@ namespace GB_Live
             {
                 if (resp == null)
                 {
-                    if (request != null)
-                    {
-                        request.Abort();
-                    }
+                    request?.Abort();
                 }
                 else
                 {
@@ -363,7 +336,7 @@ namespace GB_Live
 
             if (sbLog.Length > 0)
             {
-                Utils.LogMessage(sbLog.ToString());
+                LogMessage(sbLog.ToString());
             }
 
             return response;
@@ -379,10 +352,7 @@ namespace GB_Live
             {
                 if (resp == null)
                 {
-                    if (request != null)
-                    {
-                        request.Abort();
-                    }
+                    request?.Abort();
                 }
                 else
                 {
@@ -413,7 +383,7 @@ namespace GB_Live
 
             if (sbLog.Length > 0)
             {
-                await Utils.LogMessageAsync(sbLog.ToString()).ConfigureAwait(false);
+                await LogMessageAsync(sbLog.ToString()).ConfigureAwait(false);
             }
 
             return response;

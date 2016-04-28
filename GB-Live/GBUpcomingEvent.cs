@@ -37,17 +37,7 @@ namespace GB_Live
         public GBEventType EventType { get; private set; }
         public Uri BackgroundImageUrl { get; private set; }
         #endregion
-
-        public GBUpcomingEvent() { }
-
-        public GBUpcomingEvent(string title, DateTime time, bool premium, GBEventType type)
-        {
-            this.Title = title;
-            this.Time = time;
-            this.Premium = premium;
-            this.EventType = type;
-        }
-
+        
         private GBUpcomingEvent(string s)
         {
             string f = HttpUtility.HtmlDecode(s);
@@ -127,11 +117,10 @@ namespace GB_Live
                 Uri uri = null;
                 if (Uri.TryCreate(raw, UriKind.Absolute, out uri))
                 {
-                    return uri; // desired scenario
+                    return uri;
                 }
             }
-
-            // fallback
+            
             return new UriBuilder
             {
                 Scheme = "http",
@@ -216,8 +205,9 @@ namespace GB_Live
         private Int64 CalculateTicks()
         {
             TimeSpan fromNowToEvent = Time - DateTime.Now;
-            //TimeSpan oneMinuteInTicks = new TimeSpan(600000000L); // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s => 10,000 * 1000 * 60 ticks in 1 min == 600,000,000 ticks
-            TimeSpan twentySecondsInTicks = new TimeSpan(200000000L); // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s => 10,000 * 1000 * 20 ticks in 20 secs == 200,000,000 ticks
+
+            // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s => 10,000 * 1000 * 20 ticks in 20 secs == 200,000,000 ticks
+            TimeSpan twentySecondsInTicks = new TimeSpan(10000 * 1000 * 20);
 
             TimeSpan addedExtraTime = fromNowToEvent.Add(twentySecondsInTicks);
 
@@ -232,7 +222,7 @@ namespace GB_Live
 
         private static bool CanStartCountdownWithTicks(Int64 ticks)
         {
-            if (ticks <= 0L) return false;
+            if (ticks <= 0L) { return false; }
 
             /*
             * even though you can start a DispatcherTimer with a ticks type of Int64,
@@ -292,11 +282,11 @@ namespace GB_Live
         {
             if (other == null) throw new ArgumentNullException(nameof(other));
 
-            if (this.Time > other.Time)
+            if (Time > other.Time)
             {
                 return 1;
             }
-            else if (this.Time < other.Time)
+            else if (Time < other.Time)
             {
                 return -1;
             }
