@@ -5,6 +5,9 @@ namespace GB_Live
 {
     internal class GBEventTemplateSelector : DataTemplateSelector
     {
+        // Build Rule CA1812
+        // DO NOT add a private ctor
+
         public DataTemplate Everyone { get; set; }
         public DataTemplate Premium { get; set; }
 

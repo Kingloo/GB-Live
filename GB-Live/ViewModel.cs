@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -38,7 +39,7 @@ namespace GB_Live
 
         private async Task RefreshAsync()
         {
-            await UpdateAllAsync().ConfigureAwait(false);
+            await UpdateAsync();
         }
 
         private DelegateCommand _goToHomepageInBrowserCommand = null;
@@ -55,9 +56,11 @@ namespace GB_Live
             }
         }
 
-        private void GoToHomepageInBrowser()
+        private static void GoToHomepageInBrowser()
         {
-            Utils.OpenUriInBrowser(ConfigurationManager.AppSettings["GBHomepage"]);
+            Uri uri = new Uri(ConfigurationManager.AppSettings["GBHomepage"]);
+
+            Utils.OpenUriInBrowser(uri);
         }
 
         private DelegateCommand _goToChatPageInBrowserCommand = null;
@@ -74,9 +77,11 @@ namespace GB_Live
             }
         }
 
-        private void GoToChatPageInBrowser()
+        private static void GoToChatPageInBrowser()
         {
-            Utils.OpenUriInBrowser(ConfigurationManager.AppSettings["GBChat"]);
+            Uri uri = new Uri(ConfigurationManager.AppSettings["GBChat"]);
+
+            Utils.OpenUriInBrowser(uri);
         }
 
         private DelegateCommand _exitCommand = null;
@@ -93,7 +98,7 @@ namespace GB_Live
             }
         }
 
-        private void Exit()
+        private static void Exit()
         {
             Application.Current.MainWindow.Close();
         }
@@ -111,17 +116,10 @@ namespace GB_Live
 
         #region Fields
         private const string appName = "GB Live";
-        private const string upcomingBegins = "<dl class=\"promo-upcoming\">";
-        private const string upcomingEnds = "</dl>";
 
-        private readonly DispatcherTimer updateEventsTimer = new DispatcherTimer
+        private readonly DispatcherTimer updateTimer = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
         {
-            Interval = new TimeSpan(0, 25, 0)
-        };
-
-        private readonly DispatcherTimer updateLiveTimer = new DispatcherTimer
-        {
-            Interval = new TimeSpan(0, 4, 0)
+            Interval = new TimeSpan(0, 3, 0)
         };
         #endregion
 
@@ -130,26 +128,22 @@ namespace GB_Live
         {
             get
             {
-                if (IsBusy)
-                {
-                    return string.Format(CultureInfo.CurrentCulture, "{0}: checking ...", appName);
-                }
-                else
-                {
-                    return appName;
-                }
+                return IsBusy ? string.Format(CultureInfo.CurrentCulture, "{0}: checking ...", appName) : appName;
             }
         }
 
         private bool _isLive = false;
         public bool IsLive
         {
-            get { return this._isLive; }
+            get
+            {
+                return _isLive;
+            }
             set
             {
-                if (!value == _isLive) // only need to change anything if value and the field are different
+                if (!value == _isLive)
                 {
-                    this._isLive = value;
+                    _isLive = value;
 
                     OnNotifyPropertyChanged();
                 }
@@ -161,13 +155,13 @@ namespace GB_Live
         {
             get
             {
-                return this._isBusy;
+                return _isBusy;
             }
             set
             {
-                if (!value == _isBusy) // only need to change anything if value and the field are different
+                if (!value == _isBusy)
                 {
-                    this._isBusy = value;
+                    _isBusy = value;
 
                     OnNotifyPropertyChanged();
                     OnNotifyPropertyChanged("WindowTitle");
@@ -179,7 +173,7 @@ namespace GB_Live
 
         private void RaiseAllCommandCanExecuteChanged()
         {
-            this.RefreshCommandAsync.RaiseCanExecuteChanged();
+            RefreshCommandAsync.RaiseCanExecuteChanged();
         }
 
         private readonly ObservableCollection<GBUpcomingEvent> _events = new ObservableCollection<GBUpcomingEvent>();
@@ -189,12 +183,7 @@ namespace GB_Live
         public ViewModel()
         {
             Events.CollectionChanged += Events_CollectionChanged;
-            
-            updateEventsTimer.Tick += async (sender, e) => await UpdateEventsAsync();
-            updateEventsTimer.Start();
-            
-            updateLiveTimer.Tick += async (sender, e) => await UpdateLiveAsync();
-            updateLiveTimer.Start();
+            updateTimer.Tick += async (s, e) => await UpdateAsync();
         }
         
         private void Events_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -237,137 +226,106 @@ namespace GB_Live
                 each.StopCountdownTimer();
             }
         }
-        
-        public async Task UpdateAllAsync()
+
+        public async Task UpdateAsync()
         {
             IsBusy = true;
 
-            await Task.WhenAll(UpdateEventsAsync(), UpdateLiveAsync());
+            string web = await DownloadUpcomingJsonAsync();
+
+            if (String.IsNullOrWhiteSpace(web) == false)
+            {
+                JObject json = ParseIntoJson(web);
+
+                if (json != null)
+                {
+                    NotifyIfLive(json);
+                    
+                    ProcessEvents(json);
+                }
+            }
 
             IsBusy = false;
         }
-
-        private async Task UpdateEventsAsync()
+        
+        private async Task<string> DownloadUpcomingJsonAsync()
         {
-            HttpWebRequest req = BuildHttpWebRequest(new Uri(ConfigurationManager.AppSettings["GBHomepage"]));
-            string website = await Utils.DownloadWebsiteAsStringAsync(req);
+            Uri jsonUri = new Uri(ConfigurationManager.AppSettings["GBUpcomingJson"]);
 
-            if (String.IsNullOrWhiteSpace(website)) return;
+            HttpWebRequest req = BuildRequest(jsonUri);
 
-            IEnumerable<GBUpcomingEvent> eventsFromHtml = await RetrieveEventsFromHtmlAsync(website);
-
-            if (eventsFromHtml.Count() > 0)
-            {
-                Events.AddMissing<GBUpcomingEvent>(eventsFromHtml);
-            }
-
-            Remove(eventsFromHtml);
+            return await Utils.DownloadWebsiteAsStringAsync(req).ConfigureAwait(false);
         }
 
-        private async Task UpdateLiveAsync()
+        private JObject ParseIntoJson(string web)
         {
-            HttpWebRequest req = BuildHttpWebRequest(new Uri(ConfigurationManager.AppSettings["GBUpcomingJson"]));
-            string website = await Utils.DownloadWebsiteAsStringAsync(req);
-
-            if (String.IsNullOrWhiteSpace(website)) return;
-
             JObject json = null;
 
             try
             {
-                json = JObject.Parse(website);
+                json = JObject.Parse(web);
             }
             catch (JsonReaderException e)
             {
                 Utils.LogException(e);
 
-                return;
+                json = null;
             }
 
-            if (json != null)
-            {
-                if (json["liveNow"].HasValues)
-                {
-                    if (IsLive == false)
-                    {
-                        IsLive = true;
-
-                        NameValueCollection appSettings = ConfigurationManager.AppSettings;
-
-                        NotificationService.Send(appSettings["GBIsLiveMessage"], () =>
-                        {
-                            Utils.OpenUriInBrowser(appSettings["GBChat"]);
-                        });
-                    }
-                }
-                else
-                {
-                    IsLive = false;
-                }
-            }
+            return json;
         }
 
-        private static async Task<IEnumerable<GBUpcomingEvent>> RetrieveEventsFromHtmlAsync(string website)
+        private void NotifyIfLive(JObject json)
         {
-            FromBetweenResult res = website.FromBetween(upcomingBegins, upcomingEnds);
-
-            if (res.Result == Result.Success)
+            if (json["liveNow"].HasValues)
             {
-                return await ParseHtmlForEventsAsync(res.ResultValue);
+                if (IsLive == false)
+                {
+                    IsLive = true;
+
+                    NameValueCollection nvc = ConfigurationManager.AppSettings;
+
+                    string liveMessage = nvc["GBIsLiveMessage"];
+                    Uri chatUri = new Uri(nvc["GBChat"]);
+
+                    NotificationService.Send(liveMessage, () => Utils.OpenUriInBrowser(chatUri));
+                }
             }
             else
             {
-                return Enumerable.Empty<GBUpcomingEvent>();
+                IsLive = false;
             }
         }
 
-        private static async Task<IEnumerable<GBUpcomingEvent>> ParseHtmlForEventsAsync(string upcomingHtml)
+        private void ProcessEvents(JObject json)
+        {
+            IEnumerable<GBUpcomingEvent> eventsFromWeb = GetEventsFromJson(json);
+
+            Events.AddMissing(eventsFromWeb);
+
+            RemoveOld(eventsFromWeb);
+        }
+
+        private static IEnumerable<GBUpcomingEvent> GetEventsFromJson(JObject json)
         {
             List<GBUpcomingEvent> events = new List<GBUpcomingEvent>();
 
-            string dd = string.Empty;
-            bool shouldConcat = false;
+            IJEnumerable<JToken> upcoming = json["upcoming"];
 
-            using (StringReader sr = new StringReader(upcomingHtml))
+            foreach (JObject each in upcoming)
             {
-                string line = string.Empty;
+                GBUpcomingEvent newEvent = null;
 
-                while ((line = await sr.ReadLineAsync()) != null)
+                if (GBUpcomingEvent.TryCreateFromJson(each, out newEvent))
                 {
-                    line = line.Trim();
-
-                    if (line.StartsWith("<dd"))
-                    {
-                        shouldConcat = true;
-                    }
-                    else if (line.StartsWith("</dd"))
-                    {
-                        shouldConcat = false;
-
-                        GBUpcomingEvent newEvent = null;
-
-                        if (GBUpcomingEvent.TryCreate(dd, out newEvent))
-                        {
-                            if (newEvent.Time > DateTime.Now)
-                            {
-                                events.Add(newEvent);
-                            }
-
-                            dd = string.Empty;
-                        }
-                    }
-
-                    if (shouldConcat)
-                    {
-                        dd += line;
-                    }
+                    events.Add(newEvent);
                 }
             }
 
-            return events;
+            return events.Count > 0 ? events : Enumerable.Empty<GBUpcomingEvent>();
         }
-
-        private void Remove(IEnumerable<GBUpcomingEvent> eventsFromHtml)
+        
+        private void RemoveOld(IEnumerable<GBUpcomingEvent> eventsFromHtml)
         {
             /*
              * 
@@ -382,12 +340,12 @@ namespace GB_Live
             List<GBUpcomingEvent> toRemove = (from each in Events
                                               where each.Time.Equals(DateTime.MaxValue) || eventsFromHtml.Contains(each) == false
                                               select each)
-                                              .ToList<GBUpcomingEvent>();
+                                              .ToList();
 
-            Events.RemoveList<GBUpcomingEvent>(toRemove);
+            Events.RemoveList(toRemove);
         }
 
-        private static HttpWebRequest BuildHttpWebRequest(Uri gbUri)
+        private static HttpWebRequest BuildRequest(Uri gbUri)
         {
             HttpWebRequest req = WebRequest.CreateHttp(gbUri);
 
@@ -397,21 +355,12 @@ namespace GB_Live
             req.KeepAlive = false;
             req.Method = "GET";
             req.ProtocolVersion = HttpVersion.Version11;
-            req.Referer = string.Format(CultureInfo.CurrentCulture, "{0}{1}/", gbUri.GetLeftPart(UriPartial.Scheme), gbUri.DnsSafeHost);
             req.Timeout = 2500;
-            //req.UserAgent = "IE11: Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
             req.UserAgent = ConfigurationManager.AppSettings["UserAgent"];
-
+            
             req.Headers.Add("DNT", "1");
             req.Headers.Add("Accept-Encoding", "gzip, deflate");
-
-            // It seems that even without cookies this stuff seems to still work
-
-            // 1) lu is probably country-code, returned timezone has yet to be wrong after setting this
-            // 2) after months of use, the prior claim remains true
-            //req.CookieContainer = new CookieContainer();
-            //req.CookieContainer.Add(gbUri, new Cookie("xcg", countryCode));
-
+            
             return req;
         }
 
@@ -419,7 +368,7 @@ namespace GB_Live
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(this.GetType().ToString());
+            sb.AppendLine(GetType().ToString());
             sb.AppendLine(WindowTitle);
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "IsLive: {0}", IsLive));
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Number of events: {0}", Events.Count));
