@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Configuration;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Web;
-using System.Windows.Threading;
-using GB_Live.Extensions;
 using Newtonsoft.Json.Linq;
 
 namespace GB_Live
@@ -16,6 +15,13 @@ namespace GB_Live
         #region Fields
         private CountdownDispatcherTimer countdown = null;
         private readonly DateTime creationDate = DateTime.Now;
+        private static Uri fallbackImage = new UriBuilder
+        {
+            Scheme = "http",
+            Host = "static.giantbomb.com",
+            Path = "/bundles/phoenixsite/images/core/loose/apple-touch-icon-precomposed-gb.png",
+            Port = 80
+        }.Uri;
         #endregion
 
         #region Properties
@@ -39,135 +45,120 @@ namespace GB_Live
         public Uri BackgroundImageUrl { get; private set; }
         #endregion
         
-        private GBUpcomingEvent(string s)
+        private GBUpcomingEvent(string title, DateTime time, bool premium, GBEventType type, Uri imageUri)
         {
-            string f = HttpUtility.HtmlDecode(s);
-
-            this.Title = GetTitle(f);
-            this.Premium = GetPremium(f);
-            this.BackgroundImageUrl = GetBackgroundImageUrl(f);
-
-            if (Premium)
-            {
-                string beginning = "</span>";
-                string ending = "</p>";
-
-                SetTimeAndEventType(f, beginning, ending);
-            }
-            else
-            {
-                string beginning = "ime\">";
-                string ending = "</p>";
-
-                SetTimeAndEventType(f, beginning, ending);
-            }
+            Title = title;
+            Time = time;
+            Premium = premium;
+            EventType = type;
+            BackgroundImageUrl = imageUri;
         }
         
-        public static bool TryCreateFromJson(JObject token, out GBUpcomingEvent outEvent)
+        public static bool TryCreate(JObject token, out GBUpcomingEvent outEvent)
         {
             if (token == null) throw new ArgumentNullException(nameof(token));
-        }
 
-        public static bool TryCreate(string html, out GBUpcomingEvent outEvent)
-        {
-            if (String.IsNullOrEmpty(html)
-                || String.IsNullOrWhiteSpace(html)
-                || html.Contains("<") == false
-                || html.Contains(">") == false
-                || html.Contains("title") == false
-                || html.Contains("time") == false)
+            if (token.HasValues == false)
             {
                 outEvent = null;
 
                 return false;
             }
+            
+            string title = GetTitle(token);
+            DateTime time = GetTime(token);
+            bool isPremium = GetIsPremium(token);
+            GBEventType type = GetEventType(token);
+            Uri imageUri = GetBackgroundImageUrl(token);
 
-            string title = (string)token["title"];
-            DateTime time = GetTimeFromJson(token);
-            bool premium = (bool)token["premium"];
-            GBEventType type = GetEventTypeFromJson(token);
-            Uri imageUri = GetBackgroundImageUrlFromJson(token);
-
-            outEvent = new GBUpcomingEvent(title, time, premium, type, imageUri);
+            outEvent = new GBUpcomingEvent(title, time, isPremium, type, imageUri);
 
             return true;
         }
-
-        private static Uri GetBackgroundImageUrlFromJson(JObject token)
+        
+        private static string GetTitle(JObject token)
         {
-            string uri = HttpUtility.HtmlDecode((string)token["image"]);
+            string title = (string)token["title"];
 
-            if (String.IsNullOrWhiteSpace(uri))
-            {
-                return new UriBuilder
-                {
-                    Scheme = "http",
-                    Host = "static.giantbomb.com",
-                    Path = "/bundles/phoenixsite/images/core/loose/apple-touch-icon-precomposed-gb.png",
-                    Port = 80,
-                }
-                .Uri;
-            }
-            else
-            {
-                return new Uri(uri);
-            }
+            return String.IsNullOrWhiteSpace(title) ? "Title Unknown" : title;
         }
 
-        private static DateTime GetTimeFromJson(JToken token)
+        private static DateTime GetTime(JObject token)
         {
-<<<<<<< HEAD
+            string time = (string)token["date"];
+
             string timeWithoutMeridiem = time.Remove(time.Length - 3);
 
             string timeWithTZ = AddTimeZoneData(timeWithoutMeridiem);
-=======
-            string time = (string)token["date"];
->>>>>>> parent of 60fc417... Correct timezones
 
             DateTime dt = DateTime.MinValue;
-
-            if (DateTime.TryParse(time, out dt))
+            if (DateTime.TryParse(timeWithTZ, out dt))
             {
-                string raw = res.ResultValue;
-
-                Uri uri = null;
-                if (Uri.TryCreate(raw, UriKind.Absolute, out uri))
-                {
-                    return uri;
-                }
-            }
-            
-            return new UriBuilder
-            {
-                Scheme = "http",
-                Host = "static.giantbomb.com",
-                Path = "/bundles/phoenixsite/images/core/loose/apple-touch-icon-precomposed-gb.png",
-                Port = 80,
-            }
-            .Uri;
-        }
-
-        private static GBEventType GetEventTypeFromJson(JToken token)
-        {
-            FromBetweenResult res = whole.FromBetween(beginning, ending);
-
-            if (res.Result == Result.Success)
-            {
-                string raw = res.ResultValue;
-                string between = raw.Trim();
-
-                Time = GetTime(between);
-                EventType = GetEventType(between);
+                return dt;
             }
             else
             {
-                Utils.LogMessage(string.Format(CultureInfo.CurrentCulture, "{0} occurred while looking between {1} and {2}", res.Result.ToString(), beginning, ending));
+                return DateTime.MinValue;
             }
         }
 
-        private DateTime GetTime(string s)
+        private static bool GetIsPremium(JObject token)
         {
-            return TryParseAndTrim(s, false);
+            string premium = (string)token["premium"];
+
+            return String.IsNullOrWhiteSpace(premium) ? false : Convert.ToBoolean(premium);
+        }
+
+        private static GBEventType GetEventType(JToken token)
+        {
+            GBEventType toReturn = GBEventType.Unknown;
+            string type = (string)token["type"];
+
+            switch (type)
+            {
+                case "Video":
+                    toReturn = GBEventType.Video;
+                    break;
+                case "Live Show":
+                    toReturn = GBEventType.LiveShow;
+                    break;
+                case "Article":
+                    toReturn = GBEventType.Article;
+                    break;
+                case "Podcast":
+                    toReturn = GBEventType.Podcast;
+                    break;
+                case "Review":
+                    toReturn = GBEventType.Review;
+                    break;
+                default:
+                    toReturn = GBEventType.Unknown;
+                    break;
+            }
+
+            return toReturn;
+        }
+
+        private static Uri GetBackgroundImageUrl(JObject token)
+        {
+            string uri = (string)token["image"];
+
+            string decoded = HttpUtility.HtmlDecode(uri);
+            
+            Uri tmp = null;
+
+            return Uri.TryCreate(decoded, UriKind.Absolute, out tmp) ? tmp : fallbackImage;
+        }
+        
+        private static string AddTimeZoneData(string time)
+        {
+            TimeZoneInfo pac = TimeZoneInfo
+                .GetSystemTimeZones()
+                .SingleOrDefault(i => i.Id.Equals("Pacific Standard Time"));
+
+            string offset = pac.GetUtcOffset(DateTime.Now).ToString();
+
+            return string.Format("{0} {1}", time, offset);
         }
         
         public void StartCountdownTimer()
@@ -210,7 +201,7 @@ namespace GB_Live
 
         private static bool CanStartCountdownWithTicks(Int64 ticks)
         {
-            if (ticks <= 0L) { return false; }
+            if (ticks <= 0L) return false;
 
             /*
             * even though you can start a DispatcherTimer with a ticks type of Int64,
@@ -234,38 +225,9 @@ namespace GB_Live
 
         public void StopCountdownTimer()
         {
-            if (countdown.IsActive)
-            {
-                countdown.Stop();
-            }
+            countdown?.Stop();
         }
-
-        private DateTime TryParseAndTrim(string s, bool fromEnd)
-        {
-            DateTime dt = DateTime.MinValue;
-
-            if (DateTime.TryParse(s, out dt))
-            {
-                return dt;
-            }
-            else
-            {
-                if ((s.Length - 1) <= 0)
-                {
-                    return DateTime.MinValue;
-                }
-
-                if (fromEnd)
-                {
-                    return TryParseAndTrim(s.Substring(0, s.Length - 1), fromEnd);
-                }
-                else
-                {
-                    return TryParseAndTrim(s.Substring(1, s.Length - 1), fromEnd);
-                }
-            }
-        }
-
+        
         public int CompareTo(GBUpcomingEvent other)
         {
             if (other == null) throw new ArgumentNullException(nameof(other));
