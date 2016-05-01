@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Cache;
@@ -110,21 +112,9 @@ namespace GB_Live
 
         #region Fields
         private const string appName = "GB Live";
-<<<<<<< HEAD
-        private const string upcomingBegins = "<dl class=\"promo-upcoming\">";
-        private const string upcomingEnds = "</dl>";
-
-        private readonly DispatcherTimer updateEventsTimer = new DispatcherTimer
-        {
-            Interval = new TimeSpan(0, 25, 0)
-        };
-
-        private readonly DispatcherTimer updateLiveTimer = new DispatcherTimer
-=======
         private readonly DispatcherTimer updateTimer = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
->>>>>>> only-gbjson
         {
-            Interval = TimeSpan.FromMinutes(3)
+            Interval = new TimeSpan(0, 3, 0)
         };
         #endregion
 
@@ -229,7 +219,7 @@ namespace GB_Live
         {
             foreach (GBUpcomingEvent each in newItems)
             {
-                each?.StartCountdownTimer();
+                each.StartCountdownTimer();
             }
         }
 
@@ -237,7 +227,7 @@ namespace GB_Live
         {
             foreach (GBUpcomingEvent each in oldItems)
             {
-                each?.StopCountdownTimer();
+                each.StopCountdownTimer();
             }
         }
         
@@ -254,8 +244,12 @@ namespace GB_Live
         private async Task UpdateEventsAsync()
 =======
         
+<<<<<<< HEAD
         private async static Task<string> DownloadUpcomingJsonAsync()
 >>>>>>> only-gbjson
+=======
+        private async Task<string> DownloadUpcomingJsonAsync()
+>>>>>>> parent of 60fc417... Correct timezones
         {
             HttpWebRequest req = BuildRequest(new Uri(ConfigurationManager.AppSettings["GBHomepage"]));
             string website = await Utils.DownloadWebsiteAsStringAsync(req);
@@ -273,10 +267,14 @@ namespace GB_Live
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         private async Task UpdateLiveAsync()
 =======
         private static JObject ParseIntoJson(string web)
 >>>>>>> only-gbjson
+=======
+        private JObject ParseIntoJson(string web)
+>>>>>>> parent of 60fc417... Correct timezones
         {
             HttpWebRequest req = BuildRequest(new Uri(ConfigurationManager.AppSettings["GBUpcomingJson"]));
             string website = await Utils.DownloadWebsiteAsStringAsync(req);
@@ -322,9 +320,13 @@ namespace GB_Live
         private static async Task<IEnumerable<GBUpcomingEvent>> RetrieveEventsFromHtmlAsync(string website)
         {
 <<<<<<< HEAD
+<<<<<<< HEAD
             FromBetweenResult res = website.FromBetween(upcomingBegins, upcomingEnds);
 =======
             IEnumerable<GBUpcomingEvent> eventsFromWeb = GetEvents(json);
+=======
+            IEnumerable<GBUpcomingEvent> eventsFromWeb = GetEventsFromJson(json);
+>>>>>>> parent of 60fc417... Correct timezones
 
             Events.AddMissing(eventsFromWeb);
 >>>>>>> only-gbjson
@@ -340,10 +342,14 @@ namespace GB_Live
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         private static async Task<IEnumerable<GBUpcomingEvent>> ParseHtmlForEventsAsync(string upcomingHtml)
 =======
         private static IEnumerable<GBUpcomingEvent> GetEvents(JObject json)
 >>>>>>> only-gbjson
+=======
+        private static IEnumerable<GBUpcomingEvent> GetEventsFromJson(JObject json)
+>>>>>>> parent of 60fc417... Correct timezones
         {
             List<GBUpcomingEvent> events = new List<GBUpcomingEvent>();
 
@@ -355,10 +361,14 @@ namespace GB_Live
                 string line = string.Empty;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
                 while ((line = await sr.ReadLineAsync()) != null)
 =======
                 if (GBUpcomingEvent.TryCreate(each, out newEvent))
 >>>>>>> only-gbjson
+=======
+                if (GBUpcomingEvent.TryCreateFromJson(each, out newEvent))
+>>>>>>> parent of 60fc417... Correct timezones
                 {
                     line = line.Trim();
 
