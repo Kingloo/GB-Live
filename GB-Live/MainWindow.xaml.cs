@@ -8,7 +8,7 @@ namespace GB_Live
         {
             InitializeComponent();
 
-            Loaded += async (sender, e) => await vm.UpdateAllAsync();
+            Loaded += async (sender, e) => await vm.UpdateAsync();
         }
     }
 }
