@@ -8,9 +8,9 @@ namespace GB_Live
     public class CountdownDispatcherTimer
     {
         #region Fields
-        private DateTime created = DateTime.Now;
-        private Action tick = null;
-        private DispatcherTimer timer = new DispatcherTimer();
+        private readonly DateTime created = DateTime.Now;
+        private readonly Action tick = null;
+        private DispatcherTimer timer = null;
         #endregion
 
         #region Properties
@@ -18,7 +18,6 @@ namespace GB_Live
         {
             get
             {
-                // when timer is NOT null, IsActive == true; when timer IS null, isActive == false
                 return (timer != null);
             }
         }
@@ -27,15 +26,7 @@ namespace GB_Live
         {
             get
             {
-                if (timer == null)
-                {
-                    return TimeSpan.Zero;
-                }
-                else
-                {
-                    // created + timer.Interval is the time in the future when it fires, so minus DateTime.Now is how much time is left between now and then
-                    return ((created + timer.Interval) - DateTime.Now);
-                }
+                return IsActive ? ((created + timer.Interval) - DateTime.Now) : TimeSpan.Zero;
             }
         }
         #endregion
@@ -47,12 +38,15 @@ namespace GB_Live
 
             this.tick = tick;
 
-            timer.Tick += timer_Tick;
-            timer.Interval = new TimeSpan((time - DateTime.Now).Ticks);
+            timer = new DispatcherTimer
+            {
+                Interval = new TimeSpan((time - DateTime.Now).Ticks)
+            };
 
+            timer.Tick += Timer_Tick;
             timer.Start();
         }
-
+        
         public CountdownDispatcherTimer(TimeSpan span, Action tick)
         {
             // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s == 10,000,000 ticks
@@ -61,20 +55,20 @@ namespace GB_Live
 
             this.tick = tick;
 
-            timer.Tick += timer_Tick;
-            timer.Interval = span;
+            timer = new DispatcherTimer
+            {
+                Interval = span
+            };
 
+            timer.Tick += Timer_Tick;
             timer.Start();
         }
 
-        private void timer_Tick(object sender, EventArgs e)
+        private void Timer_Tick(object sender, EventArgs e)
         {
             tick();
 
-            if (IsActive)
-            {
-                Stop();
-            }
+            Stop();
         }
 
         public void Stop()
@@ -82,7 +76,7 @@ namespace GB_Live
             if (IsActive)
             {
                 timer.Stop();
-                timer.Tick -= timer_Tick;
+                timer.Tick -= Timer_Tick;
 
                 timer = null;
             }

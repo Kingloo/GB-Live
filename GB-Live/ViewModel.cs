@@ -4,9 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Configuration;
-using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Cache;
@@ -116,10 +114,9 @@ namespace GB_Live
 
         #region Fields
         private const string appName = "GB Live";
-
         private readonly DispatcherTimer updateTimer = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
         {
-            Interval = new TimeSpan(0, 3, 0)
+            Interval = TimeSpan.FromMinutes(3)
         };
         #endregion
 
@@ -215,7 +212,7 @@ namespace GB_Live
         {
             foreach (GBUpcomingEvent each in newItems)
             {
-                each.StartCountdownTimer();
+                each?.StartCountdownTimer();
             }
         }
 
@@ -223,7 +220,7 @@ namespace GB_Live
         {
             foreach (GBUpcomingEvent each in oldItems)
             {
-                each.StopCountdownTimer();
+                each?.StopCountdownTimer();
             }
         }
 
@@ -248,7 +245,7 @@ namespace GB_Live
             IsBusy = false;
         }
         
-        private async Task<string> DownloadUpcomingJsonAsync()
+        private async static Task<string> DownloadUpcomingJsonAsync()
         {
             Uri jsonUri = new Uri(ConfigurationManager.AppSettings["GBUpcomingJson"]);
 
@@ -257,7 +254,7 @@ namespace GB_Live
             return await Utils.DownloadWebsiteAsStringAsync(req).ConfigureAwait(false);
         }
 
-        private JObject ParseIntoJson(string web)
+        private static JObject ParseIntoJson(string web)
         {
             JObject json = null;
 
@@ -299,14 +296,14 @@ namespace GB_Live
 
         private void ProcessEvents(JObject json)
         {
-            IEnumerable<GBUpcomingEvent> eventsFromWeb = GetEventsFromJson(json);
+            IEnumerable<GBUpcomingEvent> eventsFromWeb = GetEvents(json);
 
             Events.AddMissing(eventsFromWeb);
 
             RemoveOld(eventsFromWeb);
         }
 
-        private static IEnumerable<GBUpcomingEvent> GetEventsFromJson(JObject json)
+        private static IEnumerable<GBUpcomingEvent> GetEvents(JObject json)
         {
             List<GBUpcomingEvent> events = new List<GBUpcomingEvent>();
 
@@ -316,7 +313,7 @@ namespace GB_Live
             {
                 GBUpcomingEvent newEvent = null;
 
-                if (GBUpcomingEvent.TryCreateFromJson(each, out newEvent))
+                if (GBUpcomingEvent.TryCreate(each, out newEvent))
                 {
                     events.Add(newEvent);
                 }
