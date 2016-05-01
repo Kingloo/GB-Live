@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Configuration;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Web;
-using System.Windows.Threading;
-using GB_Live.Extensions;
+using Newtonsoft.Json.Linq;
 
 namespace GB_Live
 {
@@ -15,6 +15,13 @@ namespace GB_Live
         #region Fields
         private CountdownDispatcherTimer countdown = null;
         private readonly DateTime creationDate = DateTime.Now;
+        private static Uri fallbackImage = new UriBuilder
+        {
+            Scheme = "http",
+            Host = "static.giantbomb.com",
+            Path = "/bundles/phoenixsite/images/core/loose/apple-touch-icon-precomposed-gb.png",
+            Port = 80
+        }.Uri;
         #endregion
 
         #region Properties
@@ -61,6 +68,11 @@ namespace GB_Live
                 SetTimeAndEventType(f, beginning, ending);
             }
         }
+        
+        public static bool TryCreate(JObject token, out GBUpcomingEvent outEvent)
+        {
+            if (token == null) throw new ArgumentNullException(nameof(token));
+        }
 
         public static bool TryCreate(string html, out GBUpcomingEvent outEvent)
         {
@@ -75,42 +87,33 @@ namespace GB_Live
 
                 return false;
             }
+            
+            string title = GetTitle(token);
+            DateTime time = GetTime(token);
+            bool isPremium = GetIsPremium(token);
+            GBEventType type = GetEventType(token);
+            Uri imageUri = GetBackgroundImageUrl(token);
 
-            outEvent = new GBUpcomingEvent(html);
+            outEvent = new GBUpcomingEvent(title, time, isPremium, type, imageUri);
 
             return true;
         }
-
-        private static string GetTitle(string s)
+        
+        private static string GetTitle(JObject token)
         {
-            string beginning = "itle\">";
-            string ending = "<";
+            string title = (string)token["title"];
 
-            FromBetweenResult res = s.FromBetween(beginning, ending);
-
-            if (res.Result == Result.Success)
-            {
-                return res.ResultValue;
-            }
-            else
-            {
-                return "Title Unknown";
-            }
+            return String.IsNullOrWhiteSpace(title) ? "Title Unknown" : title;
         }
 
-        private static bool GetPremium(string s)
+        private static DateTime GetTime(JObject token)
         {
-            return s.Contains("content--premium");
-        }
+            string timeWithoutMeridiem = time.Remove(time.Length - 3);
 
-        private static Uri GetBackgroundImageUrl(string s)
-        {
-            string beginning = "background-image:url(";
-            string ending = ")";
+            string timeWithTZ = AddTimeZoneData(timeWithoutMeridiem);
 
-            FromBetweenResult res = s.FromBetween(beginning, ending);
-
-            if (res.Result == Result.Success)
+            DateTime dt = DateTime.MinValue;
+            if (DateTime.TryParse(timeWithTZ, out dt))
             {
                 string raw = res.ResultValue;
 
@@ -131,7 +134,14 @@ namespace GB_Live
             .Uri;
         }
 
-        private void SetTimeAndEventType(string whole, string beginning, string ending)
+        private static bool GetIsPremium(JObject token)
+        {
+            string premium = (string)token["premium"];
+
+            return String.IsNullOrWhiteSpace(premium) ? false : Convert.ToBoolean(premium);
+        }
+
+        private static GBEventType GetEventType(JToken token)
         {
             FromBetweenResult res = whole.FromBetween(beginning, ending);
 
@@ -154,34 +164,28 @@ namespace GB_Live
             return TryParseAndTrim(s, false);
         }
 
-        private static GBEventType GetEventType(string s)
+        private static Uri GetBackgroundImageUrl(JObject token)
         {
-            if (s.StartsWith("Article", StringComparison.OrdinalIgnoreCase))
-            {
-                return GBEventType.Article;
-            }
-            else if (s.StartsWith("Review", StringComparison.OrdinalIgnoreCase))
-            {
-                return GBEventType.Review;
-            }
-            else if (s.StartsWith("Podcast", StringComparison.OrdinalIgnoreCase))
-            {
-                return GBEventType.Podcast;
-            }
-            else if (s.StartsWith("Video", StringComparison.OrdinalIgnoreCase))
-            {
-                return GBEventType.Video;
-            }
-            else if (s.StartsWith("Live Show", StringComparison.OrdinalIgnoreCase))
-            {
-                return GBEventType.LiveShow;
-            }
-            else
-            {
-                return GBEventType.Unknown;
-            }
-        }
+            string uri = (string)token["image"];
 
+            string decoded = HttpUtility.HtmlDecode(uri);
+            
+            Uri tmp = null;
+
+            return Uri.TryCreate(decoded, UriKind.Absolute, out tmp) ? tmp : fallbackImage;
+        }
+        
+        private static string AddTimeZoneData(string time)
+        {
+            TimeZoneInfo pac = TimeZoneInfo
+                .GetSystemTimeZones()
+                .SingleOrDefault(i => i.Id.Equals("Pacific Standard Time"));
+
+            string offset = pac.GetUtcOffset(DateTime.Now).ToString();
+
+            return string.Format("{0} {1}", time, offset);
+        }
+        
         public void StartCountdownTimer()
         {
             Int64 ticks = CalculateTicks();
@@ -246,38 +250,9 @@ namespace GB_Live
 
         public void StopCountdownTimer()
         {
-            if (countdown.IsActive)
-            {
-                countdown.Stop();
-            }
+            countdown?.Stop();
         }
-
-        private DateTime TryParseAndTrim(string s, bool fromEnd)
-        {
-            DateTime dt = DateTime.MinValue;
-
-            if (DateTime.TryParse(s, out dt))
-            {
-                return dt;
-            }
-            else
-            {
-                if ((s.Length - 1) <= 0)
-                {
-                    return DateTime.MinValue;
-                }
-
-                if (fromEnd)
-                {
-                    return TryParseAndTrim(s.Substring(0, s.Length - 1), fromEnd);
-                }
-                else
-                {
-                    return TryParseAndTrim(s.Substring(1, s.Length - 1), fromEnd);
-                }
-            }
-        }
-
+        
         public int CompareTo(GBUpcomingEvent other)
         {
             if (other == null) throw new ArgumentNullException(nameof(other));

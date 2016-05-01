@@ -5,7 +5,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Cache;
@@ -111,6 +110,7 @@ namespace GB_Live
 
         #region Fields
         private const string appName = "GB Live";
+<<<<<<< HEAD
         private const string upcomingBegins = "<dl class=\"promo-upcoming\">";
         private const string upcomingEnds = "</dl>";
 
@@ -120,8 +120,11 @@ namespace GB_Live
         };
 
         private readonly DispatcherTimer updateLiveTimer = new DispatcherTimer
+=======
+        private readonly DispatcherTimer updateTimer = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
+>>>>>>> only-gbjson
         {
-            Interval = new TimeSpan(0, 3, 0)
+            Interval = TimeSpan.FromMinutes(3)
         };
         #endregion
 
@@ -226,7 +229,7 @@ namespace GB_Live
         {
             foreach (GBUpcomingEvent each in newItems)
             {
-                each.StartCountdownTimer();
+                each?.StartCountdownTimer();
             }
         }
 
@@ -234,7 +237,7 @@ namespace GB_Live
         {
             foreach (GBUpcomingEvent each in oldItems)
             {
-                each.StopCountdownTimer();
+                each?.StopCountdownTimer();
             }
         }
         
@@ -246,8 +249,13 @@ namespace GB_Live
 
             IsBusy = false;
         }
+<<<<<<< HEAD
 
         private async Task UpdateEventsAsync()
+=======
+        
+        private async static Task<string> DownloadUpcomingJsonAsync()
+>>>>>>> only-gbjson
         {
             HttpWebRequest req = BuildRequest(new Uri(ConfigurationManager.AppSettings["GBHomepage"]));
             string website = await Utils.DownloadWebsiteAsStringAsync(req);
@@ -264,7 +272,11 @@ namespace GB_Live
             Remove(eventsFromHtml);
         }
 
+<<<<<<< HEAD
         private async Task UpdateLiveAsync()
+=======
+        private static JObject ParseIntoJson(string web)
+>>>>>>> only-gbjson
         {
             HttpWebRequest req = BuildRequest(new Uri(ConfigurationManager.AppSettings["GBUpcomingJson"]));
             string website = await Utils.DownloadWebsiteAsStringAsync(req);
@@ -309,7 +321,13 @@ namespace GB_Live
 
         private static async Task<IEnumerable<GBUpcomingEvent>> RetrieveEventsFromHtmlAsync(string website)
         {
+<<<<<<< HEAD
             FromBetweenResult res = website.FromBetween(upcomingBegins, upcomingEnds);
+=======
+            IEnumerable<GBUpcomingEvent> eventsFromWeb = GetEvents(json);
+
+            Events.AddMissing(eventsFromWeb);
+>>>>>>> only-gbjson
 
             if (res.Result == Result.Success)
             {
@@ -321,7 +339,11 @@ namespace GB_Live
             }
         }
 
+<<<<<<< HEAD
         private static async Task<IEnumerable<GBUpcomingEvent>> ParseHtmlForEventsAsync(string upcomingHtml)
+=======
+        private static IEnumerable<GBUpcomingEvent> GetEvents(JObject json)
+>>>>>>> only-gbjson
         {
             List<GBUpcomingEvent> events = new List<GBUpcomingEvent>();
 
@@ -332,7 +354,11 @@ namespace GB_Live
             {
                 string line = string.Empty;
 
+<<<<<<< HEAD
                 while ((line = await sr.ReadLineAsync()) != null)
+=======
+                if (GBUpcomingEvent.TryCreate(each, out newEvent))
+>>>>>>> only-gbjson
                 {
                     line = line.Trim();
 
