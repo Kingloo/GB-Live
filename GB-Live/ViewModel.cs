@@ -116,6 +116,7 @@ namespace GB_Live
         private const string appName = "GB Live";
         private readonly DispatcherTimer updateTimer = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
         {
+            IsEnabled = true,
             Interval = TimeSpan.FromMinutes(3)
         };
         #endregion
