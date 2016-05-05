@@ -116,7 +116,6 @@ namespace GB_Live
         private const string appName = "GB Live";
         private readonly DispatcherTimer updateTimer = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
         {
-            IsEnabled = true,
             Interval = TimeSpan.FromMinutes(3)
         };
         #endregion
@@ -181,7 +180,9 @@ namespace GB_Live
         public ViewModel()
         {
             Events.CollectionChanged += Events_CollectionChanged;
+
             updateTimer.Tick += async (s, e) => await UpdateAsync();
+            updateTimer.Start();
         }
         
         private void Events_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -309,11 +310,11 @@ namespace GB_Live
             List<GBUpcomingEvent> events = new List<GBUpcomingEvent>();
 
             IJEnumerable<JToken> upcoming = json["upcoming"];
-
+            
             foreach (JObject each in upcoming)
             {
                 GBUpcomingEvent newEvent = null;
-
+                
                 if (GBUpcomingEvent.TryCreate(each, out newEvent))
                 {
                     events.Add(newEvent);

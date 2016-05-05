@@ -79,29 +79,37 @@ namespace GB_Live
         private static string GetTitle(JObject token)
         {
             string title = (string)token["title"];
-
+            
             return String.IsNullOrWhiteSpace(title) ? "Title Unknown" : title;
         }
 
         private static DateTime GetTime(JObject token)
         {
             string time = (string)token["date"];
-
-            string timeWithoutMeridiem = time.Remove(time.Length - 3);
-
-            string timeWithTZ = AddTimeZoneData(timeWithoutMeridiem);
-
+            
             DateTime dt = DateTime.MinValue;
-            if (DateTime.TryParse(timeWithTZ, out dt))
+
+            if (DateTime.TryParse(time, out dt))
             {
-                return dt;
+                TimeSpan pacificUtcOffset = TimeZoneInfo
+                    .GetSystemTimeZones()
+                    .SingleOrDefault(i => i.Id.Equals("Pacific Standard Time"))
+                    .GetUtcOffset(DateTime.Now);
+
+                TimeSpan localUtcOffset = TimeZoneInfo
+                    .Local
+                    .GetUtcOffset(DateTime.Now);
+
+                TimeSpan offset = localUtcOffset - pacificUtcOffset;
+
+                return dt.Add(offset);
             }
             else
             {
                 return DateTime.MinValue;
             }
         }
-
+        
         private static bool GetIsPremium(JObject token)
         {
             string premium = (string)token["premium"];
@@ -148,17 +156,6 @@ namespace GB_Live
             Uri tmp = null;
 
             return Uri.TryCreate(decoded, UriKind.Absolute, out tmp) ? tmp : fallbackImage;
-        }
-        
-        private static string AddTimeZoneData(string time)
-        {
-            TimeZoneInfo pac = TimeZoneInfo
-                .GetSystemTimeZones()
-                .SingleOrDefault(i => i.Id.Equals("Pacific Standard Time"));
-
-            string offset = pac.GetUtcOffset(DateTime.Now).ToString();
-
-            return string.Format("{0} {1}", time, offset);
         }
         
         public void StartCountdownTimer()
