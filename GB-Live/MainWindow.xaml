@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:this="clr-namespace:GB_Live"
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase">
-    
+
     <Window.DataContext>
         <this:ViewModel x:Name="vm" />
     </Window.DataContext>
@@ -159,7 +159,7 @@
         </Grid.Resources>
         
         <Grid.RowDefinitions>
-            <RowDefinition MinHeight="50" />
+            <RowDefinition Height="65" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         
@@ -171,11 +171,10 @@
                               Command="{Binding Path=GoToChatPageInBrowserCommand}" />
             </Label.InputBindings>
         </Label>
-        
+
         <ItemsControl Grid.Row="1"
                       ItemTemplateSelector="{StaticResource gbEventTemplateSelector}"
                       ItemsSource="{Binding Source={StaticResource sortEventsByTime}}">
-
             <ItemsControl.Template>
                 <ControlTemplate>
                     <ItemsPresenter />
@@ -187,7 +186,6 @@
                     <StackPanel />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
-            
         </ItemsControl>
     </Grid>
 </Window>

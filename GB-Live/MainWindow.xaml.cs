@@ -7,7 +7,7 @@ namespace GB_Live
         public MainWindow()
         {
             InitializeComponent();
-
+            
             Loaded += async (sender, e) => await vm.UpdateAsync();
         }
     }

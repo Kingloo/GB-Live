@@ -45,7 +45,7 @@ namespace GB_Live
         public Uri BackgroundImageUrl { get; private set; }
         #endregion
         
-        private GBUpcomingEvent(string title, DateTime time, bool premium, GBEventType type, Uri imageUri)
+        public GBUpcomingEvent(string title, DateTime time, bool premium, GBEventType type, Uri imageUri)
         {
             Title = title;
             Time = time;
@@ -56,7 +56,7 @@ namespace GB_Live
         
         public static bool TryCreate(JObject token, out GBUpcomingEvent outEvent)
         {
-            if (token == null) throw new ArgumentNullException(nameof(token));
+            if (token == null) { throw new ArgumentNullException(nameof(token)); }
 
             if (token.HasValues == false)
             {

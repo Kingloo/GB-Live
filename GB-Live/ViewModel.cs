@@ -239,7 +239,7 @@ namespace GB_Live
                 if (json != null)
                 {
                     NotifyIfLive(json);
-                    
+
                     ProcessEvents(json);
                 }
             }
