@@ -168,7 +168,7 @@ namespace GB_Live
 
         public static async Task LogExceptionAsync(Exception ex)
         {
-            if (ex == null) throw new ArgumentNullException(nameof(ex));
+            if (ex == null) { throw new ArgumentNullException(nameof(ex)); }
 
             StringBuilder sb = new StringBuilder();
 
@@ -181,8 +181,8 @@ namespace GB_Live
 
         public static async Task LogExceptionAsync(Exception ex, string message)
         {
-            if (ex == null) throw new ArgumentNullException(nameof(ex));
-            if (message == null) throw new ArgumentNullException(nameof(message));
+            if (ex == null) { throw new ArgumentNullException(nameof(ex)); }
+            if (message == null) { throw new ArgumentNullException(nameof(message)); }
 
             StringBuilder sb = new StringBuilder();
 
@@ -197,8 +197,8 @@ namespace GB_Live
 
         private static void WriteTextToFile(string text, int rounds = 1)
         {
-            if (text == null) throw new ArgumentNullException(nameof(text));
-            if (rounds < 1) throw new ArgumentException("WriteTextToFile: rounds cannot be < 1");
+            if (text == null) { throw new ArgumentNullException(nameof(text)); }
+            if (rounds < 1) { throw new ArgumentException("WriteTextToFile: rounds cannot be < 1"); }
 
             bool tryAgain = false;
             
@@ -247,7 +247,7 @@ namespace GB_Live
 
         private static async Task WriteTextToFileAsync(string text, int rounds = 1)
         {
-            if (rounds < 1) throw new ArgumentException("WriteTextToFileAsync: rounds cannot be < 1");
+            if (rounds < 1) { throw new ArgumentException("WriteTextToFileAsync: rounds cannot be < 1"); }
 
             bool tryAgain = false;
             
@@ -258,6 +258,7 @@ namespace GB_Live
 
                 using (StreamWriter sw = new StreamWriter(fsAsync))
                 {
+                    // CA2202 doesn't seem to trigger with this line commented out - don't know why - leaving it in just in case and to match sync version
                     fsAsync = null;
 
                     await sw.WriteLineAsync(text).ConfigureAwait(false);

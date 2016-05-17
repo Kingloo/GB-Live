@@ -29,19 +29,19 @@ namespace GB_Live
             }
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public virtual object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return default(T);
         }
     }
 
     [ValueConversion(typeof(bool), typeof(Style))]
-    public class BooleanToLabelStyleConverter : GenericBooleanConverter<Style> { }
+    public class BooleanToStyleConverter : GenericBooleanConverter<Style> { }
 
     [ValueConversion(typeof(bool), typeof(Brush))]
-    public class BooleanToColourConverter : GenericBooleanConverter<Brush> { }
-
-
+    public class BooleanToBrushConverter : GenericBooleanConverter<Brush> { }
+    
+    
     [ValueConversion(typeof(bool), typeof(string))]
     public class BooleanToLiveStatusStringConverter : IValueConverter
     {

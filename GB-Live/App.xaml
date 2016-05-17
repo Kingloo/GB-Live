@@ -17,42 +17,33 @@
         <Style TargetType="{x:Type Window}" BasedOn="{StaticResource {x:Type FrameworkElement}}" />
         <Style TargetType="{x:Type ItemsPresenter}" BasedOn="{StaticResource {x:Type FrameworkElement}}" />
         <Style TargetType="{x:Type Grid}" BasedOn="{StaticResource {x:Type FrameworkElement}}" />
-        
+        <Style TargetType="{x:Type StackPanel}" BasedOn="{StaticResource {x:Type FrameworkElement}}" />
+
         <Style TargetType="{x:Type Control}" BasedOn="{StaticResource {x:Type FrameworkElement}}">
-            <Setter Property="FontFamily" Value="Segoe UI Mono" /><!-- used to be Calibri -->
+            <Setter Property="FontFamily" Value="Segoe UI Mono" />
             <Setter Property="FontSize" Value="15" />
             <Setter Property="Foreground" Value="White" />
             <Setter Property="IsTabStop" Value="False" />
         </Style>
-        
-        <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Control}}" />
-        
-        <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}" x:Key="LabelLiveStyle">
-            <Setter Property="Margin" Value="0,10,0,10" />
+
+        <Style TargetType="{x:Type ItemsControl}" BasedOn="{StaticResource {x:Type Control}}" />
+
+        <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Control}}">
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+
+        <Style TargetType="{x:Type Label}" x:Key="LabelLiveStyle" BasedOn="{StaticResource {x:Type Label}}">
             <Setter Property="Opacity" Value="1.0" />
             <Setter Property="FontSize" Value="26" />
             <Setter Property="Foreground" Value="Green" />
-            <Setter Property="HorizontalContentAlignment" Value="Center" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
-        
-        <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}" x:Key="LabelOfflineStyle">
-            <Setter Property="Margin" Value="0,0,0,0" />
+
+        <Style TargetType="{x:Type Label}" x:Key="LabelOfflineStyle" BasedOn="{StaticResource {x:Type Label}}">
             <Setter Property="Opacity" Value="0.6" />
             <Setter Property="FontSize" Value="16" />
             <Setter Property="Foreground" Value="Red" />
-            <Setter Property="HorizontalContentAlignment" Value="Center" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
         
-        <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}" x:Key="GBUpcomingEventLabelStyle">
-            <Setter Property="Margin" Value="15,0,0,0" />
-            <Setter Property="Opacity" Value="0.75" />
-            <Setter Property="HorizontalContentAlignment" Value="Left" />
-            <Setter Property="ToolTipService.InitialShowDelay" Value="800" />
-            <Setter Property="ToolTipService.ShowDuration" Value="2000" />
-        </Style>
-
         <Style TargetType="{x:Type Image}">
             <Setter Property="Opacity" Value="0.2" />
             <Setter Property="Height" Value="Auto" />

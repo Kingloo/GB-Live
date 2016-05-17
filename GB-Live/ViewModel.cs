@@ -37,7 +37,11 @@ namespace GB_Live
 
         private async Task RefreshAsync()
         {
+            IsBusy = true;
+
             await UpdateAsync();
+
+            IsBusy = false;
         }
 
         private DelegateCommand _goToHomepageInBrowserCommand = null;
@@ -168,6 +172,21 @@ namespace GB_Live
             }
         }
 
+        private string _liveShowName = string.Empty;
+        public string LiveShowName
+        {
+            get
+            {
+                return _liveShowName;
+            }
+            set
+            {
+                _liveShowName = value;
+
+                OnNotifyPropertyChanged();
+            }
+        }
+
         private void RaiseAllCommandCanExecuteChanged()
         {
             RefreshCommandAsync.RaiseCanExecuteChanged();
@@ -185,13 +204,13 @@ namespace GB_Live
             updateTimer.Start();
         }
         
-        private void Events_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private static void Events_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             /*
              * 
-             * DO NOT USE EVENTS.CLEAR !!!!!!!!!!!
+             * DO NOT USE EVENTS.CLEAR() !!!!!!!!!!!
              * 
-             * Events.Clear() fires NotifyCollectionChangedEventsArgs.Reset - NOT .Remove
+             * Events.Clear() fires NotifyCollectionChangedEventArgs.Reset - NOT .Remove
              * 
              * .Reset does not give you a list of what was removed
              *
@@ -200,17 +219,17 @@ namespace GB_Live
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    StartAllEventTimers(e.NewItems);
+                    StartEventTimers(e.NewItems);
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    StopAllEventTimers(e.OldItems);
+                    StopEventTimers(e.OldItems);
                     break;
                 default:
                     break;
             }
         }
 
-        private static void StartAllEventTimers(IList newItems)
+        private static void StartEventTimers(IList newItems)
         {
             foreach (GBUpcomingEvent each in newItems)
             {
@@ -218,7 +237,7 @@ namespace GB_Live
             }
         }
 
-        private static void StopAllEventTimers(IList oldItems)
+        private static void StopEventTimers(IList oldItems)
         {
             foreach (GBUpcomingEvent each in oldItems)
             {
@@ -228,8 +247,6 @@ namespace GB_Live
 
         public async Task UpdateAsync()
         {
-            IsBusy = true;
-
             string web = await DownloadUpcomingJsonAsync();
 
             if (String.IsNullOrWhiteSpace(web) == false)
@@ -243,8 +260,6 @@ namespace GB_Live
                     ProcessEvents(json);
                 }
             }
-
-            IsBusy = false;
         }
         
         private async static Task<string> DownloadUpcomingJsonAsync()
@@ -278,6 +293,8 @@ namespace GB_Live
         {
             if (json["liveNow"].HasValues)
             {
+                LiveShowName = GetLiveShowName(json["liveNow"]);
+
                 if (IsLive == false)
                 {
                     IsLive = true;
@@ -292,8 +309,15 @@ namespace GB_Live
             }
             else
             {
+                LiveShowName = string.Empty;
+
                 IsLive = false;
             }
+        }
+
+        private static string GetLiveShowName(JToken token)
+        {
+            return (string)token["title"];
         }
 
         private void ProcessEvents(JObject json)
@@ -328,9 +352,9 @@ namespace GB_Live
         {
             /*
              * 
-             * DO NOT USE EVENTS.CLEAR !!!!!!!!!!
+             * DO NOT USE EVENTS.CLEAR() !!!!!!!!!!
              * 
-             * Events.Clear() fires NotifyCollectionChangedEventsArgs.Reset - NOT .Remove
+             * Events.Clear() fires NotifyCollectionChangedEventArgs.Reset - NOT .Remove
              * 
              * .Reset does not give you a list of what was removed
              *
@@ -370,9 +394,15 @@ namespace GB_Live
             sb.AppendLine(GetType().ToString());
             sb.AppendLine(WindowTitle);
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "IsLive: {0}", IsLive));
+            sb.AppendLine(LiveShowName);
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Number of events: {0}", Events.Count));
 
             return sb.ToString();
         }
+
+        //public void DEBUG_set_live()
+        //{
+        //    IsLive = !IsLive;
+        //}
     }
 }

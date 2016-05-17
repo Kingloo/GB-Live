@@ -113,8 +113,8 @@ namespace GB_Live
         private static bool GetIsPremium(JObject token)
         {
             string premium = (string)token["premium"];
-
-            return String.IsNullOrWhiteSpace(premium) ? false : Convert.ToBoolean(premium);
+            
+            return String.IsNullOrWhiteSpace(premium) ? false : Convert.ToBoolean(premium, CultureInfo.InvariantCulture);
         }
 
         private static GBEventType GetEventType(JToken token)
@@ -264,7 +264,7 @@ namespace GB_Live
 
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Title: {0}", Title));
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Time: {0}", Time));
-            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Created: {0}", creationDate.ToString()));
+            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Created: {0}", creationDate.ToString(CultureInfo.CurrentCulture)));
             sb.AppendLine("Countdown:");
             sb.Append(countdown.ToString());
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Event type: {0}", EventType.ToString()));
