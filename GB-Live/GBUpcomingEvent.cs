@@ -121,7 +121,7 @@ namespace GB_Live
         {
             GBEventType toReturn = GBEventType.Unknown;
             string type = (string)token["type"];
-
+            
             switch (type)
             {
                 case "Video":

@@ -341,7 +341,10 @@ namespace GB_Live
                 
                 if (GBUpcomingEvent.TryCreate(each, out newEvent))
                 {
-                    events.Add(newEvent);
+                    if (newEvent.Time > DateTime.Now)
+                    {
+                        events.Add(newEvent);
+                    }
                 }
             }
 
@@ -361,7 +364,9 @@ namespace GB_Live
              */
 
             List<GBUpcomingEvent> toRemove = (from each in Events
-                                              where each.Time.Equals(DateTime.MaxValue) || eventsFromHtml.Contains(each) == false
+                                              where each.Time.Equals(DateTime.MaxValue)
+                                              || each.Time < DateTime.Now
+                                              || eventsFromHtml.Contains(each) == false
                                               select each)
                                               .ToList();
 
