@@ -142,11 +142,11 @@ namespace GB_Live
             }
             set
             {
-                if (!value == _isLive)
+                if (_isLive != value)
                 {
                     _isLive = value;
 
-                    OnNotifyPropertyChanged();
+                    RaisePropertyChanged(nameof(IsLive));
                 }
             }
         }
@@ -160,12 +160,12 @@ namespace GB_Live
             }
             set
             {
-                if (!value == _isBusy)
+                if (_isBusy != value)
                 {
                     _isBusy = value;
 
-                    OnNotifyPropertyChanged();
-                    OnNotifyPropertyChanged("WindowTitle");
+                    RaisePropertyChanged(nameof(IsBusy));
+                    RaisePropertyChanged(nameof(WindowTitle));
 
                     RaiseAllCommandCanExecuteChanged();
                 }
@@ -181,9 +181,12 @@ namespace GB_Live
             }
             set
             {
-                _liveShowName = value;
+                if (_liveShowName != value)
+                {
+                    _liveShowName = value;
 
-                OnNotifyPropertyChanged();
+                    RaisePropertyChanged(nameof(LiveShowName));
+                }
             }
         }
 
@@ -193,12 +196,12 @@ namespace GB_Live
         }
 
         private readonly ObservableCollection<GBUpcomingEvent> _events = new ObservableCollection<GBUpcomingEvent>();
-        public ObservableCollection<GBUpcomingEvent> Events { get { return _events; } }
+        public IReadOnlyCollection<GBUpcomingEvent> Events { get { return _events; } }
         #endregion
 
         public ViewModel()
         {
-            Events.CollectionChanged += Events_CollectionChanged;
+            _events.CollectionChanged += Events_CollectionChanged;
 
             updateTimer.Tick += async (s, e) => await UpdateAsync();
             updateTimer.Start();
@@ -324,7 +327,8 @@ namespace GB_Live
         {
             IEnumerable<GBUpcomingEvent> eventsFromWeb = GetEvents(json);
 
-            Events.AddMissing(eventsFromWeb);
+            //Events.AddMissing(eventsFromWeb);
+            _events.AddMissing(eventsFromWeb);
 
             RemoveOld(eventsFromWeb);
         }
@@ -370,7 +374,8 @@ namespace GB_Live
                                               select each)
                                               .ToList();
 
-            Events.RemoveList(toRemove);
+            //Events.RemoveList(toRemove);
+            _events.RemoveList(toRemove);
         }
 
         private static HttpWebRequest BuildRequest(Uri gbUri)

@@ -2,13 +2,13 @@
 using System.Net;
 using System.Threading.Tasks;
 
-namespace GB_Live.Extensions
+namespace GB_Live
 {
-    public static class WebRequestExtensions
+    public static class WebRequestExt
     {
         public static WebResponse GetResponseExt(this WebRequest request)
         {
-            if (request == null) throw new ArgumentNullException(nameof(request));
+            if (request == null) { throw new ArgumentNullException(nameof(request)); }
 
             WebResponse webResp = null;
 
@@ -16,12 +16,11 @@ namespace GB_Live.Extensions
             {
                 webResp = request.GetResponse();
             }
-            catch (WebException e)
+            catch (WebException ex)
             {
-                if (e.Response != null)
-                {
-                    webResp = e.Response;
-                }
+                Utils.LogException(ex);
+
+                webResp = ex?.Response;
             }
 
             return webResp;
@@ -29,7 +28,7 @@ namespace GB_Live.Extensions
 
         public static async Task<WebResponse> GetResponseAsyncExt(this WebRequest request)
         {
-            if (request == null) throw new ArgumentNullException(nameof(request));
+            if (request == null) { throw new ArgumentNullException(nameof(request)); }
 
             WebResponse webResp = null;
 
@@ -37,12 +36,11 @@ namespace GB_Live.Extensions
             {
                 webResp = await request.GetResponseAsync().ConfigureAwait(false);
             }
-            catch (WebException e)
+            catch (WebException ex)
             {
-                if (e.Response != null)
-                {
-                    webResp = e.Response;
-                }
+                Utils.LogException(ex);
+
+                webResp = ex?.Response;
             }
 
             return webResp;

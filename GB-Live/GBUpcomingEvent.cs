@@ -27,19 +27,7 @@ namespace GB_Live
         #region Properties
         public string Title { get; private set; }
         private DateTime _time = DateTime.MinValue;
-        public DateTime Time
-        {
-            get
-            {
-                return _time;
-            }
-            set
-            {
-                _time = value;
-
-                OnNotifyPropertyChanged();
-            }
-        }
+        public DateTime Time { get; private set; }
         public bool Premium { get; private set; }
         public GBEventType EventType { get; private set; }
         public Uri BackgroundImageUrl { get; private set; }
