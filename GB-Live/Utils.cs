@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using GB_Live.Extensions;
 
 namespace GB_Live
 {
@@ -24,21 +25,7 @@ namespace GB_Live
             return Path.Combine(dir, filename);
         }
         
-
-        public static void SetWindowToMiddleOfScreen(Window window)
-        {
-            if (window == null) { throw new ArgumentNullException(nameof(window)); }
-
-            double screenHeight = SystemParameters.PrimaryScreenHeight;
-            double windowHeight = window.Height;
-            window.Top = (screenHeight / 2) - (windowHeight / 2);
-
-            double screenWidth = SystemParameters.PrimaryScreenWidth;
-            double windowWidth = window.Width;
-            window.Left = (screenWidth / 2) - (windowWidth / 2);
-        }
-
-
+        
         public static void SafeDispatcher(Action action)
         {
             if (action == null) { throw new ArgumentNullException(nameof(action)); }
@@ -343,7 +330,7 @@ namespace GB_Live
         }
 
 
-        public static string DownloadWebsiteAsString(HttpWebRequest request)
+        public static string DownloadWebsiteAsString(WebRequest request)
         {
             if (request == null) { throw new ArgumentNullException(nameof(request)); }
 
@@ -365,11 +352,11 @@ namespace GB_Live
                             {
                                 response = sr.ReadToEnd();
                             }
-                            catch (Exception e)
+                            catch (Exception ex)
                             {
                                 string message = string.Format(CultureInfo.CurrentCulture, "Requesting {0} failed with code {1}", request.RequestUri.AbsoluteUri, resp.StatusCode.ToString());
 
-                                LogException(e, message);
+                                LogException(ex, message);
 
                                 response = string.Empty;
                             }
@@ -381,7 +368,7 @@ namespace GB_Live
             return response;
         }
 
-        public static async Task<string> DownloadWebsiteAsStringAsync(HttpWebRequest request)
+        public static async Task<string> DownloadWebsiteAsStringAsync(WebRequest request)
         {
             if (request == null) { throw new ArgumentNullException(nameof(request)); }
 
@@ -403,11 +390,11 @@ namespace GB_Live
                             {
                                 response = await sr.ReadToEndAsync().ConfigureAwait(false);
                             }
-                            catch (Exception e)
+                            catch (Exception ex)
                             {
                                 string message = string.Format(CultureInfo.CurrentCulture, "Requesting {0} failed with code {1}", request.RequestUri.AbsoluteUri, resp.StatusCode.ToString());
 
-                                LogException(e, message);
+                                LogException(ex, message);
                                 
                                 response = string.Empty;
                             }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 
-[assembly:CLSCompliant(true)]
 namespace GB_Live
 {
     public static class Program

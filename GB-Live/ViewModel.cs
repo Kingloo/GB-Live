@@ -118,6 +118,7 @@ namespace GB_Live
 
         #region Fields
         private const string appName = "GB Live";
+
         private readonly DispatcherTimer updateTimer = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
         {
             Interval = TimeSpan.FromMinutes(3)
@@ -326,9 +327,8 @@ namespace GB_Live
         private void ProcessEvents(JObject json)
         {
             IEnumerable<GBUpcomingEvent> eventsFromWeb = GetEvents(json);
-
-            //Events.AddMissing(eventsFromWeb);
-            _events.AddMissing(eventsFromWeb);
+            
+            _events.AddRange(eventsFromWeb);
 
             RemoveOld(eventsFromWeb);
         }
@@ -373,9 +373,8 @@ namespace GB_Live
                                               || eventsFromHtml.Contains(each) == false
                                               select each)
                                               .ToList();
-
-            //Events.RemoveList(toRemove);
-            _events.RemoveList(toRemove);
+            
+            _events.RemoveRange(toRemove);
         }
 
         private static HttpWebRequest BuildRequest(Uri gbUri)

@@ -29,7 +29,7 @@
     <ProductName>GB Live</ProductName>
     <PublisherName>Kingloo Holdings Ltd.</PublisherName>
     <DisallowUrlActivation>true</DisallowUrlActivation>
-    <ApplicationRevision>19</ApplicationRevision>
+    <ApplicationRevision>20</ApplicationRevision>
     <ApplicationVersion>1.0.1.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -139,7 +139,10 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\Collections.cs" />
+    <Compile Include="Extensions\String.cs" />
     <Compile Include="Extensions\WebRequest.cs" />
+    <Compile Include="Utils.cs" />
     <Compile Include="ViewModelBase.cs" />
     <Page Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -147,11 +150,8 @@
     </Page>
     <Compile Include="CountdownDispatcherTimer.cs" />
     <Compile Include="DelegateCommand.cs" />
-    <Compile Include="Extensions\ICollectionT.cs" />
-    <Compile Include="Extensions\String.cs" />
     <Compile Include="NotificationService.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="Utils.cs" />
     <Compile Include="ViewModel.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

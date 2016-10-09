@@ -26,7 +26,6 @@ namespace GB_Live
 
         #region Properties
         public string Title { get; private set; }
-        private DateTime _time = DateTime.MinValue;
         public DateTime Time { get; private set; }
         public bool Premium { get; private set; }
         public GBEventType EventType { get; private set; }

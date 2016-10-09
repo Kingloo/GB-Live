@@ -2,7 +2,7 @@
 using System.Net;
 using System.Threading.Tasks;
 
-namespace GB_Live
+namespace GB_Live.Extensions
 {
     public static class WebRequestExt
     {
