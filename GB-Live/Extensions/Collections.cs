@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -16,6 +17,7 @@ namespace GB_Live.Extensions
                 collection.Add(each);
             }
         }
+
 
         public static void AddSorted<T>(this Collection<T> collection, T item) where T : IComparable<T>
         {
@@ -50,6 +52,7 @@ namespace GB_Live.Extensions
             collection.Insert(i, item);
         }
 
+
         public static void AddRangeSorted<T>(this Collection<T> collection, IEnumerable<T> list) where T : IComparable<T>
         {
             if (collection == null) { throw new ArgumentNullException(nameof(collection)); }
@@ -72,6 +75,37 @@ namespace GB_Live.Extensions
                 collection.AddSorted(each, comparer);
             }
         }
+
+
+        public static void AddMissing<T>(this ICollection<T> collection, IEnumerable<T> list) where T : IEquatable<T>
+        {
+            if (collection == null) { throw new ArgumentNullException(nameof(collection)); }
+            if (list == null) { throw new ArgumentNullException(nameof(list)); }
+
+            foreach (T each in list)
+            {
+                if (collection.Contains(each) == false)
+                {
+                    collection.Add(each);
+                }
+            }
+        }
+
+        public static void AddMissing<T>(this ICollection<T> collection, IEnumerable<T> list, IEqualityComparer<T> comparer)
+        {
+            if (collection == null) { throw new ArgumentNullException(nameof(collection)); }
+            if (list == null) { throw new ArgumentNullException(nameof(list)); }
+            if (comparer == null) { throw new ArgumentNullException(nameof(comparer)); }
+
+            foreach (T each in list)
+            {
+                if (collection.Contains(each, comparer) == false)
+                {
+                    collection.Add(each);
+                }
+            }
+        }
+
 
         public static void RemoveRange<T>(this ICollection<T> collection, IEnumerable<T> list)
         {

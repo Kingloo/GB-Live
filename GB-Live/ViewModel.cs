@@ -328,7 +328,7 @@ namespace GB_Live
         {
             IEnumerable<GBUpcomingEvent> eventsFromWeb = GetEvents(json);
             
-            _events.AddRange(eventsFromWeb);
+            _events.AddMissing(eventsFromWeb);
 
             RemoveOld(eventsFromWeb);
         }
