@@ -185,7 +185,7 @@ namespace GB_Live
 
         private static bool CanStartCountdownWithTicks(Int64 ticks)
         {
-            if (ticks <= 0L) return false;
+            if (ticks <= 0L) { return false; }
 
             /*
             * even though you can start a DispatcherTimer with a ticks type of Int64,
@@ -196,7 +196,7 @@ namespace GB_Live
             */
 
             Int64 millisecondsUntilEvent = ticks / 10000;
-
+            
             if (millisecondsUntilEvent > Convert.ToInt64(Int32.MaxValue))
             {
                 return false;
