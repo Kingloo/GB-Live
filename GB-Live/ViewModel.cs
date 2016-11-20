@@ -10,7 +10,6 @@ using System.Net;
 using System.Net.Cache;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Threading;
 using GB_Live.Extensions;
 using Newtonsoft.Json;
@@ -85,26 +84,7 @@ namespace GB_Live
 
             Utils.OpenUriInBrowser(uri);
         }
-
-        private DelegateCommand _exitCommand = null;
-        public DelegateCommand ExitCommand
-        {
-            get
-            {
-                if (_exitCommand == null)
-                {
-                    _exitCommand = new DelegateCommand(Exit, canExecute);
-                }
-
-                return _exitCommand;
-            }
-        }
-
-        private static void Exit()
-        {
-            Application.Current.MainWindow.Close();
-        }
-
+        
         private bool canExecute(object _)
         {
             return true;
@@ -286,8 +266,6 @@ namespace GB_Live
             catch (JsonReaderException e)
             {
                 Utils.LogException(e);
-
-                json = null;
             }
 
             return json;
@@ -400,7 +378,7 @@ namespace GB_Live
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(GetType().ToString());
+            sb.AppendLine(GetType().Name);
             sb.AppendLine(WindowTitle);
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "IsLive: {0}", IsLive));
             sb.AppendLine(LiveShowName);
@@ -409,9 +387,16 @@ namespace GB_Live
             return sb.ToString();
         }
 
-        //public void DEBUG_set_live()
-        //{
-        //    IsLive = !IsLive;
-        //}
+#if DEBUG
+        public void DEBUG_set_live()
+        {
+            IsLive = !IsLive;
+        }
+
+        public void DEBUG_add(GBUpcomingEvent item)
+        {
+            _events.Add(item);
+        }
+#endif
     }
 }

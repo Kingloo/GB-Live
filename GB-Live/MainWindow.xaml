@@ -30,8 +30,6 @@
     </Window.Resources>
     
     <Window.InputBindings>
-        <KeyBinding Key="Escape"
-                    Command="{Binding Path=ExitCommand}" />
         <KeyBinding Key="F5"
                     Command="{Binding Path=RefreshCommandAsync}" />
     </Window.InputBindings>
