@@ -158,7 +158,9 @@ namespace GB_Live
         {
             get
             {
-                return _liveShowName;
+                return IsLive ? _liveShowName : "There is no live show";
+
+                //return _liveShowName;
             }
             set
             {

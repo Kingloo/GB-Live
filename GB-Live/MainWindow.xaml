@@ -53,6 +53,7 @@
         <Label Grid.Row="0"
                HorizontalContentAlignment="Center"
                Content="{Binding Path=IsLive, Mode=OneWay, Converter={StaticResource booleanToLiveStatusStringConverter}}"
+               ToolTip="{Binding Path=LiveShowName}"
                Style="{Binding Path=IsLive, Mode=OneWay, Converter={StaticResource booleanToLabelStyleConverter}}">
             <Label.InputBindings>
                 <MouseBinding MouseAction="LeftDoubleClick"
