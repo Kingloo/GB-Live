@@ -164,12 +164,9 @@ namespace GB_Live
             }
             set
             {
-                if (_liveShowName != value)
-                {
-                    _liveShowName = value;
+                _liveShowName = value;
 
-                    RaisePropertyChanged(nameof(LiveShowName));
-                }
+                RaisePropertyChanged(nameof(LiveShowName));
             }
         }
 
