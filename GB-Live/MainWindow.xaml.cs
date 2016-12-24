@@ -9,17 +9,18 @@ namespace GB_Live
 {
     public partial class MainWindow : Window
     {
+        private IntPtr hWnd = IntPtr.Zero;
+
         public MainWindow()
         {
             InitializeComponent();
 
             KeyUp += MainWindow_KeyUp;
-            SourceInitialized += (s, e) => CalculateMaxHeight();
-            LayoutUpdated += (s, e) => CalculateMaxHeight();
+            SourceInitialized += MainWindow_SourceInitialized;
             LocationChanged += (s, e) => CalculateMaxHeight();
             Loaded += async (s, e) => await vm.UpdateAsync();
         }
-        
+
         private void MainWindow_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
         {
             switch (e.Key)
@@ -35,10 +36,13 @@ namespace GB_Live
             }
         }
 
+        private void MainWindow_SourceInitialized(object sender, EventArgs e)
+        {
+            hWnd = new WindowInteropHelper(this).EnsureHandle();
+        }
+        
         private void CalculateMaxHeight()
         {
-            IntPtr hWnd = new WindowInteropHelper(this).EnsureHandle();
-
             Screen currentMonitor = Screen.FromHandle(hWnd);
 
             MaxHeight = currentMonitor.WorkingArea.Bottom - 200;
