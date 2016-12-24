@@ -159,8 +159,6 @@ namespace GB_Live
             get
             {
                 return IsLive ? _liveShowName : "There is no live show";
-
-                //return _liveShowName;
             }
             set
             {
@@ -290,46 +288,54 @@ namespace GB_Live
             }
             else
             {
-                LiveShowName = string.Empty;
-
                 IsLive = false;
             }
         }
 
         private static string GetLiveShowName(JToken token)
         {
-            return (string)token["title"];
+            return (string)token["title"] ?? "Untitled Live Show";
         }
 
         private void ProcessEvents(JObject json)
         {
-            IEnumerable<GBUpcomingEvent> eventsFromWeb = GetEvents(json);
-            
-            _events.AddMissing(eventsFromWeb);
+            IReadOnlyList<GBUpcomingEvent> eventsFromWeb = GetEvents(json);
 
+            foreach (GBUpcomingEvent each in eventsFromWeb)
+            {
+                // we don't want to add any events that are already in the collection
+                // or that are for a time in the past
+                // sometimes the JSON will contain old events after the expired time
+
+                if (!_events.Contains(each) && (each.Time > DateTime.Now))
+                {
+                    _events.Add(each);
+                }
+            }
+            
             RemoveOld(eventsFromWeb);
         }
 
-        private static IEnumerable<GBUpcomingEvent> GetEvents(JObject json)
+        private static IReadOnlyList<GBUpcomingEvent> GetEvents(JObject json)
         {
             List<GBUpcomingEvent> events = new List<GBUpcomingEvent>();
 
-            IJEnumerable<JToken> upcoming = json["upcoming"];
-            
-            foreach (JObject each in upcoming)
+            JToken upcoming = null;
+
+            if (json.TryGetValue("upcoming", StringComparison.InvariantCultureIgnoreCase, out upcoming))
             {
-                GBUpcomingEvent newEvent = null;
-                
-                if (GBUpcomingEvent.TryCreate(each, out newEvent))
+                foreach (JToken each in upcoming)
                 {
-                    if (newEvent.Time > DateTime.Now)
+                    GBUpcomingEvent newEvent = null;
+
+                    if (GBUpcomingEvent.TryCreate(each, out newEvent))
                     {
                         events.Add(newEvent);
                     }
                 }
             }
-
-            return events.Count > 0 ? events : Enumerable.Empty<GBUpcomingEvent>();
+            
+            return events;
         }
         
         private void RemoveOld(IEnumerable<GBUpcomingEvent> eventsFromHtml)
@@ -347,7 +353,7 @@ namespace GB_Live
             List<GBUpcomingEvent> toRemove = (from each in Events
                                               where each.Time.Equals(DateTime.MaxValue)
                                               || each.Time < DateTime.Now
-                                              || eventsFromHtml.Contains(each) == false
+                                              || !eventsFromHtml.Contains(each)
                                               select each)
                                               .ToList();
             

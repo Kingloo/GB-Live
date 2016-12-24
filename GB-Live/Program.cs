@@ -15,7 +15,10 @@ namespace GB_Live
 
             if (exitCode != 0)
             {
-                string errorMessage = string.Format(CultureInfo.CurrentCulture, "Exited with code {0}", exitCode);
+                string errorMessage = string.Format(
+                    CultureInfo.CurrentCulture,
+                    "Exited with code {0}",
+                    exitCode);
 
                 Utils.LogMessage(errorMessage);
             }

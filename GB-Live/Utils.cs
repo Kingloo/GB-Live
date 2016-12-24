@@ -362,6 +362,12 @@ namespace GB_Live
                             }
                         }
                     }
+                    else
+                    {
+                        string message = string.Format(CultureInfo.CurrentCulture, "Request failed: {0}", resp.StatusCode);
+
+                        LogMessage(message);
+                    }
                 }
             }
             
@@ -392,13 +398,19 @@ namespace GB_Live
                             }
                             catch (Exception ex)
                             {
-                                string message = string.Format(CultureInfo.CurrentCulture, "Requesting {0} failed with code {1}", request.RequestUri.AbsoluteUri, resp.StatusCode.ToString());
+                                string message = string.Format(CultureInfo.CurrentCulture, "Requesting {0} failed", request.RequestUri.AbsoluteUri);
 
                                 LogException(ex, message);
                                 
                                 response = string.Empty;
                             }
                         }
+                    }
+                    else
+                    {
+                        string message = string.Format(CultureInfo.CurrentCulture, "Request failed: {0}", resp.StatusCode);
+
+                        await LogMessageAsync(message).ConfigureAwait(false);
                     }
                 }
             }

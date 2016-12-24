@@ -11,8 +11,11 @@ namespace GB_Live.Extensions
         {
             if (text == null) { throw new ArgumentNullException(nameof(text)); }
             
-            if (String.IsNullOrEmpty(beginning)) { throw new ArgumentException("beginning was NullOrEmpty", nameof(beginning)); }
-            if (String.IsNullOrEmpty(ending)) { throw new ArgumentException("ending was NullOrEmpty", nameof(ending)); }
+            if (String.IsNullOrEmpty(beginning))
+            { throw new ArgumentException("beginning was NullOrEmpty", nameof(beginning)); }
+
+            if (String.IsNullOrEmpty(ending))
+            { throw new ArgumentException("ending was NullOrEmpty", nameof(ending)); }
 
             List<string> results = new List<string>();
 

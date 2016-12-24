@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:this="clr-namespace:GB_Live"
+        xmlns:PresentationOptions="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase">
 
     <Window.DataContext>
@@ -113,7 +114,8 @@
                         </Grid.ColumnDefinitions>
                         
                         <Image Grid.ColumnSpan="2" Grid.RowSpan="2"
-                               Source="{Binding Path=BackgroundImageUrl, Mode=OneTime}" />
+                               PresentationOptions:Freeze="True"
+                               Source="{Binding Path=BackgroundImageLink, Mode=OneTime}" />
                         
                         <Label Grid.ColumnSpan="2" Grid.Row="0"
                                Padding="0,0,20,5"
@@ -129,7 +131,7 @@
                         </Label>
 
                         <Label Grid.Column="0" Grid.Row="1"
-                               Content="{Binding Path=EventType, Mode=OneTime, Converter={this:AddSpacesToEnumConverter}}"
+                               Content="{Binding Path=EventType, Mode=OneTime}"
                                Padding="15,5,0,0"
                                VerticalContentAlignment="Top" />
 

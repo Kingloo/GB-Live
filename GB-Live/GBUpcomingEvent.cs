@@ -8,40 +8,45 @@ using Newtonsoft.Json.Linq;
 
 namespace GB_Live
 {
-    public enum GBEventType { Unknown, Article, Review, Podcast, Video, LiveShow };
-
     public class GBUpcomingEvent : ViewModelBase, IComparable<GBUpcomingEvent>, IEquatable<GBUpcomingEvent>
     {
         #region Fields
         private CountdownDispatcherTimer countdown = null;
         private readonly DateTime creationDate = DateTime.Now;
-        private static Uri fallbackImage = new UriBuilder
+
+        private static Uri fallbackImageLink = new UriBuilder
         {
             Scheme = "http",
             Host = "static.giantbomb.com",
             Path = "/bundles/phoenixsite/images/core/loose/apple-touch-icon-precomposed-gb.png",
             Port = 80
-        }.Uri;
+        }
+        .Uri;
         #endregion
 
         #region Properties
         public string Title { get; private set; }
         public DateTime Time { get; private set; }
         public bool Premium { get; private set; }
-        public GBEventType EventType { get; private set; }
-        public Uri BackgroundImageUrl { get; private set; }
+        public string EventType { get; private set; }
+        public Uri BackgroundImageLink { get; private set; }
         #endregion
         
-        public GBUpcomingEvent(string title, DateTime time, bool premium, GBEventType type, Uri imageUri)
+        public GBUpcomingEvent(
+            string title,
+            DateTime time,
+            bool premium,
+            string eventType,
+            Uri imageUri)
         {
             Title = title;
             Time = time;
             Premium = premium;
-            EventType = type;
-            BackgroundImageUrl = imageUri;
+            EventType = eventType;
+            BackgroundImageLink = imageUri;
         }
         
-        public static bool TryCreate(JObject token, out GBUpcomingEvent outEvent)
+        public static bool TryCreate(JToken token, out GBUpcomingEvent outEvent)
         {
             if (token == null) { throw new ArgumentNullException(nameof(token)); }
 
@@ -55,22 +60,20 @@ namespace GB_Live
             string title = GetTitle(token);
             DateTime time = GetTime(token);
             bool isPremium = GetIsPremium(token);
-            GBEventType type = GetEventType(token);
-            Uri imageUri = GetBackgroundImageUrl(token);
+            string type = GetEventType(token);
+            Uri imageUri = GetBackgroundImageLink(token);
 
             outEvent = new GBUpcomingEvent(title, time, isPremium, type, imageUri);
 
             return true;
         }
         
-        private static string GetTitle(JObject token)
+        private static string GetTitle(JToken token)
         {
-            string title = (string)token["title"];
-            
-            return String.IsNullOrWhiteSpace(title) ? "Title Unknown" : title;
+            return (string)token["title"] ?? "Unknown Event";
         }
 
-        private static DateTime GetTime(JObject token)
+        private static DateTime GetTime(JToken token)
         {
             string time = (string)token["date"];
             
@@ -89,52 +92,25 @@ namespace GB_Live
 
                 TimeSpan offset = localUtcOffset - pacificUtcOffset;
 
-                return dt.Add(offset);
+                dt = dt.Add(offset);
             }
-            else
-            {
-                return DateTime.MinValue;
-            }
+
+            return dt;
         }
         
-        private static bool GetIsPremium(JObject token)
+        private static bool GetIsPremium(JToken token)
         {
             string premium = (string)token["premium"];
             
             return String.IsNullOrWhiteSpace(premium) ? false : Convert.ToBoolean(premium, CultureInfo.InvariantCulture);
         }
 
-        private static GBEventType GetEventType(JToken token)
+        private static string GetEventType(JToken token)
         {
-            GBEventType toReturn = GBEventType.Unknown;
-            string type = (string)token["type"];
-            
-            switch (type)
-            {
-                case "Video":
-                    toReturn = GBEventType.Video;
-                    break;
-                case "Live Show":
-                    toReturn = GBEventType.LiveShow;
-                    break;
-                case "Article":
-                    toReturn = GBEventType.Article;
-                    break;
-                case "Podcast":
-                    toReturn = GBEventType.Podcast;
-                    break;
-                case "Review":
-                    toReturn = GBEventType.Review;
-                    break;
-                default:
-                    toReturn = GBEventType.Unknown;
-                    break;
-            }
-
-            return toReturn;
+            return (string)token["type"] ?? "Unknown";
         }
 
-        private static Uri GetBackgroundImageUrl(JObject token)
+        private static Uri GetBackgroundImageLink(JToken token)
         {
             string uri = (string)token["image"];
 
@@ -142,7 +118,7 @@ namespace GB_Live
             
             Uri tmp = null;
 
-            return Uri.TryCreate(decoded, UriKind.Absolute, out tmp) ? tmp : fallbackImage;
+            return Uri.TryCreate(decoded, UriKind.Absolute, out tmp) ? tmp : fallbackImageLink;
         }
         
         public void StartCountdownTimer()
@@ -191,20 +167,13 @@ namespace GB_Live
             * even though you can start a DispatcherTimer with a ticks type of Int64,
             * the equivalent number of milliseconds cannot exceed Int32.MaxValue
             * 
-            * http://referencesource.microsoft.com/#WindowsBase/Base/System/Windows/Threading/DispatcherTimer.cs
+            * https://referencesource.microsoft.com/#WindowsBase/Base/System/Windows/Threading/DispatcherTimer.cs
             * -> ctor with TimeSpan, DispatcherPriority, EventHandler, Dispatcher
             */
 
-            Int64 millisecondsUntilEvent = ticks / 10000;
+            Int64 millisecondsUntilEvent = ticks / 10000; // there are 10,000 ticks in one millisecond
             
-            if (millisecondsUntilEvent > Convert.ToInt64(Int32.MaxValue))
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
+            return millisecondsUntilEvent <= Convert.ToInt64(Int32.MaxValue);
         }
 
         public void StopCountdownTimer()
@@ -214,7 +183,7 @@ namespace GB_Live
         
         public int CompareTo(GBUpcomingEvent other)
         {
-            if (other == null) throw new ArgumentNullException(nameof(other));
+            if (other == null) { return 1; }
 
             if (Time > other.Time)
             {
@@ -232,15 +201,15 @@ namespace GB_Live
         
         public bool Equals(GBUpcomingEvent other)
         {
-            if (other == null) return false;
+            if (other == null) { return false; }
 
-            if (Title.Equals(other.Title) == false) return false;
+            if (!Title.Equals(other.Title)) { return false; }
 
-            if (Time.Equals(other.Time) == false) return false;
+            if (!Time.Equals(other.Time)) { return false; }
 
-            if (Premium.Equals(other.Premium) == false) return false;
+            if (!Premium.Equals(other.Premium)) { return false; }
 
-            if (EventType.Equals(other.EventType) == false) return false;
+            if (!EventType.Equals(other.EventType)) { return false; }
 
             return true;
         }
@@ -256,7 +225,7 @@ namespace GB_Live
             sb.Append(countdown.ToString());
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Event type: {0}", EventType.ToString()));
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Premium: {0}", Premium.ToString()));
-            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Image url: {0}", BackgroundImageUrl.AbsoluteUri));
+            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Image url: {0}", BackgroundImageLink.AbsoluteUri));
 
             return sb.ToString();
         }

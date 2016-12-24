@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Globalization;
 using System.Text;
 using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Interop;
 
 namespace GB_Live
 {
@@ -12,14 +13,14 @@ namespace GB_Live
         {
             InitializeComponent();
 
-            MaxHeight = SystemParameters.WorkArea.Bottom - 200;
-
-            Loaded += async (sender, e) => await vm.UpdateAsync();
-
             KeyUp += MainWindow_KeyUp;
+            SourceInitialized += (s, e) => CalculateMaxHeight();
+            LayoutUpdated += (s, e) => CalculateMaxHeight();
+            LocationChanged += (s, e) => CalculateMaxHeight();
+            Loaded += async (s, e) => await vm.UpdateAsync();
         }
-
-        private void MainWindow_KeyUp(object sender, KeyEventArgs e)
+        
+        private void MainWindow_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
         {
             switch (e.Key)
             {
@@ -29,26 +30,20 @@ namespace GB_Live
                 case Key.F1:
                     WriteEventsToLog();
                     break;
-                case Key.F2:
-                    DEBUG_Add_Test_Event();
-                    break;
-                case Key.F3:
-                    DEBUG_Toggle_Live();
+                default:
                     break;
             }
         }
 
-        private void Exit()
+        private void CalculateMaxHeight()
         {
-            /*
-             *  this will shutdown the programme
-             *  because App.xaml->ShutdownMode
-             *  is set to OnMainWindowClose
-             */
+            IntPtr hWnd = new WindowInteropHelper(this).EnsureHandle();
 
-            Close();
+            Screen currentMonitor = Screen.FromHandle(hWnd);
+
+            MaxHeight = currentMonitor.WorkingArea.Bottom - 200;
         }
-
+        
         private void WriteEventsToLog()
         {
             StringBuilder sb = new StringBuilder();
@@ -64,26 +59,35 @@ namespace GB_Live
 
             Utils.LogMessage(sb.ToString());
         }
-
-        private void DEBUG_Add_Test_Event()
+        
+        private void Exit()
         {
-            GBUpcomingEvent test = new GBUpcomingEvent
-                (Environment.TickCount.ToString(CultureInfo.InvariantCulture),
-                DateTime.Now + TimeSpan.FromSeconds(3),
-                Environment.TickCount % 2 == 0,
-                GBEventType.Unknown,
-                new Uri("http://www.giantbomb.com/bundles/phoenixsite/images/core/loose/favicon-gb.ico"));
+            /*
+             *  this will shutdown the programme
+             *  because App.xaml->ShutdownMode
+             *  is set to OnMainWindowClose
+             */
 
-#if DEBUG
-            vm.DEBUG_add(test);
-#endif
-        }
-
-        private void DEBUG_Toggle_Live()
-        {
-#if DEBUG
-            vm.DEBUG_set_live();
-#endif
+            Close();
         }
     }
 }
+
+
+
+//private void DEBUG_Add_Test_Event()
+//{
+//    GBUpcomingEvent test = new GBUpcomingEvent
+//        (Environment.TickCount.ToString(CultureInfo.InvariantCulture),
+//        DateTime.Now + TimeSpan.FromSeconds(3),
+//        Environment.TickCount % 2 == 0,
+//        "test event",
+//        new Uri("http://www.giantbomb.com/bundles/phoenixsite/images/core/loose/favicon-gb.ico"));
+
+//    vm.DEBUG_add(test);
+//}
+
+//private void DEBUG_Toggle_Live()
+//{
+//    vm.DEBUG_set_live();
+//}
