@@ -39,6 +39,8 @@ namespace GB_Live
         private void MainWindow_SourceInitialized(object sender, EventArgs e)
         {
             hWnd = new WindowInteropHelper(this).EnsureHandle();
+
+            CalculateMaxHeight();
         }
         
         private void CalculateMaxHeight()
