@@ -128,6 +128,7 @@ namespace GB_Live
                     _isLive = value;
 
                     RaisePropertyChanged(nameof(IsLive));
+                    RaisePropertyChanged(nameof(LiveShowName));
                 }
             }
         }
