@@ -26,7 +26,22 @@ namespace GB_Live
 
         #region Properties
         public string Title { get; private set; }
-        public DateTime Time { get; private set; }
+
+        private DateTime _time = DateTime.MinValue;
+        public DateTime Time
+        {
+            get
+            {
+                return _time;
+            }
+            set
+            {
+                _time = value;
+
+                RaisePropertyChanged(nameof(Time));
+            }
+        }
+
         public bool Premium { get; private set; }
         public string EventType { get; private set; }
         public Uri BackgroundImageLink { get; private set; }
@@ -145,10 +160,10 @@ namespace GB_Live
         {
             TimeSpan fromNowToEvent = Time - DateTime.Now;
 
-            // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s => 10,000 * 1000 * 20 ticks in 20 secs == 200,000,000 ticks
-            TimeSpan twentySecondsInTicks = new TimeSpan(10000 * 1000 * 20);
+            // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s => 10,000 * 1000 * 3 ticks in 3 secs == 30,000,000 ticks
+            TimeSpan threeSecondsInTicks = new TimeSpan(10000 * 1000 * 3);
 
-            TimeSpan addedExtraTime = fromNowToEvent.Add(twentySecondsInTicks);
+            TimeSpan addedExtraTime = fromNowToEvent.Add(threeSecondsInTicks);
 
             Int64 ticksUntilEvent = addedExtraTime.Ticks;
 

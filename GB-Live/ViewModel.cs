@@ -230,17 +230,15 @@ namespace GB_Live
         {
             string web = await DownloadUpcomingJsonAsync();
 
-            if (String.IsNullOrWhiteSpace(web) == false)
-            {
-                JObject json = ParseIntoJson(web);
+            if (String.IsNullOrEmpty(web)) { return; }
 
-                if (json != null)
-                {
-                    NotifyIfLive(json);
+            JObject json = ParseIntoJson(web);
 
-                    ProcessEvents(json);
-                }
-            }
+            if (json == null) { return; }
+
+            NotifyIfLive(json);
+
+            ProcessEvents(json);
         }
         
         private async static Task<string> DownloadUpcomingJsonAsync()
@@ -260,9 +258,9 @@ namespace GB_Live
             {
                 json = JObject.Parse(web);
             }
-            catch (JsonReaderException e)
+            catch (JsonReaderException ex)
             {
-                Utils.LogException(e);
+                Utils.LogException(ex);
             }
 
             return json;
@@ -312,7 +310,7 @@ namespace GB_Live
                     _events.Add(each);
                 }
             }
-            
+
             RemoveOld(eventsFromWeb);
         }
 
@@ -349,14 +347,11 @@ namespace GB_Live
              * .Reset does not give you a list of what was removed
              *
              */
+             
+            List<GBUpcomingEvent> toRemove = _events
+                .Where(x => x.Time == DateTime.MaxValue || x.Time < DateTime.Now || !eventsFromHtml.Contains(x))
+                .ToList();
 
-            List<GBUpcomingEvent> toRemove = (from each in Events
-                                              where each.Time.Equals(DateTime.MaxValue)
-                                              || each.Time < DateTime.Now
-                                              || !eventsFromHtml.Contains(each)
-                                              select each)
-                                              .ToList();
-            
             _events.RemoveRange(toRemove);
         }
 
