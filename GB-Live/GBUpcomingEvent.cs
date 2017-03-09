@@ -19,7 +19,7 @@ namespace GB_Live
             Scheme = "https",
             Host = "static.giantbomb.com",
             Path = "/bundles/phoenixsite/images/core/loose/apple-touch-icon-precomposed-gb.png",
-            Port = 80
+            Port = 443
         }
         .Uri;
         #endregion
@@ -130,6 +130,11 @@ namespace GB_Live
             string uriAsString = (string)token["image"];
 
             string decoded = HttpUtility.HtmlDecode(uriAsString);
+
+            if (!decoded.StartsWith("http"))
+            {
+                decoded = $"https://{decoded}";
+            }
             
             return Uri.TryCreate(decoded, UriKind.Absolute, out Uri uri) ? uri : fallbackImageLink;
         }
@@ -140,11 +145,11 @@ namespace GB_Live
 
             if (CanStartCountdownWithTicks(ticks))
             {
-                countdown = new CountdownDispatcherTimer(new TimeSpan(ticks), countdown_Fire);
+                countdown = new CountdownDispatcherTimer(new TimeSpan(ticks), Countdown_Fire);
             }
         }
 
-        private void countdown_Fire()
+        private void Countdown_Fire()
         {
             Time = DateTime.MaxValue;
 
