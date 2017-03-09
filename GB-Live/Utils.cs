@@ -158,7 +158,7 @@ namespace GB_Live
 
             DateTime time = DateTime.Now;
             string name = Process.GetCurrentProcess().MainModule.ModuleName;
-            string type = ex.GetType().ToString();
+            string type = ex.GetType().Name;
             
             string log = string.Format(CultureInfo.CurrentCulture, "{0} - {1} - {2}", time, name, type);
 
@@ -178,7 +178,7 @@ namespace GB_Live
 
             DateTime time = DateTime.Now;
             string name = Process.GetCurrentProcess().MainModule.ModuleName;
-            string type = ex.GetType().ToString();
+            string type = ex.GetType().Name;
 
             string log = string.Format(CultureInfo.CurrentCulture, "{0} - {1} - {2} - {3}", time, name, type, message);
             
@@ -197,7 +197,7 @@ namespace GB_Live
 
             DateTime time = DateTime.Now;
             string name = Process.GetCurrentProcess().MainModule.ModuleName;
-            string type = ex.GetType().ToString();
+            string type = ex.GetType().Name;
 
             string log = string.Format(CultureInfo.CurrentCulture, "{0} - {1} - {2}", time, name, type);
 
@@ -217,7 +217,7 @@ namespace GB_Live
 
             DateTime time = DateTime.Now;
             string name = Process.GetCurrentProcess().MainModule.ModuleName;
-            string type = ex.GetType().ToString();
+            string type = ex.GetType().Name;
 
             string log = string.Format(CultureInfo.CurrentCulture, "{0} - {1} - {2} - {3}", time, name, type, message);
 
@@ -362,12 +362,6 @@ namespace GB_Live
                             }
                         }
                     }
-                    else
-                    {
-                        string message = string.Format(CultureInfo.CurrentCulture, "Request failed: {0}", resp.StatusCode);
-
-                        LogMessage(message);
-                    }
                 }
             }
             
@@ -398,19 +392,13 @@ namespace GB_Live
                             }
                             catch (Exception ex)
                             {
-                                string message = string.Format(CultureInfo.CurrentCulture, "Requesting {0} failed", request.RequestUri.AbsoluteUri);
+                                string message = string.Format(CultureInfo.CurrentCulture, "Requesting {0} failed with code {1}", request.RequestUri.AbsoluteUri, resp.StatusCode.ToString());
 
                                 LogException(ex, message);
                                 
                                 response = string.Empty;
                             }
                         }
-                    }
-                    else
-                    {
-                        string message = string.Format(CultureInfo.CurrentCulture, "Request failed: {0}", resp.StatusCode);
-
-                        await LogMessageAsync(message).ConfigureAwait(false);
                     }
                 }
             }

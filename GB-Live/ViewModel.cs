@@ -190,11 +190,13 @@ namespace GB_Live
         {
             /*
              * 
-             * DO NOT USE EVENTS.CLEAR() !!!!!!!!!!!
+             * DO NOT USE EVENTS.CLEAR() !!!!!!!!!!
              * 
              * Events.Clear() fires NotifyCollectionChangedEventArgs.Reset - NOT .Remove
              * 
              * .Reset does not give you a list of what was removed
+             * 
+             * we need access to each removed event in order to unhook the countdowntimer event
              *
              */
 
@@ -302,8 +304,12 @@ namespace GB_Live
 
             foreach (GBUpcomingEvent each in eventsFromWeb)
             {
-                // we don't want to add any events that are already in the collection
-                // or that are for a time in the past
+                // we don't want to add any events that are already in the collection, hence
+                //      -> !_events.Contains(each)
+                //
+                // or that are for a time in the past, hence
+                //      -> each.Time > DateTime.Now
+                //
                 // sometimes the JSON will contain old events after the expired time
 
                 if (!_events.Contains(each) && (each.Time > DateTime.Now))
@@ -318,16 +324,12 @@ namespace GB_Live
         private static IReadOnlyList<GBUpcomingEvent> GetEvents(JObject json)
         {
             List<GBUpcomingEvent> events = new List<GBUpcomingEvent>();
-
-            JToken upcoming = null;
-
-            if (json.TryGetValue("upcoming", StringComparison.InvariantCultureIgnoreCase, out upcoming))
+            
+            if (json.TryGetValue("upcoming", StringComparison.Ordinal, out JToken upcoming))
             {
                 foreach (JToken each in upcoming)
                 {
-                    GBUpcomingEvent newEvent = null;
-
-                    if (GBUpcomingEvent.TryCreate(each, out newEvent))
+                    if (GBUpcomingEvent.TryCreate(each, out GBUpcomingEvent newEvent))
                     {
                         events.Add(newEvent);
                     }
@@ -346,10 +348,17 @@ namespace GB_Live
              * Events.Clear() fires NotifyCollectionChangedEventArgs.Reset - NOT .Remove
              * 
              * .Reset does not give you a list of what was removed
+             * 
+             * we need access to each removed event in order to unhook the countdowntimer event
              *
              */
-             
-            List<GBUpcomingEvent> toRemove = _events
+
+            // We want to remove the following types of events:
+            // DateTime.MaxValue: the countdown has fired
+            // x.Time < DateTime.Now: the event is in the past
+            // !eventsFromHtml.Contains(x): event removed before time (e.g. cancelled, rescheduled)
+
+            var toRemove = _events
                 .Where(x => x.Time == DateTime.MaxValue || x.Time < DateTime.Now || !eventsFromHtml.Contains(x))
                 .ToList();
 

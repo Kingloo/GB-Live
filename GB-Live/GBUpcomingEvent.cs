@@ -16,7 +16,7 @@ namespace GB_Live
 
         private static Uri fallbackImageLink = new UriBuilder
         {
-            Scheme = "http",
+            Scheme = "https",
             Host = "static.giantbomb.com",
             Path = "/bundles/phoenixsite/images/core/loose/apple-touch-icon-precomposed-gb.png",
             Port = 80
@@ -127,13 +127,11 @@ namespace GB_Live
 
         private static Uri GetBackgroundImageLink(JToken token)
         {
-            string uri = (string)token["image"];
+            string uriAsString = (string)token["image"];
 
-            string decoded = HttpUtility.HtmlDecode(uri);
+            string decoded = HttpUtility.HtmlDecode(uriAsString);
             
-            Uri tmp = null;
-
-            return Uri.TryCreate(decoded, UriKind.Absolute, out tmp) ? tmp : fallbackImageLink;
+            return Uri.TryCreate(decoded, UriKind.Absolute, out Uri uri) ? uri : fallbackImageLink;
         }
         
         public void StartCountdownTimer()

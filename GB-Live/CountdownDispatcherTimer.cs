@@ -86,7 +86,7 @@ namespace GB_Live
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(GetType().ToString());
+            sb.AppendLine(GetType().Name);
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Created at: {0}", created.ToString(CultureInfo.CurrentCulture)));
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Active: {0}", IsActive));
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Time left: {0}", TimeLeft.ToString()));
