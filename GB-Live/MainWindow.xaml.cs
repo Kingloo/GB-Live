@@ -63,7 +63,7 @@ namespace GB_Live
 
             sb.Append(Environment.NewLine);
 
-            Utils.LogMessage(sb.ToString());
+            Log.LogMessage(sb.ToString());
         }
         
         private void Exit()

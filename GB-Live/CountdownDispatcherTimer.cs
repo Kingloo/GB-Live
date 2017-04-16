@@ -15,28 +15,22 @@ namespace GB_Live
 
         #region Properties
         public bool IsActive
-        {
-            get
-            {
-                return (timer != null);
-            }
-        }
+            => (timer != null);
 
         public TimeSpan TimeLeft
-        {
-            get
-            {
-                return IsActive ? ((created + timer.Interval) - DateTime.Now) : TimeSpan.Zero;
-            }
-        }
+            => IsActive ? ((created + timer.Interval) - DateTime.Now) : TimeSpan.Zero;
         #endregion
 
         public CountdownDispatcherTimer(DateTime time, Action tick)
         {
-            if (time < DateTime.Now) { throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "{0} is in the past, it must be in the future", time.ToString(CultureInfo.CurrentCulture))); }
-            if (tick == null) { throw new ArgumentNullException(nameof(tick)); }
+            if (time < DateTime.Now)
+            {
+                string message = string.Format(CultureInfo.CurrentCulture, "{0} is in the past, it must be in the future", time.ToString(CultureInfo.CurrentCulture));
 
-            this.tick = tick;
+                throw new ArgumentException(message, nameof(time));
+            }
+
+            this.tick = tick ?? throw new ArgumentNullException(nameof(tick));
 
             timer = new DispatcherTimer
             {
@@ -50,10 +44,12 @@ namespace GB_Live
         public CountdownDispatcherTimer(TimeSpan span, Action tick)
         {
             // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s == 10,000,000 ticks
-            if (span.Ticks < (10000 * 1000)) throw new ArgumentException("span.Ticks cannot be less than 1 second", nameof(span));
-            if (tick == null) throw new ArgumentNullException(nameof(tick));
+            if (span.Ticks < (10_000 * 1000))
+            {
+                throw new ArgumentException("span.Ticks cannot be less than 1 second", nameof(span));
+            }
 
-            this.tick = tick;
+            this.tick = tick ?? throw new ArgumentNullException(nameof(tick));
 
             timer = new DispatcherTimer
             {

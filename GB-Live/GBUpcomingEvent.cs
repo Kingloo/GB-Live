@@ -63,12 +63,15 @@ namespace GB_Live
         
         public static bool TryCreate(JToken token, out GBUpcomingEvent outEvent)
         {
-            if (token == null) { throw new ArgumentNullException(nameof(token)); }
-
-            if (token.HasValues == false)
+            if (token == null)
             {
                 outEvent = null;
+                return false;
+            }
 
+            if (!token.HasValues)
+            {
+                outEvent = null;
                 return false;
             }
             
@@ -83,10 +86,7 @@ namespace GB_Live
             return true;
         }
         
-        private static string GetTitle(JToken token)
-        {
-            return (string)token["title"] ?? "Unknown Event";
-        }
+        private static string GetTitle(JToken token) => (string)token["title"] ?? "Unknown Event";
 
         private static DateTime GetTime(JToken token)
         {
@@ -120,10 +120,7 @@ namespace GB_Live
             return String.IsNullOrWhiteSpace(premium) ? false : Convert.ToBoolean(premium, CultureInfo.InvariantCulture);
         }
 
-        private static string GetEventType(JToken token)
-        {
-            return (string)token["type"] ?? "Unknown";
-        }
+        private static string GetEventType(JToken token) => (string)token["type"] ?? "Unknown";
 
         private static Uri GetBackgroundImageLink(JToken token)
         {
@@ -152,11 +149,9 @@ namespace GB_Live
         private void Countdown_Fire()
         {
             Time = DateTime.MaxValue;
-
-            NotificationService.Send(Title, () =>
-                {
-                    Utils.OpenUriInBrowser(ConfigurationManager.AppSettings["GBHomepage"]);
-                });
+            
+            NotificationService.Send(Title, ()
+                => Utils.OpenUriInBrowser(ConfigurationManager.AppSettings["GBHomepage"]));
         }
 
         private Int64 CalculateTicks()
@@ -164,7 +159,7 @@ namespace GB_Live
             TimeSpan fromNowToEvent = Time - DateTime.Now;
 
             // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s => 10,000 * 1000 * 3 ticks in 3 secs == 30,000,000 ticks
-            TimeSpan threeSecondsInTicks = new TimeSpan(10000 * 1000 * 3);
+            TimeSpan threeSecondsInTicks = new TimeSpan(10_000 * 1000 * 3);
 
             TimeSpan addedExtraTime = fromNowToEvent.Add(threeSecondsInTicks);
 
@@ -194,11 +189,8 @@ namespace GB_Live
             return millisecondsUntilEvent <= Convert.ToInt64(Int32.MaxValue);
         }
 
-        public void StopCountdownTimer()
-        {
-            countdown?.Stop();
-        }
-        
+        public void StopCountdownTimer() => countdown?.Stop();
+
         public int CompareTo(GBUpcomingEvent other)
         {
             if (other == null) { return 1; }

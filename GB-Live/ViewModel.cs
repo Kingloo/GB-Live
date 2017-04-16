@@ -6,8 +6,6 @@ using System.Collections.Specialized;
 using System.Configuration;
 using System.Globalization;
 using System.Linq;
-using System.Net;
-using System.Net.Cache;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Threading;
@@ -27,7 +25,7 @@ namespace GB_Live
             {
                 if (_refreshCommandAsync == null)
                 {
-                    _refreshCommandAsync = new DelegateCommandAsync(RefreshAsync, canExecuteAsync);
+                    _refreshCommandAsync = new DelegateCommandAsync(RefreshAsync, CanExecuteAsync);
                 }
 
                 return _refreshCommandAsync;
@@ -50,7 +48,7 @@ namespace GB_Live
             {
                 if (_goToHomepageInBrowserCommand == null)
                 {
-                    _goToHomepageInBrowserCommand = new DelegateCommand(GoToHomepageInBrowser, canExecute);
+                    _goToHomepageInBrowserCommand = new DelegateCommand(GoToHomepageInBrowser, CanExecute);
                 }
 
                 return _goToHomepageInBrowserCommand;
@@ -71,7 +69,7 @@ namespace GB_Live
             {
                 if (_goToChatPageInBrowserCommand == null)
                 {
-                    _goToChatPageInBrowserCommand = new DelegateCommand(GoToChatPageInBrowser, canExecute);
+                    _goToChatPageInBrowserCommand = new DelegateCommand(GoToChatPageInBrowser, CanExecute);
                 }
 
                 return _goToChatPageInBrowserCommand;
@@ -84,16 +82,10 @@ namespace GB_Live
 
             Utils.OpenUriInBrowser(uri);
         }
-        
-        private bool canExecute(object _)
-        {
-            return true;
-        }
 
-        private bool canExecuteAsync(object _)
-        {
-            return !IsBusy;
-        }
+        private bool CanExecute(object _) => true;
+
+        private bool CanExecuteAsync(object _) => !IsBusy;
         #endregion
 
         #region Fields
@@ -107,12 +99,9 @@ namespace GB_Live
 
         #region Properties
         public string WindowTitle
-        {
-            get
-            {
-                return IsBusy ? string.Format(CultureInfo.CurrentCulture, "{0}: checking ...", appName) : appName;
-            }
-        }
+            => IsBusy
+            ? string.Format(CultureInfo.CurrentCulture, "{0}: checking ...", appName)
+            : appName;
 
         private bool _isLive = false;
         public bool IsLive
@@ -170,12 +159,11 @@ namespace GB_Live
         }
 
         private void RaiseAllCommandCanExecuteChanged()
-        {
-            RefreshCommandAsync.RaiseCanExecuteChanged();
-        }
+            => RefreshCommandAsync.RaiseCanExecuteChanged();
 
-        private readonly ObservableCollection<GBUpcomingEvent> _events = new ObservableCollection<GBUpcomingEvent>();
-        public IReadOnlyCollection<GBUpcomingEvent> Events { get { return _events; } }
+        private readonly ObservableCollection<GBUpcomingEvent> _events
+            = new ObservableCollection<GBUpcomingEvent>();
+        public IReadOnlyCollection<GBUpcomingEvent> Events => _events;
         #endregion
 
         public ViewModel()
@@ -248,9 +236,8 @@ namespace GB_Live
         {
             Uri jsonUri = new Uri(ConfigurationManager.AppSettings["GBUpcomingJson"]);
 
-            HttpWebRequest req = BuildRequest(jsonUri);
-
-            return await Utils.DownloadWebsiteAsStringAsync(req).ConfigureAwait(false);
+            return await Download.WebsiteAsync(jsonUri)
+                .ConfigureAwait(false);
         }
 
         private static JObject ParseIntoJson(string web)
@@ -263,7 +250,7 @@ namespace GB_Live
             }
             catch (JsonReaderException ex)
             {
-                Utils.LogException(ex);
+                Log.LogException(ex);
             }
 
             return json;
@@ -275,7 +262,7 @@ namespace GB_Live
             {
                 LiveShowName = GetLiveShowName(json["liveNow"]);
 
-                if (IsLive == false)
+                if (!IsLive)
                 {
                     IsLive = true;
 
@@ -294,9 +281,7 @@ namespace GB_Live
         }
 
         private static string GetLiveShowName(JToken token)
-        {
-            return (string)token["title"] ?? "Untitled Live Show";
-        }
+            => (string)token["title"] ?? "Untitled Live Show";
 
         private void ProcessEvents(JObject json)
         {
@@ -323,9 +308,9 @@ namespace GB_Live
 
         private static IReadOnlyList<GBUpcomingEvent> GetEvents(JObject json)
         {
-            List<GBUpcomingEvent> events = new List<GBUpcomingEvent>();
+            var events = new List<GBUpcomingEvent>();
             
-            if (json.TryGetValue("upcoming", StringComparison.Ordinal, out JToken upcoming))
+            if (json.TryGetValue("upcoming", StringComparison.OrdinalIgnoreCase, out JToken upcoming))
             {
                 foreach (JToken each in upcoming)
                 {
@@ -364,26 +349,7 @@ namespace GB_Live
 
             _events.RemoveRange(toRemove);
         }
-
-        private static HttpWebRequest BuildRequest(Uri gbUri)
-        {
-            HttpWebRequest req = WebRequest.CreateHttp(gbUri);
-
-            req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-            req.CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
-            req.Host = gbUri.DnsSafeHost;
-            req.KeepAlive = false;
-            req.Method = "GET";
-            req.ProtocolVersion = HttpVersion.Version11;
-            req.Timeout = 2500;
-            req.UserAgent = ConfigurationManager.AppSettings["UserAgent"];
-            
-            req.Headers.Add("DNT", "1");
-            req.Headers.Add("Accept-Encoding", "gzip, deflate");
-            
-            return req;
-        }
-
+        
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();

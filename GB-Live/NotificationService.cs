@@ -29,7 +29,7 @@ namespace GB_Live
             System.Media.SystemSounds.Hand.Play();
         }
 
-        private class NotificationWindow : Window
+        private sealed class NotificationWindow : Window
         {
             private Action action = null;
 

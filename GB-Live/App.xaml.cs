@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Threading;
 
 namespace GB_Live
@@ -8,7 +7,7 @@ namespace GB_Live
     {
         private void Application_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            Utils.LogException(e.Exception);
+            Log.LogException(e.Exception);
         }
     }
 }

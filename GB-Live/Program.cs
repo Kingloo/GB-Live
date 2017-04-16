@@ -20,7 +20,7 @@ namespace GB_Live
                     "Exited with code {0}",
                     exitCode);
 
-                Utils.LogMessage(errorMessage);
+                Log.LogMessage(errorMessage);
             }
 
             return exitCode;

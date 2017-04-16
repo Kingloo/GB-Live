@@ -14,25 +14,10 @@ namespace GB_Live
         public T False { get; set; }
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            bool b = false;
-
-            try
-            {
-                b = (bool)value;
-            }
-            catch (InvalidCastException)
-            {
-                return null;
-            }
-
-            return b ? True : False;
-        }
+            => (bool)value ? True : False;
 
         public virtual object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return default(T);
-        }
+            => default(T);
     }
 
     [ValueConversion(typeof(bool), typeof(Style))]
@@ -49,20 +34,13 @@ namespace GB_Live
         {
             bool b = (bool)value;
 
-            if (b)
-            {
-                return ConfigurationManager.AppSettings["GBIsLiveMessage"];
-            }
-            else
-            {
-                return ConfigurationManager.AppSettings["GBIsNotLiveMessage"];
-            }
+            return b
+                ? ConfigurationManager.AppSettings["GBIsLiveMessage"]
+                : ConfigurationManager.AppSettings["GBIsNotLiveMessage"];
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return null;
-        }
+            => null;
     }
     
     [ValueConversion(typeof(DateTime), typeof(string))]
