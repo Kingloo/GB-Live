@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 using Newtonsoft.Json.Linq;
+using static System.FormattableString;
 
 namespace GB_Live
 {
@@ -128,9 +129,9 @@ namespace GB_Live
 
             string decoded = HttpUtility.HtmlDecode(uriAsString);
 
-            if (!decoded.StartsWith("http"))
+            if (!decoded.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                decoded = $"https://{decoded}";
+                decoded = Invariant($"https://{decoded}");
             }
             
             return Uri.TryCreate(decoded, UriKind.Absolute, out Uri uri) ? uri : fallbackImageLink;
