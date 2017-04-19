@@ -234,9 +234,30 @@ namespace GB_Live
         
         private async static Task<string> DownloadUpcomingJsonAsync()
         {
-            Uri jsonUri = new Uri(ConfigurationManager.AppSettings["GBUpcomingJson"]);
+            string key = "GBUpcomingJson";
+            string url = ConfigurationManager.AppSettings[key];
 
-            return await Download.WebsiteAsync(jsonUri)
+            if (String.IsNullOrEmpty(url))
+            {
+                string errorMessage = $"Downloading upcoming json failed: {key} not found.";
+
+                await Log.LogMessageAsync(errorMessage)
+                    .ConfigureAwait(false);
+
+                return string.Empty;
+            }
+            
+            if (!Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
+            {
+                string errorMessage = $"Downloading upcoming json failed: {key} not Uri.";
+
+                await Log.LogMessageAsync(errorMessage)
+                    .ConfigureAwait(false);
+
+                return string.Empty;
+            }
+
+            return await Download.WebsiteAsync(uri)
                 .ConfigureAwait(false);
         }
 
