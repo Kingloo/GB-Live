@@ -29,7 +29,7 @@
     <ProductName>GB Live</ProductName>
     <PublisherName>Kingloo Holdings Ltd.</PublisherName>
     <DisallowUrlActivation>true</DisallowUrlActivation>
-    <ApplicationRevision>42</ApplicationRevision>
+    <ApplicationRevision>43</ApplicationRevision>
     <ApplicationVersion>1.0.1.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -147,6 +147,7 @@
     <Compile Include="DelegateCommand.cs" />
     <Compile Include="Download.cs" />
     <Compile Include="Extensions\Collections.cs" />
+    <Compile Include="ConfigurationManagerWrapper.cs" />
     <Compile Include="Extensions\DateTime.cs" />
     <Compile Include="Extensions\String.cs" />
     <Compile Include="Extensions\WebRequest.cs" />

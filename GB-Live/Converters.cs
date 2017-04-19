@@ -12,8 +12,8 @@ namespace GB_Live
     {
         public T True { get; set; }
         public T False { get; set; }
-
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        
+        public virtual object Convert(object value, Type targetType, object parameter, CultureInfo culture)
             => (bool)value ? True : False;
 
         public virtual object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -26,22 +26,27 @@ namespace GB_Live
     [ValueConversion(typeof(bool), typeof(Brush))]
     public class BooleanToBrushConverter : GenericBooleanConverter<Brush> { }
     
-    
     [ValueConversion(typeof(bool), typeof(string))]
-    public class BooleanToLiveStatusStringConverter : IValueConverter
+    public class BooleanToLiveStatusConverter : GenericBooleanConverter<string>
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             bool b = (bool)value;
 
-            return b
-                ? ConfigurationManager.AppSettings["GBIsLiveMessage"]
-                : ConfigurationManager.AppSettings["GBIsNotLiveMessage"];
-        }
+            if (!ConfigurationManagerWrapper.TryGetString(True, out string onlineMessage))
+            {
+                throw new ConfigurationErrorsException($"online message key not found: {True}");
+            }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-            => null;
+            if (!ConfigurationManagerWrapper.TryGetString(False, out string offlineMessage))
+            {
+                throw new ConfigurationErrorsException($"offline message key not found: {False}");
+            }
+
+            return b ? onlineMessage : offlineMessage;
+        }
     }
+
     
     [ValueConversion(typeof(DateTime), typeof(string))]
     public class FormatDateTimeString : MarkupExtension, IValueConverter
@@ -50,14 +55,9 @@ namespace GB_Live
         {
             DateTime dt = (DateTime)value;
 
-            if (dt.Equals(DateTime.MaxValue))
-            {
-                return "Now!";
-            }
-            else
-            {
-                return dt.ToString("ddd MMM dd  -  HH:mm", CultureInfo.CurrentCulture);
-            }
+            string format = "ddd MMM dd  -  HH:mm";
+
+            return dt.Equals(DateTime.MaxValue) ? "Now!" : dt.ToString(format, culture);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -69,7 +69,7 @@ namespace GB_Live
         {
             // do NOT change this to 'return null;'
             // breaks!!
-
+            
             return this;
         }
     }

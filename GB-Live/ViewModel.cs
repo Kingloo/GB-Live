@@ -57,9 +57,14 @@ namespace GB_Live
 
         private static void GoToHomepageInBrowser()
         {
-            Uri uri = new Uri(ConfigurationManager.AppSettings["GBHomepage"]);
-
-            Utils.OpenUriInBrowser(uri);
+            if (ConfigurationManagerWrapper.TryGetUri(GBHomePageKey, out Uri uri))
+            {
+                Utils.OpenUriInBrowser(uri);
+            }
+            else
+            {
+                throw new ConfigurationErrorsException($"home page key either not found or not a Uri: {GBHomePageKey}");
+            }
         }
 
         private DelegateCommand _goToChatPageInBrowserCommand = null;
@@ -78,9 +83,14 @@ namespace GB_Live
 
         private static void GoToChatPageInBrowser()
         {
-            Uri uri = new Uri(ConfigurationManager.AppSettings["GBChat"]);
-
-            Utils.OpenUriInBrowser(uri);
+            if (ConfigurationManagerWrapper.TryGetUri(GBChatKey, out Uri uri))
+            {
+                Utils.OpenUriInBrowser(uri);
+            }
+            else
+            {
+                throw new ConfigurationErrorsException($"chat page key either not found or not a Uri: {GBChatKey}");
+            }
         }
 
         private bool CanExecute(object _) => true;
@@ -90,6 +100,11 @@ namespace GB_Live
 
         #region Fields
         private const string appName = "GB Live";
+        private const string GBHomePageKey = "GBHomePage";
+        private const string GBChatKey = "GBChat";
+        private const string GBIsLiveMessageKey = "GBIsLiveMessage";
+        private const string GBIsNotLiveMessageKey = "GBIsNotLiveMessage";
+        private const string GBUpcomingJsonKey = "GBUpcomingJson";
 
         private readonly DispatcherTimer updateTimer = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
         {
@@ -234,29 +249,11 @@ namespace GB_Live
         
         private async static Task<string> DownloadUpcomingJsonAsync()
         {
-            string key = "GBUpcomingJson";
-            string url = ConfigurationManager.AppSettings[key];
-
-            if (String.IsNullOrEmpty(url))
+            if (!ConfigurationManagerWrapper.TryGetUri(GBUpcomingJsonKey, out Uri uri))
             {
-                string errorMessage = $"Downloading upcoming json failed: {key} not found.";
-
-                await Log.LogMessageAsync(errorMessage)
-                    .ConfigureAwait(false);
-
-                return string.Empty;
+                throw new ConfigurationErrorsException($"upcoming json key not found or not a Uri: {GBUpcomingJsonKey}");
             }
             
-            if (!Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
-            {
-                string errorMessage = $"Downloading upcoming json failed: {key} not Uri.";
-
-                await Log.LogMessageAsync(errorMessage)
-                    .ConfigureAwait(false);
-
-                return string.Empty;
-            }
-
             return await Download.WebsiteAsync(uri)
                 .ConfigureAwait(false);
         }
@@ -279,26 +276,40 @@ namespace GB_Live
 
         private void NotifyIfLive(JObject json)
         {
+            bool isLiveNow = IsLive;
+
             if (json["liveNow"].HasValues)
             {
                 LiveShowName = GetLiveShowName(json["liveNow"]);
 
-                if (!IsLive)
+                if (!isLiveNow)
                 {
-                    IsLive = true;
+                    isLiveNow = true;
 
-                    NameValueCollection nvc = ConfigurationManager.AppSettings;
-
-                    string liveMessage = nvc["GBIsLiveMessage"];
-                    Uri chatUri = new Uri(nvc["GBChat"]);
-
-                    NotificationService.Send(liveMessage, () => Utils.OpenUriInBrowser(chatUri));
+                    CreateAndSendLiveNotification();
                 }
             }
             else
             {
-                IsLive = false;
+                isLiveNow = false;
             }
+
+            IsLive = isLiveNow;
+        }
+
+        private static void CreateAndSendLiveNotification()
+        {
+            if (!ConfigurationManagerWrapper.TryGetString(GBIsLiveMessageKey, out string liveMessage))
+            {
+                throw new ConfigurationErrorsException($"live key not found: {GBIsLiveMessageKey}");
+            }
+
+            if (!ConfigurationManagerWrapper.TryGetUri(GBChatKey, out Uri chatUri))
+            {
+                throw new ConfigurationErrorsException($"live key not found or not a Uri: {GBChatKey}");
+            }
+
+            NotificationService.Send(liveMessage, () => Utils.OpenUriInBrowser(chatUri));
         }
 
         private static string GetLiveShowName(JToken token)
@@ -306,7 +317,7 @@ namespace GB_Live
 
         private void ProcessEvents(JObject json)
         {
-            IReadOnlyList<GBUpcomingEvent> eventsFromWeb = GetEvents(json);
+            var eventsFromWeb = GetEvents(json);
 
             foreach (GBUpcomingEvent each in eventsFromWeb)
             {
@@ -360,7 +371,7 @@ namespace GB_Live
              */
 
             // We want to remove the following types of events:
-            // DateTime.MaxValue: the countdown has fired
+            // x.Time == DateTime.MaxValue: the countdown has fired
             // x.Time < DateTime.Now: the event is in the past
             // !eventsFromHtml.Contains(x): event removed before time (e.g. cancelled, rescheduled)
 
