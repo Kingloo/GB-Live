@@ -12,7 +12,7 @@ namespace GB_Live
     public class GBUpcomingEvent : ViewModelBase, IComparable<GBUpcomingEvent>, IEquatable<GBUpcomingEvent>
     {
         #region Fields
-        private CountdownDispatcherTimer countdown = null;
+        private DispatcherCountdownTimer countdown = null;
         private readonly DateTime creationDate = DateTime.Now;
 
         private static Uri fallbackImageLink = new UriBuilder
@@ -143,7 +143,7 @@ namespace GB_Live
 
             if (CanStartCountdownWithTicks(ticks))
             {
-                countdown = new CountdownDispatcherTimer(new TimeSpan(ticks), Countdown_Fire);
+                countdown = new DispatcherCountdownTimer(new TimeSpan(ticks), Countdown_Fire);
             }
         }
 

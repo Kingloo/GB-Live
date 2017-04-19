@@ -5,7 +5,7 @@ using System.Windows.Threading;
 
 namespace GB_Live
 {
-    public class CountdownDispatcherTimer
+    public class DispatcherCountdownTimer
     {
         #region Fields
         private readonly DateTime created = DateTime.Now;
@@ -21,7 +21,7 @@ namespace GB_Live
             => IsActive ? ((created + timer.Interval) - DateTime.Now) : TimeSpan.Zero;
         #endregion
 
-        public CountdownDispatcherTimer(DateTime time, Action tick)
+        public DispatcherCountdownTimer(DateTime time, Action tick)
         {
             if (time < DateTime.Now)
             {
@@ -38,10 +38,9 @@ namespace GB_Live
             };
 
             timer.Tick += Timer_Tick;
-            timer.Start();
         }
 
-        public CountdownDispatcherTimer(TimeSpan span, Action tick)
+        public DispatcherCountdownTimer(TimeSpan span, Action tick)
         {
             // 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s == 10,000,000 ticks
             if (span.Ticks < (10_000 * 1000))
@@ -57,7 +56,6 @@ namespace GB_Live
             };
 
             timer.Tick += Timer_Tick;
-            timer.Start();
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -66,6 +64,8 @@ namespace GB_Live
 
             Stop();
         }
+
+        public void Start() => timer.Start();
 
         public void Stop()
         {

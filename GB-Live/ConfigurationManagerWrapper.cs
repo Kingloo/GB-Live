@@ -8,7 +8,7 @@ namespace GB_Live
         public static bool TryGetString(string key, out string value)
         {
             string s = ConfigurationManager.AppSettings[key];
-
+            
             if (String.IsNullOrEmpty(s))
             {
                 value = null;
@@ -23,9 +23,7 @@ namespace GB_Live
 
         public static bool TryGetUri(string key, out Uri uri)
         {
-            string value = string.Empty;
-
-            if (TryGetString(key, out value))
+            if (TryGetString(key, out string value))
             {
                 return Uri.TryCreate(value, UriKind.Absolute, out uri);
             }
