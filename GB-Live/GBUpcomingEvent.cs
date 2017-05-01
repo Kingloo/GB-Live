@@ -99,9 +99,9 @@ namespace GB_Live
             {
                 TimeSpan pacificUtcOffset = TimeZoneInfo
                     .GetSystemTimeZones()
-                    .SingleOrDefault(i => i.Id.Equals("Pacific Standard Time"))
+                    .Single(i => i.Id.Equals("Pacific Standard Time"))
                     .GetUtcOffset(DateTime.Now);
-
+                
                 TimeSpan localUtcOffset = TimeZoneInfo
                     .Local
                     .GetUtcOffset(DateTime.Now);
