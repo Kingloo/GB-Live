@@ -35,12 +35,16 @@ namespace GB_Live
 
             if (!ConfigurationManagerWrapper.TryGetString(True, out string onlineMessage))
             {
-                throw new ConfigurationErrorsException($"online message key not found: {True}");
+                string errorMessage = string.Format(culture, "online message key was not found: {0}", True);
+
+                throw new ConfigurationErrorsException(errorMessage);
             }
 
             if (!ConfigurationManagerWrapper.TryGetString(False, out string offlineMessage))
             {
-                throw new ConfigurationErrorsException($"offline message key not found: {False}");
+                string errorMessage = string.Format(culture, "offline message key was not found: {0}", False);
+
+                throw new ConfigurationErrorsException(errorMessage);
             }
 
             return b ? onlineMessage : offlineMessage;

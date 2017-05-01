@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 
@@ -58,7 +59,7 @@ namespace GB_Live
             }
             else
             {
-                string errorMessage = $"Uri ({uri.OriginalString}) was not absolute";
+                string errorMessage = string.Format(CultureInfo.CurrentCulture, "Uri \"{0}\" was not absolute", uri.OriginalString);
 
                 Log.LogMessage(errorMessage);
             }
@@ -77,7 +78,7 @@ namespace GB_Live
             }
             else
             {
-                string errorMessage = $"Uri.TryCreate returned false on {uri}";
+                string errorMessage = string.Format(CultureInfo.CurrentCulture, "Uri.TryCreate false on {0}", uri);
 
                 Log.LogMessage(errorMessage);
             }

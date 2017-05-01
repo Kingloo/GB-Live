@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -93,8 +94,8 @@ namespace GB_Live
 
             DateTime time = DateTime.Now;
             string process = Process.GetCurrentProcess().MainModule.ModuleName;
-
-            string log = $"{time} - {process}";
+            
+            string log = string.Format(CultureInfo.CurrentCulture, "{0} - {1}", time, process);
 
             sb.AppendLine(log);
             sb.AppendLine(text);

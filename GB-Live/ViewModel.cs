@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Configuration;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -57,14 +56,9 @@ namespace GB_Live
 
         private static void GoToHomepageInBrowser()
         {
-            if (ConfigurationManagerWrapper.TryGetUri(GBHomePageKey, out Uri uri))
-            {
-                Utils.OpenUriInBrowser(uri);
-            }
-            else
-            {
-                throw new ConfigurationErrorsException($"home page key either not found or not a Uri: {GBHomePageKey}");
-            }
+            Uri gbHome = ConfigurationManagerWrapper.GetUriOrThrow(GBHomePageKey);
+
+            Utils.OpenUriInBrowser(gbHome);
         }
 
         private DelegateCommand _goToChatPageInBrowserCommand = null;
@@ -83,14 +77,9 @@ namespace GB_Live
 
         private static void GoToChatPageInBrowser()
         {
-            if (ConfigurationManagerWrapper.TryGetUri(GBChatKey, out Uri uri))
-            {
-                Utils.OpenUriInBrowser(uri);
-            }
-            else
-            {
-                throw new ConfigurationErrorsException($"chat page key either not found or not a Uri: {GBChatKey}");
-            }
+            Uri gbChat = ConfigurationManagerWrapper.GetUriOrThrow(GBChatKey);
+
+            Utils.OpenUriInBrowser(gbChat);
         }
 
         private bool CanExecute(object _) => true;
@@ -249,12 +238,9 @@ namespace GB_Live
         
         private async static Task<string> DownloadUpcomingJsonAsync()
         {
-            if (!ConfigurationManagerWrapper.TryGetUri(GBUpcomingJsonKey, out Uri uri))
-            {
-                throw new ConfigurationErrorsException($"upcoming json key not found or not a Uri: {GBUpcomingJsonKey}");
-            }
+            Uri gbUpcoming = ConfigurationManagerWrapper.GetUriOrThrow(GBUpcomingJsonKey);
             
-            return await Download.WebsiteAsync(uri)
+            return await Download.WebsiteAsync(gbUpcoming)
                 .ConfigureAwait(false);
         }
 
@@ -299,17 +285,10 @@ namespace GB_Live
 
         private static void CreateAndSendLiveNotification()
         {
-            if (!ConfigurationManagerWrapper.TryGetString(GBIsLiveMessageKey, out string liveMessage))
-            {
-                throw new ConfigurationErrorsException($"live key not found: {GBIsLiveMessageKey}");
-            }
+            string liveMessage = ConfigurationManagerWrapper.GetStringOrThrow(GBIsLiveMessageKey);
+            Uri gbChat = ConfigurationManagerWrapper.GetUriOrThrow(GBChatKey);
 
-            if (!ConfigurationManagerWrapper.TryGetUri(GBChatKey, out Uri chatUri))
-            {
-                throw new ConfigurationErrorsException($"live key not found or not a Uri: {GBChatKey}");
-            }
-
-            NotificationService.Send(liveMessage, () => Utils.OpenUriInBrowser(chatUri));
+            NotificationService.Send(liveMessage, () => Utils.OpenUriInBrowser(gbChat));
         }
 
         private static string GetLiveShowName(JToken token)
