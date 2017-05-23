@@ -1,0 +1,76 @@
+﻿<Window x:Class="GBLive.WPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:common="clr-namespace:GBLive.WPF.Common"
+        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+        x:Name="window">
+
+    <Window.Style>
+        <Style TargetType="{x:Type Window}">
+            <Setter Property="Title" Value="GB Live" />
+            <Setter Property="Background" Value="Black" />
+            <Setter Property="Width" Value="500" />
+            <Setter Property="SizeToContent" Value="Height" />
+            <Setter Property="ResizeMode" Value="CanMinimize" />
+            <Setter Property="WindowStyle" Value="SingleBorderWindow" />
+        </Style>
+    </Window.Style>
+
+    <Window.Resources>
+        <CollectionViewSource Source="{Binding Path=Events}"
+                              x:Key="eventsSortedByTime"
+                              IsLiveSortingRequested="True">
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="Time" Direction="Ascending" />
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+
+        <Style TargetType="{x:Type Label}" x:Key="LabelLiveStyle" BasedOn="{StaticResource {x:Type Label}}">
+            <Setter Property="Opacity" Value="1.0" />
+            <Setter Property="FontSize" Value="26" />
+            <Setter Property="Foreground" Value="Green" />
+        </Style>
+
+        <Style TargetType="{x:Type Label}" x:Key="LabelOfflineStyle" BasedOn="{StaticResource {x:Type Label}}">
+            <Setter Property="Opacity" Value="0.6" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Foreground" Value="Red" />
+        </Style>
+
+        <common:BooleanToLiveStatusConverter x:Key="liveStatusConverter"
+                                             True="{Binding Path=DataContext.Settings.IsLiveMessage, Source={x:Reference window}}"
+                                             False="{Binding Path=DataContext.Settings.IsNotLiveMessage, Source={x:Reference window}}" />
+
+        <common:BooleanToStyleConverter x:Key="labelStyleConverter"
+                                        True="{StaticResource LabelLiveStyle}"
+                                        False="{StaticResource LabelOfflineStyle}" />
+    </Window.Resources>
+    
+    <Grid>
+        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Label Grid.Row="0"
+               HorizontalContentAlignment="Center"
+               Content="{Binding Path=IsLive, Converter={StaticResource liveStatusConverter}}"
+               ToolTip="{Binding Path=LiveShowName}"
+               Style="{Binding Path=IsLive, Converter={StaticResource labelStyleConverter}}"
+               MouseDoubleClick="Label_MouseDoubleClick" />
+
+        <ItemsControl Grid.Row="1"
+                      ItemsSource="{Binding Source={StaticResource eventsSortedByTime}}"
+                      MouseDoubleClick="ItemsControl_MouseDoubleClick">
+            <ItemsControl.Template>
+                <ControlTemplate>
+                    <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                  VerticalScrollBarVisibility="Auto">
+                        <ItemsPresenter />
+                    </ScrollViewer>
+                </ControlTemplate>
+            </ItemsControl.Template>
+        </ItemsControl>
+    </Grid>
+</Window>
