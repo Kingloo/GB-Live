@@ -144,6 +144,8 @@ namespace GBLive.WPF
             if (IsValidNumberOfTicks(ticks))
             {
                 countdownTimer = new DispatcherCountdownTimer(new TimeSpan(ticks), CountdownTimer_Fire);
+
+                countdownTimer.Start();
             }
         }
 

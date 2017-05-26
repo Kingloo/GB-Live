@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using GBLive.WPF.Common;
 
 namespace GBLive.WPF
 {
@@ -41,6 +42,9 @@ namespace GBLive.WPF
                 case Key.Escape:
                     Close();
                     break;
+                //case Key.F1:
+                //    Debug();
+                //    break;
                 case Key.F5:
                     await ManualUpdateAsync();
                     break;
@@ -48,6 +52,11 @@ namespace GBLive.WPF
                     break;
             }
         }
+
+        //private void Debug()
+        //{
+        //    NotificationService.Send("fred", () => Utils.OpenUriInBrowser("http://google.com"));
+        //}
 
         private async Task ManualUpdateAsync()
         {

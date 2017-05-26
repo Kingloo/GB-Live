@@ -88,11 +88,11 @@ namespace GBLive.WPF.Common
 
 #if DEBUG
                 DispatcherCountdownTimer notifyWindowCloseTimer = new DispatcherCountdownTimer(
-                    new TimeSpan(0, 0, 2),
+                    TimeSpan.FromSeconds(2),
                     () => Close());
 #else
                 DispatcherCountdownTimer notifyWindowCloseTimer = new DispatcherCountdownTimer(
-                    new TimeSpan(0, 0, 15),
+                    TimeSpan.FromSeconds(15),
                     () => Close());
 #endif
                 notifyWindowCloseTimer.Start();
