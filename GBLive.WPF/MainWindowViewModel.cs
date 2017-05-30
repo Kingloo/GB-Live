@@ -82,7 +82,7 @@ namespace GBLive.WPF
 
             if (autostart)
             {
-                StartTimer();
+                StartUpdateTimer();
             }
         }
 
@@ -133,7 +133,7 @@ namespace GBLive.WPF
             }
         }
 
-        public void StartTimer()
+        public void StartUpdateTimer()
         {
             updateTimer = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
             {
@@ -141,6 +141,7 @@ namespace GBLive.WPF
             };
 
             updateTimer.Tick += async (s, e) => await UpdateAsync();
+
             updateTimer.Start();
         }
         

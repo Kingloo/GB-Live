@@ -11,7 +11,7 @@ namespace GBLive.WPF
 
         void GoToHomePage();
         void GoToChatPage();
-        void StartTimer();
+        void StartUpdateTimer();
 
         Task UpdateAsync();
     }
