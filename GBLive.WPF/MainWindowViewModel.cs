@@ -4,11 +4,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Threading;
 using GBLive.WPF.Common;
 using GBLive.WPF.Extensions;
@@ -120,7 +123,16 @@ namespace GBLive.WPF
 
         private void GBUpcomingEventCountdown_Fired(object sender, BasicEventArgs<string> e)
         {
-            NotificationService.Send(e.Object, () => GoToHomePage());
+            //NotificationService.Send(e.Object, () => GoToHomePage());
+
+            Debug.WriteLine($"outer: {Thread.CurrentThread.ManagedThreadId}");
+
+            Utils.DispatchSafely(Application.Current.Dispatcher, () =>
+            {
+                Debug.WriteLine($"inner: {Thread.CurrentThread.ManagedThreadId}");
+
+                NotificationService.Send(e.Object, () => GoToHomePage());
+            });
         }
 
         private static void OnEventRemoved(IList oldItems)
@@ -292,5 +304,7 @@ namespace GBLive.WPF
 
             return sb.ToString();
         }
+
+        public void AddDebug(GBUpcomingEvent gbu) => _events.Add(gbu);
     }
 }

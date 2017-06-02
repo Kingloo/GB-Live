@@ -42,6 +42,9 @@ namespace GBLive.WPF
         public Uri ImageUri => _imageUri;
         #endregion
 
+        public GBUpcomingEvent()
+            : this("Debug Title", DateTime.Now.AddSeconds(15), false, "Debug Type", new Uri("http://giantbomb.com")) { }
+
         private GBUpcomingEvent(
             string title,
             DateTime time,

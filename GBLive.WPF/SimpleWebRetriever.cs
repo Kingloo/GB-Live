@@ -45,11 +45,15 @@ namespace GBLive.WPF
                     text = await response.Content.ReadAsStringAsync()
                         .ConfigureAwait(false);
                 }
-                catch (TaskCanceledException) { }
                 catch (HttpRequestException ex)
                 {
                     Log.LogException(ex);
                 }
+                catch (TaskCanceledException ex) when (ex.InnerException is HttpRequestException innerEx)
+                {
+                    Log.LogException(innerEx);
+                }
+                catch (TaskCanceledException) { }
             }
 
             return (text, status);

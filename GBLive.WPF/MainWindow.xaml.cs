@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -42,9 +43,12 @@ namespace GBLive.WPF
                 case Key.Escape:
                     Close();
                     break;
-                //case Key.F1:
-                //    Debug();
-                //    break;
+                case Key.F1:
+                    LogEvents();
+                    break;
+                case Key.F2:
+                    (viewModel as MainWindowViewModel).AddDebug(new GBUpcomingEvent());
+                    break;
                 case Key.F5:
                     await ManualUpdateAsync();
                     break;
@@ -53,10 +57,17 @@ namespace GBLive.WPF
             }
         }
 
-        //private void Debug()
-        //{
-        //    NotificationService.Send("fred", () => Utils.OpenUriInBrowser("http://google.com"));
-        //}
+        private void LogEvents()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var gb in viewModel.Events)
+            {
+                sb.Append(gb.ToString());
+            }
+
+            Log.LogMessage(sb.ToString());
+        }
 
         private async Task ManualUpdateAsync()
         {
