@@ -44,7 +44,7 @@ namespace GBLive.WPF
                     Close();
                     break;
                 case Key.F1:
-                    LogEvents();
+                    await LogEventsAsync();
                     break;
                 case Key.F2:
                     (viewModel as MainWindowViewModel).AddDebug(new GBUpcomingEvent());
@@ -57,16 +57,17 @@ namespace GBLive.WPF
             }
         }
 
-        private void LogEvents()
+        private async Task LogEventsAsync()
         {
             StringBuilder sb = new StringBuilder();
 
             foreach (var gb in viewModel.Events)
             {
-                sb.Append(gb.ToString());
+                sb.AppendLine(gb.ToString());
             }
 
-            Log.LogMessage(sb.ToString());
+            await Log.LogMessageAsync(sb.ToString())
+                .ConfigureAwait(false);
         }
 
         private async Task ManualUpdateAsync()

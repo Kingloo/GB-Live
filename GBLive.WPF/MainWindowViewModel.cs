@@ -124,13 +124,9 @@ namespace GBLive.WPF
         private void GBUpcomingEventCountdown_Fired(object sender, BasicEventArgs<string> e)
         {
             //NotificationService.Send(e.Object, () => GoToHomePage());
-
-            Debug.WriteLine($"outer: {Thread.CurrentThread.ManagedThreadId}");
-
+            
             Utils.DispatchSafely(Application.Current.Dispatcher, () =>
             {
-                Debug.WriteLine($"inner: {Thread.CurrentThread.ManagedThreadId}");
-
                 NotificationService.Send(e.Object, () => GoToHomePage());
             });
         }

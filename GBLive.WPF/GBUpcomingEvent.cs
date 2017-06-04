@@ -217,7 +217,7 @@ namespace GBLive.WPF
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-
+            
             sb.AppendLine(GetType().FullName);
             sb.AppendLine(Title);
             sb.AppendLine(Time.ToString(CultureInfo.CurrentCulture));
@@ -237,7 +237,7 @@ namespace GBLive.WPF
             }
             else
             {
-                return string.Format(CultureInfo.CurrentCulture, "Countdown time to event: {}", timer.TimeLeft);
+                return string.Format(CultureInfo.CurrentCulture, "Countdown time to event: {0}", timer.TimeLeft);
             }
         }
     }
