@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.26430.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Desktop", "Desktop", "{3091B3D5-4212-433E-98E2-265021D1561B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GBLive.Desktop", "GBLive.WPF\GBLive.Desktop.csproj", "{7B15FD99-00FD-40FC-8F46-6E4B1BD75787}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GBLive.Desktop", "GBLive.Desktop\GBLive.Desktop.csproj", "{7B15FD99-00FD-40FC-8F46-6E4B1BD75787}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
