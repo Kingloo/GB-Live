@@ -1,8 +1,8 @@
-﻿<Application x:Class="GBLive.WPF.App"
+﻿<Application x:Class="GBLive.Desktop.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:GBLive.WPF"
-             xmlns:common="clr-namespace:GBLive.WPF.Common">
+             xmlns:gb="clr-namespace:GBLive.Desktop.GiantBomb"
+             xmlns:common="clr-namespace:GBLive.Desktop.Common">
 
     <Application.Resources>
         
@@ -39,7 +39,7 @@
             <Setter Property="Stretch" Value="UniformToFill" />
         </Style>
 
-        <DataTemplate DataType="{x:Type local:GBUpcomingEvent}">
+        <DataTemplate DataType="{x:Type gb:UpcomingEvent}">
             <Grid>
                 <Grid.Resources>
                     <common:BooleanToBrushConverter x:Key="premiumToForegroundConverter"

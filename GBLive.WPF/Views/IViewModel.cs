@@ -1,18 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using GBLive.Desktop.GiantBomb;
 
-namespace GBLive.WPF
+namespace GBLive.Desktop.Views
 {
     public interface IViewModel
     {
         bool IsLive { get; }
         string LiveShowName { get; }
-        IReadOnlyCollection<GBUpcomingEvent> Events { get; }
+        IReadOnlyCollection<UpcomingEvent> Events { get; }
 
-        void GoToHomePage();
+        void GoToHomepage();
         void GoToChatPage();
-        void StartUpdateTimer();
-
+        
         Task UpdateAsync();
     }
 }

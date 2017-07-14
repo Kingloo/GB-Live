@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Text;
 using System.Windows.Threading;
 
-namespace GBLive.WPF.Common
+namespace GBLive.Desktop.Common
 {
     public class DispatcherCountdownTimer
     {

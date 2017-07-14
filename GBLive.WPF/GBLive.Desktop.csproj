@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{7B15FD99-00FD-40FC-8F46-6E4B1BD75787}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>GBLive.WPF</RootNamespace>
-    <AssemblyName>GBLive.WPF</AssemblyName>
+    <RootNamespace>GBLive.Desktop</RootNamespace>
+    <AssemblyName>GBLive.Desktop</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -28,8 +28,8 @@
     <ProductName>GB Live</ProductName>
     <PublisherName>Kingloo Holdings Ltd.</PublisherName>
     <DisallowUrlActivation>true</DisallowUrlActivation>
-    <ApplicationRevision>8</ApplicationRevision>
-    <ApplicationVersion>1.1.0.%2a</ApplicationVersion>
+    <ApplicationRevision>1</ApplicationRevision>
+    <ApplicationVersion>1.2.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -60,9 +60,10 @@
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
     <FileAlignment>4096</FileAlignment>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>GBLive.WPF.Program</StartupObject>
+    <StartupObject>GBLive.Desktop.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Assets\giantbomb_logo.ico</ApplicationIcon>
@@ -105,7 +106,13 @@
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetZone>LocalIntranet</TargetZone>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -126,16 +133,16 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\BasicEventArgs.cs" />
     <Compile Include="Common\Converters.cs" />
     <Compile Include="Common\Utils.cs" />
-    <Compile Include="GBSettings.cs" />
-    <Compile Include="SimpleWebRetriever.cs" />
+    <Compile Include="GiantBomb\GiantBombService.cs" />
+    <Compile Include="GiantBomb\IGiantBombService.cs" />
+    <Compile Include="GiantBomb\Settings.cs" />
     <Page Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="MainWindow.xaml">
+    <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -147,16 +154,15 @@
     <Compile Include="Common\Log.cs" />
     <Compile Include="Common\NotificationService.cs" />
     <Compile Include="Extensions\Collections.cs" />
-    <Compile Include="GBUpcomingEvent.cs" />
-    <Compile Include="IViewModel.cs" />
-    <Compile Include="IWebRetriever.cs" />
-    <Compile Include="MainWindow.xaml.cs">
+    <Compile Include="GiantBomb\UpcomingEvent.cs" />
+    <Compile Include="Views\IViewModel.cs" />
+    <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MainWindowViewModel.cs" />
+    <Compile Include="Views\MainWindowViewModel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -175,7 +181,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="GBLive.WPF_TemporaryKey.pfx" />
+    <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

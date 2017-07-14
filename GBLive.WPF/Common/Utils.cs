@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 
-namespace GBLive.WPF.Common
+namespace GBLive.Desktop.Common
 {
     public static class Utils
     {

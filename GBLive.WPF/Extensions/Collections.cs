@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace GBLive.WPF.Extensions
+namespace GBLive.Desktop.Extensions
 {
     public static class CollectionExt
     {

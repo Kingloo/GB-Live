@@ -5,7 +5,7 @@ using System.Windows.Data;
 using System.Windows.Markup;
 using System.Windows.Media;
 
-namespace GBLive.WPF.Common
+namespace GBLive.Desktop.Common
 {
     public abstract class GenericBooleanConverter<T> : DependencyObject, IValueConverter
     {

@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GBLive.WPF.Common
+namespace GBLive.Desktop.Common
 {
     public static class Log
     {

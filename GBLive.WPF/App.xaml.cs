@@ -1,22 +1,23 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Threading;
-using GBLive.WPF.Common;
+using GBLive.Desktop.Common;
+using GBLive.Desktop.GiantBomb;
+using GBLive.Desktop.Views;
 
-namespace GBLive.WPF
+namespace GBLive.Desktop
 {
     public partial class App : Application
     {
-        public App(GBSettings settings, IWebRetriever jsonRetriever)
+        public App(IGiantBombService gbService)
         {
-            if (settings == null) { throw new ArgumentNullException(nameof(settings)); }
-            if (jsonRetriever == null) { throw new ArgumentNullException(nameof(jsonRetriever)); }
+            if (gbService == null) { throw new ArgumentNullException(nameof(gbService)); }
 
             InitializeComponent();
 
             DispatcherUnhandledException += App_DispatcherUnhandledException;
 
-            MainWindow = new MainWindow(new MainWindowViewModel(settings, jsonRetriever, true));
+            MainWindow = new MainWindow(new MainWindowViewModel(gbService, autoStart: true));
             MainWindow.Show();
         }
 

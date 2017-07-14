@@ -1,33 +1,31 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Globalization;
-using GBLive.WPF.Common;
+using GBLive.Desktop.Common;
+using GBLive.Desktop.GiantBomb;
 
-namespace GBLive.WPF
+namespace GBLive.Desktop
 {
     public static class Program
     {
         [STAThread]
         public static int Main()
         {
-            var settings = new GBSettings();
+            int exitCode = 0;
 
-            var jsonRetriever = new SimpleWebRetriever(settings.GBJson)
+            using (var gbService = new GiantBombService())
             {
-                UserAgent = settings.UserAgent
-            };
+                var app = new App(gbService);
+
+                exitCode = app.Run();
+            }
             
-            App app = new App(settings, jsonRetriever);
-
-            int exitCode = app.Run();
-
             if (exitCode != 0)
             {
-                string message = string.Format(CultureInfo.CurrentCulture, "{0} exited with code: {1}", Process.GetCurrentProcess().MainModule.ModuleName, exitCode);
+                string message = string.Format(CultureInfo.CurrentCulture, "exited with code: {0}", exitCode);
 
                 Log.LogMessage(message);
             }
-
+            
             return exitCode;
         }
     }

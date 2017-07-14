@@ -3,26 +3,20 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Text;
-using GBLive.WPF.Common;
+using GBLive.Desktop.Common;
 using Newtonsoft.Json.Linq;
 
-namespace GBLive.WPF
+namespace GBLive.Desktop.GiantBomb
 {
-    public class GBUpcomingEvent : IComparable<GBUpcomingEvent>, IEquatable<GBUpcomingEvent>
+    public class UpcomingEvent : IComparable<UpcomingEvent>, IEquatable<UpcomingEvent>
     {
-        #region Events
-        public event EventHandler<BasicEventArgs<string>> CountdownFired;
-        private void OnCountdownFired(string title)
-        {
-            CountdownFired?.Invoke(this, new BasicEventArgs<string>(title));
-        }
-        #endregion
-
         #region Fields
         private DispatcherCountdownTimer countdownTimer = default(DispatcherCountdownTimer);
 
         private static Uri fallbackImageUri
             = new Uri("https://static.giantbomb.com/bundles/phoenixsite/images/core/loose/apple-touch-icon-precomposed-gb.png");
+
+        private readonly Action _countdownAction = null;
         #endregion
 
         #region Properties
@@ -41,25 +35,24 @@ namespace GBLive.WPF
         private readonly Uri _imageUri = default(Uri);
         public Uri ImageUri => _imageUri;
         #endregion
-
-        public GBUpcomingEvent()
-            : this("Debug Title", DateTime.Now.AddSeconds(15), false, "Debug Type", new Uri("http://giantbomb.com")) { }
-
-        private GBUpcomingEvent(
+        
+        private UpcomingEvent(
             string title,
             DateTime time,
             bool isPremium,
             string eventType,
-            Uri imageUri)
+            Uri imageUri,
+            Action action)
         {
             _title = title;
             _time = time;
             _isPremium = isPremium;
             _eventType = eventType;
             _imageUri = imageUri;
+            _countdownAction = action;
         }
 
-        public static bool TryCreate(JToken token, out GBUpcomingEvent outEvent)
+        public static bool TryCreate(JToken token, Action action, out UpcomingEvent outEvent)
         {
             if (token == null)
             {
@@ -79,11 +72,11 @@ namespace GBLive.WPF
             string eventType = GetEventType(token);
             Uri imageUri = GetImageUri(token);
             
-            outEvent = new GBUpcomingEvent(title, time, isPremium, eventType, imageUri);
+            outEvent = new UpcomingEvent(title, time, isPremium, eventType, imageUri, action);
 
             return true;
         }
-
+        
         private static string GetTitle(JToken token)
         {
             return (string)token["title"] ?? "Untitled Event";
@@ -183,8 +176,8 @@ namespace GBLive.WPF
 
         private void CountdownTimer_Fire()
         {
-            OnCountdownFired(Title);
-
+            _countdownAction?.Invoke();
+            
             // this shouldn't be necessary, but it does no harm
             countdownTimer?.Stop();
         }
@@ -194,14 +187,14 @@ namespace GBLive.WPF
             countdownTimer?.Stop();
         }
 
-        public int CompareTo(GBUpcomingEvent other)
+        public int CompareTo(UpcomingEvent other)
         {
             if (other == null) { throw new ArgumentNullException(nameof(other)); }
 
             return Time.CompareTo(other.Time);
         }
 
-        public bool Equals(GBUpcomingEvent other)
+        public bool Equals(UpcomingEvent other)
         {
             if (other == null) { return false; }
             

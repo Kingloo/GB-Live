@@ -5,38 +5,38 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
-using GBLive.WPF.Common;
+using GBLive.Desktop.Common;
 
-namespace GBLive.WPF
+namespace GBLive.Desktop.Views
 {
     public partial class MainWindow : Window
     {
         #region Fields
         private const string appName = "GB Live";
         private IntPtr hWnd = IntPtr.Zero;
-        private readonly IViewModel viewModel = null;
+        private readonly IViewModel _viewModel = null;
         #endregion
 
-        public MainWindow(IViewModel viewmodel)
+        public MainWindow(IViewModel viewModel)
         {
-            viewModel = viewmodel ?? throw new ArgumentNullException(nameof(viewmodel));
+            _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
 
             InitializeComponent();
 
-            DataContext = viewModel;
+            DataContext = _viewModel;
 
             Loaded += MainWindow_Loaded;
-            KeyUp += MainWindow_KeyUp;
+            KeyDown += MainWindow_KeyDown;
             SourceInitialized += MainWindow_SourceInitialized;
             LocationChanged += MainWindow_LocationChanged;
         }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            await viewModel.UpdateAsync();
+            await _viewModel.UpdateAsync();
         }
         
-        private async void MainWindow_KeyUp(object sender, KeyEventArgs e)
+        private async void MainWindow_KeyDown(object sender, KeyEventArgs e)
         {
             switch (e.Key)
             {
@@ -45,9 +45,6 @@ namespace GBLive.WPF
                     break;
                 case Key.F1:
                     await LogEventsAsync();
-                    break;
-                case Key.F2:
-                    (viewModel as MainWindowViewModel).AddDebug(new GBUpcomingEvent());
                     break;
                 case Key.F5:
                     await ManualUpdateAsync();
@@ -61,7 +58,7 @@ namespace GBLive.WPF
         {
             StringBuilder sb = new StringBuilder();
 
-            foreach (var gb in viewModel.Events)
+            foreach (var gb in _viewModel.Events)
             {
                 sb.AppendLine(gb.ToString());
             }
@@ -75,7 +72,7 @@ namespace GBLive.WPF
             Opacity = 0.5d;
             Title = string.Format(CultureInfo.CurrentCulture, "{0}: updating...", appName);
 
-            await viewModel.UpdateAsync();
+            await _viewModel.UpdateAsync();
 
             Opacity = 1.0d;
             Title = appName;
@@ -100,21 +97,21 @@ namespace GBLive.WPF
             MaxHeight = currentMonitor.WorkingArea.Bottom - 200;
         }
 
-        private void Label_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void LiveLabel_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (viewModel.IsLive)
+            if (_viewModel.IsLive)
             {
-                viewModel.GoToChatPage();
+                _viewModel.GoToChatPage();
             }
             else
             {
-                viewModel.GoToHomePage();
+                _viewModel.GoToHomepage();
             }
         }
 
-        private void ItemsControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void EventList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            viewModel.GoToHomePage();
+            _viewModel.GoToHomepage();
         }
     }
 }

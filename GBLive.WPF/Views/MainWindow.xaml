@@ -1,7 +1,8 @@
-﻿<Window x:Class="GBLive.WPF.MainWindow"
+﻿<Window x:Class="GBLive.Desktop.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:common="clr-namespace:GBLive.WPF.Common"
+        xmlns:common="clr-namespace:GBLive.Desktop.Common"
+        xmlns:gb="clr-namespace:GBLive.Desktop.GiantBomb"
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         x:Name="window">
 
@@ -38,8 +39,8 @@
         </Style>
 
         <common:BooleanToLiveStatusConverter x:Key="liveStatusConverter"
-                                             True="{Binding Path=DataContext.Settings.IsLiveMessage, Source={x:Reference window}}"
-                                             False="{Binding Path=DataContext.Settings.IsNotLiveMessage, Source={x:Reference window}}" />
+                                             True="{Binding Source={x:Static gb:Settings.IsLiveMessage}}"
+                                             False="{Binding Source={x:Static gb:Settings.IsNotLiveMessage}}" />
 
         <common:BooleanToStyleConverter x:Key="labelStyleConverter"
                                         True="{StaticResource LabelLiveStyle}"
@@ -58,11 +59,13 @@
                Content="{Binding Path=IsLive, Converter={StaticResource liveStatusConverter}}"
                ToolTip="{Binding Path=LiveShowName}"
                Style="{Binding Path=IsLive, Converter={StaticResource labelStyleConverter}}"
-               MouseDoubleClick="Label_MouseDoubleClick" />
+               Name="liveLabel"
+               MouseDoubleClick="LiveLabel_MouseDoubleClick" />
 
         <ItemsControl Grid.Row="1"
                       ItemsSource="{Binding Source={StaticResource eventsSortedByTime}}"
-                      MouseDoubleClick="ItemsControl_MouseDoubleClick">
+                      Name="eventList"
+                      MouseDoubleClick="EventList_MouseDoubleClick">
             <ItemsControl.Template>
                 <ControlTemplate>
                     <ScrollViewer HorizontalScrollBarVisibility="Disabled"
