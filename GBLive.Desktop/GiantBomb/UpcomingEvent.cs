@@ -15,8 +15,6 @@ namespace GBLive.Desktop.GiantBomb
 
         private static Uri fallbackImageUri
             = new Uri("https://static.giantbomb.com/bundles/phoenixsite/images/core/loose/apple-touch-icon-precomposed-gb.png");
-
-        private readonly Action _countdownAction = null;
         #endregion
 
         #region Properties
@@ -41,18 +39,16 @@ namespace GBLive.Desktop.GiantBomb
             DateTime time,
             bool isPremium,
             string eventType,
-            Uri imageUri,
-            Action action)
+            Uri imageUri)
         {
             _title = title;
             _time = time;
             _isPremium = isPremium;
             _eventType = eventType;
             _imageUri = imageUri;
-            _countdownAction = action;
         }
 
-        public static bool TryCreate(JToken token, Action action, out UpcomingEvent outEvent)
+        public static bool TryCreate(JToken token, out UpcomingEvent outEvent)
         {
             if (token == null)
             {
@@ -72,15 +68,12 @@ namespace GBLive.Desktop.GiantBomb
             string eventType = GetEventType(token);
             Uri imageUri = GetImageUri(token);
             
-            outEvent = new UpcomingEvent(title, time, isPremium, eventType, imageUri, action);
+            outEvent = new UpcomingEvent(title, time, isPremium, eventType, imageUri);
 
             return true;
         }
         
-        private static string GetTitle(JToken token)
-        {
-            return (string)token["title"] ?? "Untitled Event";
-        }
+        private static string GetTitle(JToken token) => (string)token["title"] ?? "Untitled Event";
 
         private static DateTime GetTime(JToken token)
         {
@@ -114,10 +107,7 @@ namespace GBLive.Desktop.GiantBomb
             return String.IsNullOrWhiteSpace(premium) ? false : Convert.ToBoolean(premium, CultureInfo.InvariantCulture);
         }
 
-        private static string GetEventType(JToken token)
-        {
-            return (string)token["type"] ?? "Unknown";
-        }
+        private static string GetEventType(JToken token) => (string)token["type"] ?? "Unknown";
 
         private static Uri GetImageUri(JToken token)
         {
@@ -139,7 +129,10 @@ namespace GBLive.Desktop.GiantBomb
 
             if (IsValidNumberOfTicks(ticks))
             {
-                countdownTimer = new DispatcherCountdownTimer(TimeSpan.FromTicks(ticks), CountdownTimer_Fire);
+                Action goToHomepage = () => Utils.OpenUriInBrowser(Settings.Homepage);
+                Action notify       = () => NotificationService.Send(Title, goToHomepage);
+
+                countdownTimer = new DispatcherCountdownTimer(TimeSpan.FromTicks(ticks), notify);
 
                 countdownTimer.Start();
             }
@@ -167,25 +160,14 @@ namespace GBLive.Desktop.GiantBomb
         {
             TimeSpan fromNowtoTime = time - DateTime.Now;
 
-            TimeSpan threeSecondsInTicks = new TimeSpan(10_000 * 1000 * 3);
+            TimeSpan oneSecondsInTicks = new TimeSpan(10_000 * 1000 * 1);
 
-            Int64 ticksUntilShouldNotify = (fromNowtoTime.Add(threeSecondsInTicks)).Ticks;
+            Int64 ticksUntilShouldNotify = (fromNowtoTime.Add(oneSecondsInTicks)).Ticks;
 
             return ticksUntilShouldNotify;
         }
-
-        private void CountdownTimer_Fire()
-        {
-            _countdownAction?.Invoke();
-            
-            // this shouldn't be necessary, but it does no harm
-            countdownTimer?.Stop();
-        }
-
-        public void StopCountdownTimer()
-        {
-            countdownTimer?.Stop();
-        }
+        
+        public void StopCountdownTimer() => countdownTimer?.Stop();
 
         public int CompareTo(UpcomingEvent other)
         {

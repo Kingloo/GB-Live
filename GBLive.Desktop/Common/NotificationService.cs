@@ -9,21 +9,19 @@ namespace GBLive.Desktop.Common
     public static class NotificationService
     {
         public static void Send(string title, Action action)
-        {
-            NotificationWindow window = new NotificationWindow(title, string.Empty, action);
-
-            Display(window);
-        }
+            => Send(title, string.Empty, action);
         
         public static void Send(string title, string description, Action action)
         {
-            NotificationWindow window = new NotificationWindow(title, description, action);
+            var window = new NotificationWindow(title, description, action);
 
             Display(window);
         }
 
         private static void Display(NotificationWindow window)
         {
+            if (window == null) { throw new ArgumentNullException(nameof(window)); }
+
             window.Show();
 
             System.Media.SystemSounds.Hand.Play();
@@ -62,7 +60,7 @@ namespace GBLive.Desktop.Common
                 Grid.SetRow(lbl_Title, 0);
                 grid.Children.Add(lbl_Title);
 
-                if (String.IsNullOrEmpty(description) == false)
+                if (!String.IsNullOrEmpty(description))
                 {
                     Label lbl_Description = new Label
                     {
@@ -87,11 +85,11 @@ namespace GBLive.Desktop.Common
                 AddChild(grid);
 
 #if DEBUG
-                DispatcherCountdownTimer notifyWindowCloseTimer = new DispatcherCountdownTimer(
+                var notifyWindowCloseTimer = new DispatcherCountdownTimer(
                     TimeSpan.FromSeconds(2),
                     () => Close());
 #else
-                DispatcherCountdownTimer notifyWindowCloseTimer = new DispatcherCountdownTimer(
+                var notifyWindowCloseTimer = new DispatcherCountdownTimer(
                     TimeSpan.FromSeconds(15),
                     () => Close());
 #endif

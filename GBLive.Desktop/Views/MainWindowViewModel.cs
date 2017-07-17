@@ -85,20 +85,11 @@ namespace GBLive.Desktop.Views
             OnPropertyChanged(nameof(LiveShowName));
         }
 
-        public void GoToHomepage()
-        {
-            GoToUri(Settings.Homepage);
-        }
+        public void GoToHomepage() => GoToUri(Settings.Homepage);
 
-        public void GoToChatPage()
-        {
-            GoToUri(Settings.ChatPage);
-        }
+        public void GoToChatPage() => GoToUri(Settings.ChatPage);
 
-        private static void GoToUri(Uri uri)
-        {
-            Utils.OpenUriInBrowser(uri);
-        }
+        private static void GoToUri(Uri uri) => Utils.OpenUriInBrowser(uri);
 
         public override string ToString()
         {

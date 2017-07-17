@@ -9,9 +9,7 @@ namespace GBLive.Desktop.Common
     public static class Utils
     {
         public static void DispatchSafely(Dispatcher dispatcher, Action action)
-        {
-            DispatchSafely(dispatcher, action, DispatcherPriority.Normal);
-        }
+            => DispatchSafely(dispatcher, action, DispatcherPriority.Normal);
 
         public static void DispatchSafely(Dispatcher dispatcher, Action action, DispatcherPriority priority)
         {
@@ -29,9 +27,7 @@ namespace GBLive.Desktop.Common
         }
         
         public static async Task DispatchSafelyAsync(Dispatcher dispatcher, Action action)
-        {
-            await DispatchSafelyAsync(dispatcher, action, DispatcherPriority.Normal);
-        }
+            => await DispatchSafelyAsync(dispatcher, action, DispatcherPriority.Normal);
 
         public static async Task DispatchSafelyAsync(Dispatcher dispatcher, Action action, DispatcherPriority priority)
         {
@@ -78,7 +74,7 @@ namespace GBLive.Desktop.Common
             }
             else
             {
-                string errorMessage = string.Format(CultureInfo.CurrentCulture, "Uri.TryCreate false on {0}", uri);
+                string errorMessage = string.Format(CultureInfo.CurrentCulture, "Uri.TryCreate failed on {0}", uri);
 
                 Log.LogMessage(errorMessage);
             }

@@ -92,46 +92,37 @@ namespace GBLive.Desktop.GiantBomb
                     Settings.UpcomingJson.AbsoluteUri,
                     status);
 
-                await Log.LogMessageAsync(error)
-                    .ConfigureAwait(false);
+                await Log.LogMessageAsync(error).ConfigureAwait(false);
 
                 return;
             }
-
-            JObject json = Parse(raw);
-
-            if (json == null)
+            
+            if (Parse(raw) is JObject json)
             {
-                return;
+                Process(json);
             }
-
-            Process(json);
         }
         
         private async Task<(string raw, HttpStatusCode status)> DownloadJsonAsync()
         {
-            string text = string.Empty;
-            HttpStatusCode status = default(HttpStatusCode);
-
             try
             {
-                var response = await client.GetAsync(Settings.UpcomingJson)
-                    .ConfigureAwait(false);
-
-                status = response.StatusCode;
-
-                if (status != HttpStatusCode.OK)
+                using (var response = await client.GetAsync(Settings.UpcomingJson).ConfigureAwait(false))
                 {
-                    return (string.Empty, status);
-                }
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        return (string.Empty, response.StatusCode);
+                    }
+                    
+                    string text = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-                text = await response.Content.ReadAsStringAsync()
-                    .ConfigureAwait(false);
+                    return (text, response.StatusCode);
+                }
             }
             catch (HttpRequestException) { }
             catch (TaskCanceledException ex) when (ex.InnerException is HttpRequestException) { }
 
-            return (text, status);
+            return (string.Empty, default(HttpStatusCode));
         }
 
         private static JObject Parse(string raw)
@@ -169,10 +160,7 @@ namespace GBLive.Desktop.GiantBomb
             }
         }
         
-        private void SetLiveStatus(JToken token)
-        {
-            _isLive = token.HasValues;
-        }
+        private void SetLiveStatus(JToken token) => _isLive = token.HasValues;
 
         private void SetLiveShowName(JToken token)
         {
@@ -189,12 +177,10 @@ namespace GBLive.Desktop.GiantBomb
         private static IEnumerable<UpcomingEvent> CreateEvents(JToken upcoming)
         {
             var events = new List<UpcomingEvent>();
-
-            Action eventCountdownFired = () => Utils.OpenUriInBrowser(Settings.Homepage);
-
+            
             foreach (JToken each in upcoming)
             {
-                if (UpcomingEvent.TryCreate(each, eventCountdownFired, out UpcomingEvent newEvent))
+                if (UpcomingEvent.TryCreate(each, out UpcomingEvent newEvent))
                 {
                     events.Add(newEvent);
                 }

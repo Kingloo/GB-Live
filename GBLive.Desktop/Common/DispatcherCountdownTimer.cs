@@ -14,8 +14,7 @@ namespace GBLive.Desktop.Common
         #endregion
 
         #region Properties
-        public bool IsActive
-            => (timer != null);
+        public bool IsActive => (timer != null);
 
         public TimeSpan TimeLeft
             => IsActive ? ((created + timer.Interval) - DateTime.Now) : TimeSpan.Zero;
@@ -82,7 +81,7 @@ namespace GBLive.Desktop.Common
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(GetType().Name);
+            sb.AppendLine(GetType().FullName);
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Created at: {0}", created.ToString(CultureInfo.CurrentCulture)));
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Active: {0}", IsActive));
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Time left: {0}", TimeLeft.ToString()));

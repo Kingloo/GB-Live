@@ -37,10 +37,7 @@ namespace GBLive.Desktop.Common
         }
 
 
-        public static void LogException(Exception ex)
-        {
-            LogException(ex, string.Empty);
-        }
+        public static void LogException(Exception ex) => LogException(ex, string.Empty);
 
         public static void LogException(Exception ex, string message)
         {
@@ -62,10 +59,7 @@ namespace GBLive.Desktop.Common
         }
 
         public static async Task LogExceptionAsync(Exception ex)
-        {
-            await LogExceptionAsync(ex)
-                .ConfigureAwait(false);
-        }
+            => await LogExceptionAsync(ex).ConfigureAwait(false);
 
         public static async Task LogExceptionAsync(Exception ex, string message)
         {
@@ -83,8 +77,7 @@ namespace GBLive.Desktop.Common
             sb.AppendLine(ex.Message);
             sb.AppendLine(ex.StackTrace);
 
-            await WriteTextToFileAsync(sb.ToString(), rounds)
-                .ConfigureAwait(false);
+            await WriteTextToFileAsync(sb.ToString(), rounds).ConfigureAwait(false);
         }
 
 
@@ -185,8 +178,7 @@ namespace GBLive.Desktop.Common
                 {
                     fsAsync = null;
 
-                    await sw.WriteLineAsync(log)
-                        .ConfigureAwait(false);
+                    await sw.WriteLineAsync(log).ConfigureAwait(false);
                 }
             }
             catch (IOException)
@@ -214,11 +206,9 @@ namespace GBLive.Desktop.Common
 
                 int toWait = Convert.ToInt32(fixedWait) + variation;
 
-                await Task.Delay(toWait)
-                    .ConfigureAwait(false);
+                await Task.Delay(toWait).ConfigureAwait(false);
 
-                await WriteTextToFileAsync(log, rounds - 1)
-                    .ConfigureAwait(false);
+                await WriteTextToFileAsync(log, rounds - 1).ConfigureAwait(false);
             }
         }
     }

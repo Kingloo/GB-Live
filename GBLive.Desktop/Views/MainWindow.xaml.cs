@@ -32,9 +32,7 @@ namespace GBLive.Desktop.Views
         }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            await _viewModel.UpdateAsync();
-        }
+            => await _viewModel.UpdateAsync();
         
         private async void MainWindow_KeyDown(object sender, KeyEventArgs e)
         {
@@ -63,16 +61,19 @@ namespace GBLive.Desktop.Views
                 sb.AppendLine(gb.ToString());
             }
 
-            await Log.LogMessageAsync(sb.ToString())
-                .ConfigureAwait(false);
+            await Log.LogMessageAsync(sb.ToString()).ConfigureAwait(false);
         }
 
         private async Task ManualUpdateAsync()
         {
+            var task = Task.Run(() => _viewModel.UpdateAsync());
+
             Opacity = 0.5d;
             Title = string.Format(CultureInfo.CurrentCulture, "{0}: updating...", appName);
 
-            await _viewModel.UpdateAsync();
+            //await _viewModel.UpdateAsync();
+
+            await task;
 
             Opacity = 1.0d;
             Title = appName;
@@ -86,9 +87,7 @@ namespace GBLive.Desktop.Views
         }
 
         private void MainWindow_LocationChanged(object sender, EventArgs e)
-        {
-            CalculateMaxHeight();
-        }
+            => CalculateMaxHeight();
 
         private void CalculateMaxHeight()
         {
@@ -110,8 +109,6 @@ namespace GBLive.Desktop.Views
         }
 
         private void EventList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            _viewModel.GoToHomepage();
-        }
+            => _viewModel.GoToHomepage();
     }
 }
