@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Text;
+using System.Windows;
 using System.Windows.Threading;
 
 namespace GBLive.Desktop.Common
@@ -10,7 +11,8 @@ namespace GBLive.Desktop.Common
         #region Fields
         private readonly DateTime created = DateTime.Now;
         private readonly Action tick = null;
-        private DispatcherTimer timer = null;
+        private DispatcherTimer timer
+            = new DispatcherTimer(DispatcherPriority.Background, Application.Current.Dispatcher);
         #endregion
 
         #region Properties
@@ -30,11 +32,8 @@ namespace GBLive.Desktop.Common
             }
 
             this.tick = tick ?? throw new ArgumentNullException(nameof(tick));
-
-            timer = new DispatcherTimer
-            {
-                Interval = new TimeSpan((time - DateTime.Now).Ticks)
-            };
+            
+            timer.Interval = new TimeSpan((time - DateTime.Now).Ticks);
 
             timer.Tick += Timer_Tick;
         }
@@ -48,11 +47,8 @@ namespace GBLive.Desktop.Common
             }
 
             this.tick = tick ?? throw new ArgumentNullException(nameof(tick));
-
-            timer = new DispatcherTimer
-            {
-                Interval = span
-            };
+            
+            timer.Interval = span;
 
             timer.Tick += Timer_Tick;
         }

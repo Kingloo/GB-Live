@@ -53,10 +53,7 @@ namespace GBLive.Desktop.Views
 
         public void StartUpdateTimer()
         {
-            updateTimer = new DispatcherTimer(DispatcherPriority.Background)
-            {
-                Interval = Settings.UpdateInterval
-            };
+            updateTimer = new DispatcherTimer() { Interval = Settings.UpdateInterval };
 
             updateTimer.Tick += async (s, e) => await UpdateAsync();
 
@@ -95,7 +92,7 @@ namespace GBLive.Desktop.Views
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(GetType().Name);
+            sb.AppendLine(GetType().FullName);
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "There are {0} events", Events.Count));
             sb.AppendLine(IsLive.ToString(CultureInfo.CurrentCulture));
             sb.AppendLine(LiveShowName);

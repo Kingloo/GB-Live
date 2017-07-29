@@ -11,7 +11,7 @@ namespace GBLive.Desktop.GiantBomb
     public class UpcomingEvent : IComparable<UpcomingEvent>, IEquatable<UpcomingEvent>
     {
         #region Fields
-        private DispatcherCountdownTimer countdownTimer = default(DispatcherCountdownTimer);
+        private DispatcherCountdownTimer countdownTimer = null;
 
         private static Uri fallbackImageUri
             = new Uri("https://static.giantbomb.com/bundles/phoenixsite/images/core/loose/apple-touch-icon-precomposed-gb.png");
@@ -48,7 +48,22 @@ namespace GBLive.Desktop.GiantBomb
             _imageUri = imageUri;
         }
 
-        public static bool TryCreate(JToken token, out UpcomingEvent outEvent)
+        private UpcomingEvent(
+            string title,
+            DateTime time,
+            bool isPremium,
+            string eventType,
+            Uri imageUri,
+            bool startTimer)
+            : this(title, time, isPremium, eventType, imageUri)
+        {
+            if (startTimer)
+            {
+                StartCountdownTimer();
+            }
+        }
+
+        public static bool TryCreate(JToken token, bool startTimer, out UpcomingEvent outEvent)
         {
             if (token == null)
             {
@@ -67,8 +82,10 @@ namespace GBLive.Desktop.GiantBomb
             bool isPremium = GetPremium(token);
             string eventType = GetEventType(token);
             Uri imageUri = GetImageUri(token);
-            
-            outEvent = new UpcomingEvent(title, time, isPremium, eventType, imageUri);
+
+            //outEvent = new UpcomingEvent(title, time, isPremium, eventType, imageUri);
+
+            outEvent = new UpcomingEvent(title, time, isPremium, eventType, imageUri, startTimer: startTimer);
 
             return true;
         }

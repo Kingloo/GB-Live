@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using GBLive.Desktop.Common;
 using GBLive.Desktop.Extensions;
@@ -49,9 +48,6 @@ namespace GBLive.Desktop.GiantBomb
 
             switch (e.Action)
             {
-                case NotifyCollectionChangedAction.Add:
-                    OnEventAdded(e.NewItems);
-                    break;
                 case NotifyCollectionChangedAction.Remove:
                     OnEventRemoved(e.OldItems);
                     break;
@@ -59,17 +55,7 @@ namespace GBLive.Desktop.GiantBomb
                     break;
             }
         }
-
-        private static void OnEventAdded(IList newItems)
-        {
-            var addedEvents = newItems.Cast<UpcomingEvent>();
-
-            foreach (var each in addedEvents)
-            {
-                each.StartCountdownTimer();
-            }
-        }
-
+        
         private static void OnEventRemoved(IList oldItems)
         {
             var removedEvents = oldItems.Cast<UpcomingEvent>();
@@ -121,6 +107,10 @@ namespace GBLive.Desktop.GiantBomb
             }
             catch (HttpRequestException) { }
             catch (TaskCanceledException ex) when (ex.InnerException is HttpRequestException) { }
+            catch (TaskCanceledException ex)
+            {
+                await Log.LogExceptionAsync(ex).ConfigureAwait(false);
+            }
 
             return (string.Empty, default(HttpStatusCode));
         }
@@ -180,7 +170,7 @@ namespace GBLive.Desktop.GiantBomb
             
             foreach (JToken each in upcoming)
             {
-                if (UpcomingEvent.TryCreate(each, out UpcomingEvent newEvent))
+                if (UpcomingEvent.TryCreate(each, true, out UpcomingEvent newEvent))
                 {
                     events.Add(newEvent);
                 }
@@ -222,14 +212,7 @@ namespace GBLive.Desktop.GiantBomb
             _events.RemoveRange(toRemove.ToList());
         }
 
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.AppendLine(GetType().FullName);
-
-            return sb.ToString();
-        }
+        public override string ToString() => GetType().FullName;
 
         #region IDisposable Support
         private bool disposedValue = false;
