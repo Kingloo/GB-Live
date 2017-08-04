@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using GBLive.Desktop.Common;
 using GBLive.Desktop.Extensions;
@@ -212,7 +213,15 @@ namespace GBLive.Desktop.GiantBomb
             _events.RemoveRange(toRemove.ToList());
         }
 
-        public override string ToString() => GetType().FullName;
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendLine(GetType().FullName);
+            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "{0} events", Events.Count));
+
+            return sb.ToString();
+        }
 
         #region IDisposable Support
         private bool disposedValue = false;

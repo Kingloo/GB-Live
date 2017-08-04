@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Windows.Threading;
 using GBLive.Desktop.Common;
 using Newtonsoft.Json.Linq;
 
@@ -149,7 +150,7 @@ namespace GBLive.Desktop.GiantBomb
                 Action goToHomepage = () => Utils.OpenUriInBrowser(Settings.Homepage);
                 Action notify       = () => NotificationService.Send(Title, goToHomepage);
 
-                countdownTimer = new DispatcherCountdownTimer(TimeSpan.FromTicks(ticks), notify);
+                countdownTimer = new DispatcherCountdownTimer(TimeSpan.FromTicks(ticks), notify, DispatcherPriority.ApplicationIdle);
 
                 countdownTimer.Start();
             }

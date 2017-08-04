@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Threading;
 using GBLive.Desktop.Common;
 
 namespace GBLive.Desktop.Views
@@ -51,7 +53,7 @@ namespace GBLive.Desktop.Views
                     break;
             }
         }
-
+        
         private async Task LogEventsAsync()
         {
             StringBuilder sb = new StringBuilder();
@@ -70,9 +72,7 @@ namespace GBLive.Desktop.Views
 
             Opacity = 0.5d;
             Title = string.Format(CultureInfo.CurrentCulture, "{0}: updating...", appName);
-
-            //await _viewModel.UpdateAsync();
-
+            
             await task;
 
             Opacity = 1.0d;
@@ -110,5 +110,15 @@ namespace GBLive.Desktop.Views
 
         private void EventList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
             => _viewModel.GoToHomepage();
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendLine(GetType().FullName);
+            sb.AppendLine(_viewModel.ToString());
+
+            return sb.ToString();
+        }
     }
 }
