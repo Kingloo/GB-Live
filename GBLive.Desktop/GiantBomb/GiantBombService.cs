@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -20,6 +18,7 @@ namespace GBLive.Desktop.GiantBomb
     {
         #region Fields
         private readonly HttpClient client = new HttpClient();
+        private string jsonResponseCache = string.Empty;
         #endregion
 
         #region Properties
@@ -36,34 +35,26 @@ namespace GBLive.Desktop.GiantBomb
 
         public GiantBombService()
         {
-            _events.CollectionChanged += _events_CollectionChanged;
-
             client.DefaultRequestHeaders.Add("User-Agent", Settings.UserAgent);
         }
-
-        private void _events_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        
+        public void AddUpcomingEvent(UpcomingEvent upcomingEvent)
         {
-            // NEVER use .Reset
-            // .Reset does not provide a list of what was removed
-            // we need such a list so as to be able to unhook the countdown timer events
-
-            switch (e.Action)
+            if (!_events.Contains(upcomingEvent) && upcomingEvent.Time > DateTime.Now)
             {
-                case NotifyCollectionChangedAction.Remove:
-                    OnEventRemoved(e.OldItems);
-                    break;
-                default:
-                    break;
+                _events.Add(upcomingEvent);
+
+                upcomingEvent.StartCountdownTimer();
             }
         }
-        
-        private static void OnEventRemoved(IList oldItems)
-        {
-            var removedEvents = oldItems.Cast<UpcomingEvent>();
 
-            foreach (var each in removedEvents)
+        public void RemoveUpcomingEvent(UpcomingEvent upcomingEvent)
+        {
+            if (_events.Contains(upcomingEvent))
             {
-                each.StopCountdownTimer();
+                upcomingEvent.StopCountdownTimer();
+
+                _events.Remove(upcomingEvent);
             }
         }
 
@@ -77,11 +68,20 @@ namespace GBLive.Desktop.GiantBomb
                     CultureInfo.CurrentCulture,
                     "request for {0} failed: {1}",
                     Settings.UpcomingJson.AbsoluteUri,
-                    status);
+                    status.ToString());
 
                 await Log.LogMessageAsync(error).ConfigureAwait(false);
 
                 return;
+            }
+
+            if (raw.Equals(jsonResponseCache))
+            {
+                return;
+            }
+            else
+            {
+                jsonResponseCache = raw;
             }
             
             if (Parse(raw) is JObject json)
@@ -144,9 +144,12 @@ namespace GBLive.Desktop.GiantBomb
             if (json.TryGetValue("upcoming", StringComparison.OrdinalIgnoreCase, out JToken upcoming))
             {
                 var events = CreateEvents(upcoming);
-
-                AddEvents(events);
-
+                
+                foreach (var each in events)
+                {
+                    AddUpcomingEvent(each);
+                }
+                
                 RemoveExpired(events);
             }
         }
@@ -171,24 +174,13 @@ namespace GBLive.Desktop.GiantBomb
             
             foreach (JToken each in upcoming)
             {
-                if (UpcomingEvent.TryCreate(each, true, out UpcomingEvent newEvent))
+                if (UpcomingEvent.TryCreate(each, out UpcomingEvent newEvent))
                 {
                     events.Add(newEvent);
                 }
             }
 
             return events.Any() ? events : Enumerable.Empty<UpcomingEvent>();
-        }
-
-        private void AddEvents(IEnumerable<UpcomingEvent> events)
-        {
-            foreach (UpcomingEvent each in events)
-            {
-                if (!_events.Contains(each) && (each.Time > DateTime.Now))
-                {
-                    _events.Add(each);
-                }
-            }
         }
         
         private void RemoveExpired(IEnumerable<UpcomingEvent> eventsFromWeb)
@@ -212,7 +204,7 @@ namespace GBLive.Desktop.GiantBomb
 
             _events.RemoveRange(toRemove.ToList());
         }
-
+        
         public override string ToString()
         {
             var sb = new StringBuilder();

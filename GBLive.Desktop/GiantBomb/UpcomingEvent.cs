@@ -35,7 +35,7 @@ namespace GBLive.Desktop.GiantBomb
         public Uri ImageUri => _imageUri;
         #endregion
         
-        private UpcomingEvent(
+        public UpcomingEvent(
             string title,
             DateTime time,
             bool isPremium,
@@ -46,25 +46,10 @@ namespace GBLive.Desktop.GiantBomb
             _time = time;
             _isPremium = isPremium;
             _eventType = eventType;
-            _imageUri = imageUri;
+            _imageUri = imageUri ?? throw new ArgumentNullException(nameof(imageUri));
         }
-
-        private UpcomingEvent(
-            string title,
-            DateTime time,
-            bool isPremium,
-            string eventType,
-            Uri imageUri,
-            bool startTimer)
-            : this(title, time, isPremium, eventType, imageUri)
-        {
-            if (startTimer)
-            {
-                StartCountdownTimer();
-            }
-        }
-
-        public static bool TryCreate(JToken token, bool startTimer, out UpcomingEvent outEvent)
+        
+        public static bool TryCreate(JToken token, out UpcomingEvent outEvent)
         {
             if (token == null)
             {
@@ -83,10 +68,8 @@ namespace GBLive.Desktop.GiantBomb
             bool isPremium = GetPremium(token);
             string eventType = GetEventType(token);
             Uri imageUri = GetImageUri(token);
-
-            //outEvent = new UpcomingEvent(title, time, isPremium, eventType, imageUri);
-
-            outEvent = new UpcomingEvent(title, time, isPremium, eventType, imageUri, startTimer: startTimer);
+            
+            outEvent = new UpcomingEvent(title, time, isPremium, eventType, imageUri);
 
             return true;
         }
@@ -143,6 +126,11 @@ namespace GBLive.Desktop.GiantBomb
 
         public void StartCountdownTimer()
         {
+            if (countdownTimer != null && countdownTimer.IsCountdownRunning)
+            {
+                return;
+            }
+
             Int64 ticks = CalculateTicksUntilTime(Time);
 
             if (IsValidNumberOfTicks(ticks))
@@ -153,6 +141,12 @@ namespace GBLive.Desktop.GiantBomb
                 countdownTimer = new DispatcherCountdownTimer(TimeSpan.FromTicks(ticks), notify, DispatcherPriority.ApplicationIdle);
 
                 countdownTimer.Start();
+            }
+            else
+            {
+                string message = string.Format(CultureInfo.CurrentCulture, "{0}: countdown not started, {1} is too far in the future", Title, Time);
+
+                Log.LogMessage(message);
             }
         }
 

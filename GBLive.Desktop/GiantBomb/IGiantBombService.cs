@@ -9,6 +9,9 @@ namespace GBLive.Desktop.GiantBomb
         string LiveShowName { get; }
         IReadOnlyCollection<UpcomingEvent> Events { get; }
 
+        void AddUpcomingEvent(UpcomingEvent upcomingEvent);
+        void RemoveUpcomingEvent(UpcomingEvent upcomingEvent);
+
         Task UpdateAsync();
     }
 }
