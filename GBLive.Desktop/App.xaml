@@ -58,8 +58,8 @@
                 </Grid.Resources>
 
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="55" />
-                    <RowDefinition Height="55" />
+                    <RowDefinition Height="60" /> <!--55-->
+                    <RowDefinition Height="60" /> <!--55-->
                 </Grid.RowDefinitions>
 
                 <Grid.ColumnDefinitions>

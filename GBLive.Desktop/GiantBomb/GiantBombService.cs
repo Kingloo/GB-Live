@@ -40,6 +40,8 @@ namespace GBLive.Desktop.GiantBomb
         
         public void AddUpcomingEvent(UpcomingEvent upcomingEvent)
         {
+            if (upcomingEvent == null) { throw new ArgumentNullException(nameof(upcomingEvent)); }
+
             if (!_events.Contains(upcomingEvent) && upcomingEvent.Time > DateTime.Now)
             {
                 _events.Add(upcomingEvent);
@@ -50,6 +52,8 @@ namespace GBLive.Desktop.GiantBomb
 
         public void RemoveUpcomingEvent(UpcomingEvent upcomingEvent)
         {
+            if (upcomingEvent == null) { throw new ArgumentNullException(nameof(upcomingEvent)); }
+
             if (_events.Contains(upcomingEvent))
             {
                 upcomingEvent.StopCountdownTimer();
