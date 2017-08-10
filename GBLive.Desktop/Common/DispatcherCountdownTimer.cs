@@ -10,7 +10,7 @@ namespace GBLive.Desktop.Common
         #region Fields
         private readonly DateTime created = DateTime.Now;
         private readonly Action tick = null;
-        private DispatcherTimer timer = new DispatcherTimer(DispatcherPriority.ApplicationIdle);
+        private DispatcherTimer timer = new DispatcherTimer(DispatcherPriority.Background);
         #endregion
 
         #region Properties
@@ -31,11 +31,15 @@ namespace GBLive.Desktop.Common
             this.tick = tick ?? throw new ArgumentNullException(nameof(tick));
 
             timer.Interval = span;
+
+            timer.Tick += Timer_Tick;
         }
         
         private void Timer_Tick(object sender, EventArgs e)
         {
             tick();
+
+            Log.LogMessage($"ticked at {DateTime.Now}");
 
             Stop();
         }
