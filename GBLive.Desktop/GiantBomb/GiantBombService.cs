@@ -54,10 +54,10 @@ namespace GBLive.Desktop.GiantBomb
         {
             if (upcomingEvent == null) { throw new ArgumentNullException(nameof(upcomingEvent)); }
 
+            upcomingEvent.StopCountdownTimer();
+
             if (_events.Contains(upcomingEvent))
             {
-                upcomingEvent.StopCountdownTimer();
-
                 _events.Remove(upcomingEvent);
             }
         }
@@ -153,7 +153,7 @@ namespace GBLive.Desktop.GiantBomb
                 {
                     AddUpcomingEvent(each);
                 }
-                
+
                 RemoveExpired(events);
             }
         }
@@ -201,12 +201,11 @@ namespace GBLive.Desktop.GiantBomb
                            || each.Time < DateTime.Now
                            || !eventsFromWeb.Contains(each)
                            select each;
-
-            // NEVER use .Reset
-            // .Reset does not provide a list of what was removed
-            // we need such a list so as to be able to unhook the countdown timer events
-
-            _events.RemoveRange(toRemove.ToList());
+            
+            foreach (UpcomingEvent each in toRemove.ToList())
+            {
+                RemoveUpcomingEvent(each);
+            }
         }
         
         public override string ToString()
