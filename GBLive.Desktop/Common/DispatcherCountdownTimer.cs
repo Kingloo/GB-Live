@@ -38,9 +38,7 @@ namespace GBLive.Desktop.Common
         private void Timer_Tick(object sender, EventArgs e)
         {
             tick();
-
-            Log.LogMessage($"ticked at {DateTime.Now}");
-
+            
             Stop();
         }
 

@@ -178,3 +178,4 @@ FakesAssemblies/
 Service References/
 *.pfx
 BuildProcessTemplates/
+.vs/
