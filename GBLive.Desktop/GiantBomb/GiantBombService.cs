@@ -8,7 +8,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using GBLive.Desktop.Common;
-using GBLive.Desktop.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -17,7 +16,14 @@ namespace GBLive.Desktop.GiantBomb
     public class GiantBombService : IGiantBombService, IDisposable
     {
         #region Fields
-        private readonly HttpClient client = new HttpClient();
+        private static HttpClientHandler handler = new HttpClientHandler
+        {
+            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+            MaxAutomaticRedirections = 3
+        };
+
+        private readonly HttpClient client = new HttpClient(handler);
+
         private string jsonResponseCache = string.Empty;
         #endregion
 
@@ -36,6 +42,8 @@ namespace GBLive.Desktop.GiantBomb
         public GiantBombService()
         {
             client.DefaultRequestHeaders.Add("User-Agent", Settings.UserAgent);
+
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
         }
         
         public void AddUpcomingEvent(UpcomingEvent upcomingEvent)
@@ -79,18 +87,14 @@ namespace GBLive.Desktop.GiantBomb
                 return;
             }
 
-            if (raw.Equals(jsonResponseCache))
-            {
-                return;
-            }
-            else
+            if (!raw.Equals(jsonResponseCache))
             {
                 jsonResponseCache = raw;
-            }
-            
-            if (Parse(raw) is JObject json)
-            {
-                Process(json);
+
+                if (Parse(raw) is JObject json)
+                {
+                    Process(json);
+                }
             }
         }
         
@@ -114,7 +118,7 @@ namespace GBLive.Desktop.GiantBomb
             catch (TaskCanceledException ex) when (ex.InnerException is HttpRequestException) { }
             catch (TaskCanceledException ex)
             {
-                await Log.LogExceptionAsync(ex).ConfigureAwait(false);
+                await Log.LogExceptionAsync(ex, false).ConfigureAwait(false);
             }
 
             return (string.Empty, default(HttpStatusCode));
@@ -130,7 +134,7 @@ namespace GBLive.Desktop.GiantBomb
             }
             catch (JsonReaderException ex)
             {
-                Log.LogException(ex);
+                Log.LogException(ex, false);
             }
 
             return json;
@@ -158,7 +162,8 @@ namespace GBLive.Desktop.GiantBomb
             }
         }
         
-        private void SetLiveStatus(JToken token) => _isLive = token.HasValues;
+        private void SetLiveStatus(JToken token)
+            => _isLive = token.HasValues;
 
         private void SetLiveShowName(JToken token)
         {
@@ -184,7 +189,7 @@ namespace GBLive.Desktop.GiantBomb
                 }
             }
 
-            return events.Any() ? events : Enumerable.Empty<UpcomingEvent>();
+            return events.Count > 0 ? events : Enumerable.Empty<UpcomingEvent>();
         }
         
         private void RemoveExpired(IEnumerable<UpcomingEvent> eventsFromWeb)
@@ -228,6 +233,7 @@ namespace GBLive.Desktop.GiantBomb
                 if (disposing)
                 {
                     client.Dispose();
+                    handler.Dispose();
                 }
                 
                 disposedValue = true;
@@ -237,6 +243,7 @@ namespace GBLive.Desktop.GiantBomb
         public void Dispose()
         {
             Dispose(true);
+
             GC.SuppressFinalize(this);
         }
         #endregion

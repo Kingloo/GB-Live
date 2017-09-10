@@ -21,8 +21,15 @@ namespace GBLive.Desktop.GiantBomb
         private readonly string _title = string.Empty;
         public string Title => _title;
 
-        private readonly DateTime _time = DateTime.MinValue;
-        public DateTime Time => _time;
+        private DateTime _time = DateTime.MinValue;
+        public DateTime Time
+        {
+            get => _time;
+            set
+            {
+                _time = value;
+            }
+        }
 
         private readonly bool _isPremium = false;
         public bool IsPremium => _isPremium;
@@ -177,8 +184,13 @@ namespace GBLive.Desktop.GiantBomb
 
             return ticksUntilShouldNotify;
         }
-        
-        public void StopCountdownTimer() => countdownTimer?.Stop();
+
+        public void StopCountdownTimer()
+        {
+            countdownTimer?.Stop();
+
+            Time = DateTime.MaxValue;
+        }
 
         public int CompareTo(UpcomingEvent other)
         {

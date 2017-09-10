@@ -23,7 +23,7 @@ namespace GBLive.Desktop
 
         private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs ex)
         {
-            Log.LogException(ex.Exception);
+            Log.LogException(ex.Exception, true);
         }
     }
 }

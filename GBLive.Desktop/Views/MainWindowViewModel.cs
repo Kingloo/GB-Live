@@ -80,6 +80,7 @@ namespace GBLive.Desktop.Views
         {
             OnPropertyChanged(nameof(IsLive));
             OnPropertyChanged(nameof(LiveShowName));
+            OnPropertyChanged(nameof(UpcomingEvent.Time));
         }
 
         public void GoToHomepage() => GoToUri(Settings.Homepage);

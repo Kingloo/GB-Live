@@ -15,7 +15,17 @@ namespace GBLive.Desktop.Common
 
         private static string GetLogFilePath()
         {
-            string dir = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string dir = string.Empty;
+
+            try
+            {
+                dir = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            }
+            catch (PlatformNotSupportedException)
+            {
+                dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            }
+
             string filename = "logfile.txt";
 
             return Path.Combine(dir, filename);
@@ -37,9 +47,10 @@ namespace GBLive.Desktop.Common
         }
 
 
-        public static void LogException(Exception ex) => LogException(ex, string.Empty);
+        public static void LogException(Exception ex, bool includeStackTrace)
+            => LogException(ex, string.Empty, includeStackTrace);
 
-        public static void LogException(Exception ex, string message)
+        public static void LogException(Exception ex, string message, bool includeStackTrace)
         {
             if (ex == null) { throw new ArgumentNullException(nameof(ex)); }
             if (message == null) { throw new ArgumentNullException(nameof(message)); }
@@ -53,15 +64,19 @@ namespace GBLive.Desktop.Common
 
             sb.AppendLine(ex.GetType().Name);
             sb.AppendLine(ex.Message);
-            sb.AppendLine(ex.StackTrace);
 
+            if (includeStackTrace)
+            {
+                sb.AppendLine(ex.StackTrace);
+            }
+            
             WriteTextToFile(sb.ToString(), rounds);
         }
 
-        public static async Task LogExceptionAsync(Exception ex)
-            => await LogExceptionAsync(ex).ConfigureAwait(false);
+        public static async Task LogExceptionAsync(Exception ex, bool includeStackTrace)
+            => await LogExceptionAsync(ex, string.Empty, includeStackTrace).ConfigureAwait(false);
 
-        public static async Task LogExceptionAsync(Exception ex, string message)
+        public static async Task LogExceptionAsync(Exception ex, string message, bool includeStackTrace)
         {
             if (ex == null) { throw new ArgumentNullException(nameof(ex)); }
             if (message == null) { throw new ArgumentNullException(nameof(message)); }
@@ -75,8 +90,12 @@ namespace GBLive.Desktop.Common
 
             sb.AppendLine(ex.GetType().Name);
             sb.AppendLine(ex.Message);
-            sb.AppendLine(ex.StackTrace);
 
+            if (includeStackTrace)
+            {
+                sb.AppendLine(ex.StackTrace);
+            }
+            
             await WriteTextToFileAsync(sb.ToString(), rounds).ConfigureAwait(false);
         }
 
@@ -87,7 +106,7 @@ namespace GBLive.Desktop.Common
 
             DateTime time = DateTime.Now;
             string process = Process.GetCurrentProcess().MainModule.ModuleName;
-            
+
             string log = string.Format(CultureInfo.CurrentCulture, "{0} - {1}", time, process);
 
             sb.AppendLine(log);
@@ -95,8 +114,8 @@ namespace GBLive.Desktop.Common
 
             return sb.ToString();
         }
-
-        private static void WriteTextToFile(string text, int rounds = 1)
+        
+        private static void WriteTextToFile(string text, int rounds)
         {
             if (text == null) { throw new ArgumentNullException(nameof(text)); }
             if (rounds < 1) { throw new ArgumentException("WriteTextToFile: rounds cannot be < 1"); }
@@ -114,7 +133,7 @@ namespace GBLive.Desktop.Common
                     FileAccess.Write,
                     FileShare.None,
                     4096,
-                    false);
+                    useAsync: false);
 
                 using (StreamWriter sw = new StreamWriter(fs))
                 {
@@ -153,8 +172,8 @@ namespace GBLive.Desktop.Common
                 WriteTextToFile(log, rounds - 1);
             }
         }
-
-        private static async Task WriteTextToFileAsync(string text, int rounds = 1)
+        
+        private static async Task WriteTextToFileAsync(string text, int rounds)
         {
             if (text == null) { throw new ArgumentNullException(nameof(text)); }
             if (rounds < 1) { throw new ArgumentException("WriteTextToFileAsync: rounds cannot be < 1"); }
@@ -172,7 +191,7 @@ namespace GBLive.Desktop.Common
                     FileAccess.Write,
                     FileShare.None,
                     4096,
-                    true);
+                    useAsync: true);
 
                 using (StreamWriter sw = new StreamWriter(fsAsync))
                 {
