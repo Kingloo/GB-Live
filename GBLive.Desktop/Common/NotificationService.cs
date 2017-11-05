@@ -70,45 +70,18 @@ namespace GBLive.Desktop.Common
                 notifyWindowCloseTimer.Start();
             }
 
-            private static Label BuildTitleLabel(string title)
-            {
-                return new Label
-                {
-                    Style = BuildLabelTitleStyle(),
-                    Content = new TextBlock
-                    {
-                        Text = title,
-                        TextTrimming = TextTrimming.CharacterEllipsis
-                    }
-                };
-            }
-
-            private static Label BuildDescriptionLabel(string description)
-            {
-                return new Label
-                {
-                    Style = BuildLabelDescriptionStyle(),
-                    Content = new TextBlock
-                    {
-                        Text = description,
-                        TextTrimming = TextTrimming.CharacterEllipsis,
-                        FontStyle = FontStyles.Italic
-                    }
-                };
-            }
-
             private static Style BuildWindowStyle(Action action)
             {
                 Style style = new Style(typeof(NotificationWindow));
 
                 if (action != null)
                 {
-                    var handler                 = new MouseButtonEventHandler((s, e) => action());
-                    var leftMouseDoubleClick    = new EventSetter(MouseDoubleClickEvent, handler);
+                    var handler = new MouseButtonEventHandler((s, e) => action());
+                    var leftMouseDoubleClick = new EventSetter(MouseDoubleClickEvent, handler);
 
                     style.Setters.Add(leftMouseDoubleClick);
                 }
-                
+
                 style.Setters.Add(new Setter(BackgroundProperty, Brushes.Black));
                 style.Setters.Add(new Setter(ForegroundProperty, Brushes.Transparent));
 
@@ -154,7 +127,7 @@ namespace GBLive.Desktop.Common
                         Height = GridLength.Auto
                     });
                 }
-                
+
                 return grid;
             }
 
@@ -175,7 +148,20 @@ namespace GBLive.Desktop.Common
                 return style;
             }
 
-            private static Style BuildLabelTitleStyle()
+            private static Label BuildTitleLabel(string title)
+            {
+                return new Label
+                {
+                    Style = BuildTitleLabelStyle(),
+                    Content = new TextBlock
+                    {
+                        Text = title,
+                        TextTrimming = TextTrimming.CharacterEllipsis
+                    }
+                };
+            }
+
+            private static Style BuildTitleLabelStyle()
             {
                 Style style = new Style(typeof(Label));
 
@@ -193,7 +179,21 @@ namespace GBLive.Desktop.Common
                 return style;
             }
 
-            private static Style BuildLabelDescriptionStyle()
+            private static Label BuildDescriptionLabel(string description)
+            {
+                return new Label
+                {
+                    Style = BuildDescriptionLabelStyle(),
+                    Content = new TextBlock
+                    {
+                        Text = description,
+                        TextTrimming = TextTrimming.CharacterEllipsis,
+                        FontStyle = FontStyles.Italic
+                    }
+                };
+            }
+
+            private static Style BuildDescriptionLabelStyle()
             {
                 Style style = new Style(typeof(Label));
 
