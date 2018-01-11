@@ -46,6 +46,8 @@ namespace GbLive.GiantBomb
 
         public async Task UpdateAsync()
         {
+            _events.Clear();
+
             (string raw, HttpStatusCode status) = await DownloadUpcomingAsync().ConfigureAwait(false);
 
             if (status != HttpStatusCode.OK)
@@ -108,7 +110,7 @@ namespace GbLive.GiantBomb
         private void Process(JObject json)
         {
             SetLiveDetails(json);
-            CreateEvents(json);
+            FindUpcomingEvents(json);
         }
         
         private void SetLiveDetails(JObject json)
@@ -136,7 +138,7 @@ namespace GbLive.GiantBomb
             }
         }
 
-        private void CreateEvents(JObject json)
+        private void FindUpcomingEvents(JObject json)
         {
             string tag = "upcoming";
 
@@ -190,6 +192,7 @@ namespace GbLive.GiantBomb
 
             return sb.ToString();
         }
+
 
         #region IDisposable Support
         private bool disposedValue = false;

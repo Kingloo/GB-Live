@@ -59,10 +59,10 @@ namespace GbLive.ViewModels
 
         public async Task UpdateAsync()
         {
-            await gbService.UpdateAsync();
-
             bool wasLive = IsLive;
 
+            await gbService.UpdateAsync();
+            
             IsLive = gbService.IsLive;
 
             if (!wasLive && IsLive)
@@ -79,8 +79,16 @@ namespace GbLive.ViewModels
 
         private void UpdateEvents(IReadOnlyList<UpcomingEvent> eventsFromWeb)
         {
-            AddNew(eventsFromWeb);
-            RemoveOld(eventsFromWeb);
+            if (eventsFromWeb.Count == 0)
+            {
+                _events.Clear();
+            }
+            else
+            {
+                AddNew(eventsFromWeb);
+
+                RemoveOld(eventsFromWeb);
+            }
         }
 
         private void AddNew(IReadOnlyList<UpcomingEvent> eventsFromWeb)
