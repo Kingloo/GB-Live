@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 
-namespace GBLive.Desktop.Common
+namespace GbLive.Common
 {
     public static class Utils
     {
@@ -25,6 +25,7 @@ namespace GBLive.Desktop.Common
                 dispatcher.Invoke(action, priority);
             }
         }
+
         
         public static async Task DispatchSafelyAsync(Dispatcher dispatcher, Action action)
             => await DispatchSafelyAsync(dispatcher, action, DispatcherPriority.Normal);
@@ -55,7 +56,7 @@ namespace GBLive.Desktop.Common
             }
             else
             {
-                string errorMessage = string.Format(CultureInfo.CurrentCulture, "Uri \"{0}\" was not absolute", uri.OriginalString);
+                string errorMessage = string.Format(CultureInfo.CurrentCulture, "{0} was not absolute", uri.OriginalString);
 
                 Log.LogMessage(errorMessage);
             }
@@ -74,7 +75,7 @@ namespace GBLive.Desktop.Common
             }
             else
             {
-                string errorMessage = string.Format(CultureInfo.CurrentCulture, "Uri.TryCreate failed on {0}", uri);
+                string errorMessage = string.Format(CultureInfo.CurrentCulture, "Uri.TryCreate failed on {0}", link);
 
                 Log.LogMessage(errorMessage);
             }

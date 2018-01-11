@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Text;
 using System.Windows.Threading;
 
-namespace GBLive.Desktop.Common
+namespace GbLive.Common
 {
     public class DispatcherCountdownTimer
     {

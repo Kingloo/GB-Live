@@ -4,7 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace GBLive.Desktop.Common
+namespace GbLive.Common
 {
     public static class NotificationService
     {
