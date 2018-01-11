@@ -146,9 +146,7 @@ namespace GbLive.GiantBomb
 
             TimeSpan fromNowToTime = time - DateTime.Now;
             
-            TimeSpan oneSecond = TimeSpan.FromTicks(10_000 * 1000 * 1);
-
-            TimeSpan untilShouldNotify = fromNowToTime.Add(oneSecond);
+            TimeSpan untilShouldNotify = fromNowToTime.Add(TimeSpan.FromSeconds(1d));
 
             return untilShouldNotify.Ticks;
         }
@@ -159,6 +157,14 @@ namespace GbLive.GiantBomb
             {
                 return false;
             }
+
+            /*
+                even though you can start a DispatcherTimer with a ticks of Int64,
+                the equivalent number of milliseconds cannot exceed Int32.MaxValue
+             
+                https://referencesource.microsoft.com/#WindowsBase/Base/System/Windows/Threading/DispatcherTimer.cs
+                -> ctor with TimeSpan, DispatcherPriority, EventHandler, Dispatcher
+            */
 
             Int64 millisecondsUntil = ticksUntilTime / 10_000;
 
@@ -193,36 +199,6 @@ namespace GbLive.GiantBomb
 
             return isSameTitle && isSameTime && areBothPremium && areSameEventType && isSameImage;
         }
-
-        //public override bool Equals(object obj)
-        //{
-        //    return base.Equals(obj);
-        //}
-
-        //public override int GetHashCode()
-        //{
-        //    return base.GetHashCode();
-        //}
-
-        //public static bool operator ==(UpcomingEvent left, UpcomingEvent right)
-        //{
-        //    return left.Equals(right);
-        //}
-
-        //public static bool operator !=(UpcomingEvent left, UpcomingEvent right)
-        //{
-        //    return !left.Equals(right);
-        //}
-
-        //public static bool operator >(UpcomingEvent left, UpcomingEvent right)
-        //{
-        //    return left.CompareTo(right) > 0;
-        //}
-
-        //public static bool operator <(UpcomingEvent left, UpcomingEvent right)
-        //{
-        //    return left.CompareTo(right) < 0;
-        //}
 
         public override string ToString()
         {
