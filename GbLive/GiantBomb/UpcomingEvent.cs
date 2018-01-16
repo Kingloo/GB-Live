@@ -166,7 +166,7 @@ namespace GbLive.GiantBomb
                 -> ctor with TimeSpan, DispatcherPriority, EventHandler, Dispatcher
             */
 
-            Int64 millisecondsUntil = ticksUntilTime / 10_000;
+            Int64 millisecondsUntil = ticksUntilTime / 10_000; // there are 10_000 ticks in 1 ms
 
             return millisecondsUntil <= Convert.ToInt64(Int32.MaxValue);
         }

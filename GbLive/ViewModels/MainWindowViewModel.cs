@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using GbLive.Common;
@@ -9,9 +11,8 @@ using GbLive.GiantBomb;
 
 namespace GbLive.ViewModels
 {
-    public class MainWindowViewModel : BindableBase, IDisposable
+    public class MainWindowViewModel : BindableBase
     {
-        private readonly GiantBombService gbService = new GiantBombService();
         private DispatcherTimer updateTimer = null;
 
         #region Properties
@@ -51,47 +52,35 @@ namespace GbLive.ViewModels
             updateTimer.Start();
         }
 
-        public static void GoToHome()
+        public void GoToHome()
             => Utils.OpenUriInBrowser(Settings.Home);
 
-        public static void GoToChat()
+        public void GoToChat()
             => Utils.OpenUriInBrowser(Settings.Chat);
 
         public async Task UpdateAsync()
         {
             bool wasLive = IsLive;
 
-            await gbService.UpdateAsync();
-            
-            IsLive = gbService.IsLive;
+            UpcomingResponse response = await GiantBombService.UpdateAsync();
 
+            IsLive = response.IsLive;
+            
             if (!wasLive && IsLive)
             {
                 NotificationService.Send(
                     Settings.IsLiveMessage,
                     () => Utils.OpenUriInBrowser(Settings.Chat));
             }
+            
+            LiveShowName = response.LiveShowName;
 
-            LiveShowName = gbService.LiveShowName;
+            AddNewEvents(response.Events);
 
-            UpdateEvents(gbService.Events);
+            RemoveOldEvents(response.Events);
         }
-
-        private void UpdateEvents(IReadOnlyList<UpcomingEvent> eventsFromWeb)
-        {
-            if (eventsFromWeb.Count == 0)
-            {
-                _events.Clear();
-            }
-            else
-            {
-                AddNew(eventsFromWeb);
-
-                RemoveOld(eventsFromWeb);
-            }
-        }
-
-        private void AddNew(IReadOnlyList<UpcomingEvent> eventsFromWeb)
+        
+        private void AddNewEvents(IReadOnlyList<UpcomingEvent> eventsFromWeb)
         {
             foreach (UpcomingEvent each in eventsFromWeb)
             {
@@ -104,7 +93,7 @@ namespace GbLive.ViewModels
             }
         }
 
-        private void RemoveOld(IReadOnlyList<UpcomingEvent> eventsFromWeb)
+        private void RemoveOldEvents(IReadOnlyList<UpcomingEvent> eventsFromWeb)
         {
             var toRemove = _events
                 .Where(x => x.Time < DateTime.Now || !eventsFromWeb.Contains(x))
@@ -114,35 +103,33 @@ namespace GbLive.ViewModels
             {
                 if (_events.Contains(each))
                 {
-                    _events.Remove(each);
-
                     each.StopCountdown();
+
+                    _events.Remove(each);
                 }
             }
         }
 
-        
-        #region IDisposable Support
-        private bool disposedValue = false;
-
-        protected virtual void Dispose(bool disposing)
+        public override string ToString()
         {
-            if (!disposedValue)
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine(GetType().FullName);
+            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "IsLive: {0}", IsLive.ToString(CultureInfo.CurrentCulture)));
+            sb.AppendLine(LiveShowName);
+            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "No. of Events: {0}", Events.Count.ToString()));
+
+            if (Events.Count > 0)
             {
-                if (disposing)
+                sb.AppendLine("Events: ");
+
+                foreach (UpcomingEvent each in Events)
                 {
-                    (gbService as IDisposable).Dispose();
+                    sb.Append(each.ToString());
                 }
-
-                disposedValue = true;
             }
+            
+            return sb.ToString();
         }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-        #endregion
     }
 }

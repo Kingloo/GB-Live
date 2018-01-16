@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -13,56 +12,44 @@ using Newtonsoft.Json.Linq;
 
 namespace GbLive.GiantBomb
 {
-    public class GiantBombService : IDisposable
+    public static class GiantBombService
     {
         private static HttpClient client = null;
 
-        #region Properties
-        private bool _isLive = false;
-        public bool IsLive => _isLive;
+        private static void InitClient()
+        {
+            var handler = new HttpClientHandler
+            {
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                MaxAutomaticRedirections = 2
+            };
 
-        private string _liveShowName = string.Empty;
-        public string LiveShowName => _liveShowName;
+            client = new HttpClient(handler, disposeHandler: true);
 
-        private readonly List<UpcomingEvent> _events = new List<UpcomingEvent>();
-        public IReadOnlyList<UpcomingEvent> Events => _events;
-        #endregion
-
-        public GiantBombService()
+            client.DefaultRequestHeaders.Add("User-Agent", Settings.UserAgent);
+        }
+        
+        public static async Task<UpcomingResponse> UpdateAsync()
         {
             if (client == null)
             {
-                var handler = new HttpClientHandler
-                {
-                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
-                    MaxAutomaticRedirections = 3
-                };
-
-                client = new HttpClient(handler, disposeHandler: true);
-
-                client.DefaultRequestHeaders.Add("User-Agent", Settings.UserAgent);
+                InitClient();
             }
-        }
-
-        public async Task UpdateAsync()
-        {
-            _events.Clear();
-
+            
             (string raw, HttpStatusCode status) = await DownloadUpcomingAsync().ConfigureAwait(false);
-
+            
             if (status != HttpStatusCode.OK)
             {
                 string errorMessage = string.Format(CultureInfo.CurrentCulture, "downloading JSON failed, status: {0}", status);
 
                 await Log.LogMessageAsync(errorMessage).ConfigureAwait(false);
 
-                return;
+                return null;
             }
-
-            if (Parse(raw) is JObject json)
-            {
-                Process(json);
-            }
+            
+            return Parse(raw) is JObject json
+                ? Process(json)
+                : null;
         }
         
         private static async Task<(string raw, HttpStatusCode status)> DownloadUpcomingAsync()
@@ -107,114 +94,60 @@ namespace GbLive.GiantBomb
             return json;
         }
 
-        private void Process(JObject json)
+        private static UpcomingResponse Process(JObject json)
         {
-            SetLiveDetails(json);
-            FindUpcomingEvents(json);
+            (bool isLive, string liveShowName) = GetLiveDetails(json);
+            IEnumerable<UpcomingEvent> events = GetEvents(json);
+
+            return new UpcomingResponse(isLive, liveShowName, events);
         }
         
-        private void SetLiveDetails(JObject json)
+        private static (bool isLive, string liveShowName) GetLiveDetails(JObject json)
         {
-            string tag = "liveNow";
+            bool isLive = false;
+            string liveShowName = Settings.NameOfNoLiveShow;
 
-            if (json.TryGetValue(tag, StringComparison.OrdinalIgnoreCase, out JToken liveNow))
+            if (!json.TryGetValue("liveNow", StringComparison.OrdinalIgnoreCase, out JToken liveNow))
             {
-                _isLive = liveNow.HasValues;
-
-                if (_isLive)
-                {
-                    _liveShowName = (string)liveNow["title"] ?? Settings.NameOfUntitledLiveShow;
-                }
-                else
-                {
-                    _liveShowName = Settings.NameOfNoLiveShow;
-                }
-            }
-            else
-            {
-                string errorMessage = string.Format(CultureInfo.CurrentCulture, "{0} not found in JObject", tag);
+                string errorMessage = string.Format(CultureInfo.CurrentCulture, "tag 'liveNow' not found in JObject");
 
                 Log.LogMessage(errorMessage);
+
+                return (isLive, liveShowName);
             }
+
+            isLive = liveNow.HasValues;
+
+            if (isLive)
+            {
+                liveShowName = (string)liveNow["title"] ?? Settings.NameOfUntitledLiveShow;
+            }
+
+            return (isLive, liveShowName);
         }
 
-        private void FindUpcomingEvents(JObject json)
+        private static IEnumerable<UpcomingEvent> GetEvents(JObject json)
         {
-            string tag = "upcoming";
-
-            if (json.TryGetValue(tag, StringComparison.OrdinalIgnoreCase, out JToken upcoming))
+            if (!json.TryGetValue("upcoming", StringComparison.OrdinalIgnoreCase, out JToken upcoming))
             {
-                foreach (JToken each in upcoming)
-                {
-                    CreateAndAdd(each);
-                }
-            }
-            else
-            {
-                string errorMessage = string.Format(CultureInfo.CurrentCulture, "{0} not found in JObject", tag);
+                string errorMessage = string.Format(CultureInfo.CurrentCulture, "tag 'upcoming' not found");
 
                 Log.LogMessage(errorMessage);
-            }
-        }
 
-        private void CreateAndAdd(JToken each)
-        {
-            if (UpcomingEvent.TryCreate(each, out UpcomingEvent newEvent))
+                return Enumerable.Empty<UpcomingEvent>();
+            }
+
+            var events = new List<UpcomingEvent>();
+
+            foreach (JToken each in upcoming)
             {
-                if (!_events.Contains(newEvent) && newEvent.Time > DateTime.Now)
+                if (UpcomingEvent.TryCreate(each, out UpcomingEvent ue))
                 {
-                    _events.Add(newEvent);
+                    events.Add(ue);
                 }
             }
-            else
-            {
-                StringBuilder sb = new StringBuilder();
 
-                sb.AppendLine("Upcoming.TryCreate failed: ");
-                sb.AppendLine(each.ToString());
-
-                Log.LogMessage(sb.ToString());
-            }
+            return events;
         }
-
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.AppendLine(GetType().FullName);
-            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Is Live: {0}", IsLive.ToString(CultureInfo.CurrentCulture)));
-            sb.AppendLine(LiveShowName);
-
-            foreach (UpcomingEvent each in Events)
-            {
-                sb.AppendLine(each.ToString());
-            }
-
-            return sb.ToString();
-        }
-
-
-        #region IDisposable Support
-        private bool disposedValue = false;
-        
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    client.Dispose();
-                }
-                
-                disposedValue = true;
-            }
-        }
-        
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }        
-        #endregion
     }
 }
