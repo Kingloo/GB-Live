@@ -128,6 +128,8 @@ namespace GbLive.GiantBomb
                 void notify() => NotificationService.Send(Title, goToHome);
 
                 countdown = new DispatcherCountdownTimer(TimeSpan.FromTicks(ticksUntilTime), notify);
+
+                countdown.Start();
             }
             else
             {

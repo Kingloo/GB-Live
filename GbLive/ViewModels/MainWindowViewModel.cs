@@ -60,10 +60,11 @@ namespace GbLive.ViewModels
 
         public async Task UpdateAsync()
         {
-            bool wasLive = IsLive;
-
             UpcomingResponse response = await GiantBombService.UpdateAsync();
 
+            if (response == null) { return; }
+
+            bool wasLive = IsLive;
             IsLive = response.IsLive;
             
             if (!wasLive && IsLive)
