@@ -40,16 +40,12 @@ namespace GbLive.GiantBomb
             
             if (status != HttpStatusCode.OK)
             {
-                string errorMessage = string.Format(CultureInfo.CurrentCulture, "downloading JSON failed, status: {0}", status);
-
-                await Log.LogMessageAsync(errorMessage).ConfigureAwait(false);
-
-                return null;
+                return new UpcomingResponse(false, "downloading JSON failed");
             }
             
             return Parse(raw) is JObject json
                 ? Process(json)
-                : null;
+                : new UpcomingResponse(false, "response did parse into JSON");
         }
         
         private static async Task<(string raw, HttpStatusCode status)> DownloadUpcomingAsync()
@@ -109,7 +105,7 @@ namespace GbLive.GiantBomb
 
             if (!json.TryGetValue("liveNow", StringComparison.OrdinalIgnoreCase, out JToken liveNow))
             {
-                string errorMessage = string.Format(CultureInfo.CurrentCulture, "tag 'liveNow' not found in JObject");
+                string errorMessage = "tag 'liveNow' not found in JObject";
 
                 Log.LogMessage(errorMessage);
 
@@ -130,7 +126,7 @@ namespace GbLive.GiantBomb
         {
             if (!json.TryGetValue("upcoming", StringComparison.OrdinalIgnoreCase, out JToken upcoming))
             {
-                string errorMessage = string.Format(CultureInfo.CurrentCulture, "tag 'upcoming' not found");
+                string errorMessage = "tag 'upcoming' not found";
 
                 Log.LogMessage(errorMessage);
 

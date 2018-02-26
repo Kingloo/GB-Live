@@ -62,8 +62,13 @@ namespace GbLive.ViewModels
         {
             UpcomingResponse response = await GiantBombService.UpdateAsync();
 
-            if (response == null) { return; }
+            if (!response.WasSuccessful)
+            {
+                await Log.LogMessageAsync(response.ErrorMessage).ConfigureAwait(false);
 
+                return;
+            }
+            
             bool wasLive = IsLive;
             IsLive = response.IsLive;
             

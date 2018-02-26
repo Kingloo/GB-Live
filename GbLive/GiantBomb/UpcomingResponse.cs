@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -7,6 +6,12 @@ namespace GbLive.GiantBomb
 {
     public class UpcomingResponse
     {
+        private readonly bool _wasSuccessful = true;
+        public bool WasSuccessful => _wasSuccessful;
+
+        private readonly string _errorMessage = string.Empty;
+        public string ErrorMessage => _errorMessage;
+
         private readonly string _liveShowName = Settings.NameOfNoLiveShow;
         public string LiveShowName => _liveShowName;
 
@@ -29,13 +34,19 @@ namespace GbLive.GiantBomb
                 }
             }
         }
+
+        public UpcomingResponse(bool wasSuccessful, string errorMessage)
+        {
+            _wasSuccessful = wasSuccessful;
+            _errorMessage = errorMessage ?? "An error occurred.";
+        }
         
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine(GetType().FullName);
-            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "IsLive: {0}", IsLive));
+            sb.AppendLine(IsLive ? "IsLive: true" : "IsLive: false");
             sb.AppendLine(LiveShowName);
 
             if (_events.Count > 0)
