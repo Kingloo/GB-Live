@@ -26,7 +26,7 @@
     <ProductName>GB Live</ProductName>
     <PublisherName>Kingloo Holdings Ltd.</PublisherName>
     <DisallowUrlActivation>true</DisallowUrlActivation>
-    <ApplicationRevision>12</ApplicationRevision>
+    <ApplicationRevision>14</ApplicationRevision>
     <ApplicationVersion>1.6.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -113,13 +113,13 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Common\BindableBase.cs" />
+    <Compile Include="Common\Log.cs" />
     <Compile Include="Converters\BooleanToBrushConverter.cs" />
     <Compile Include="Converters\BooleanToLiveStatusConverter.cs" />
     <Compile Include="Common\DispatcherCountdownTimer.cs" />
     <Compile Include="Converters\BooleanToStyleConverter.cs" />
     <Compile Include="Converters\FormatDateTimeString.cs" />
     <Compile Include="Converters\GenericBooleanConverterT.cs" />
-    <Compile Include="Common\Log.cs" />
     <Compile Include="Common\NotificationService.cs" />
     <Compile Include="Common\Utils.cs" />
     <Compile Include="GiantBomb\GiantBombService.cs" />

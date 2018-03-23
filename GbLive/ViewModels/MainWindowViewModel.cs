@@ -121,9 +121,8 @@ namespace GbLive.ViewModels
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine(GetType().FullName);
-            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "IsLive: {0}", IsLive.ToString(CultureInfo.CurrentCulture)));
+            sb.AppendLine(IsLive ? "IsLive: true" : "IsLive: false");
             sb.AppendLine(LiveShowName);
-            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "No. of Events: {0}", Events.Count.ToString()));
 
             if (Events.Count > 0)
             {
@@ -133,6 +132,10 @@ namespace GbLive.ViewModels
                 {
                     sb.Append(each.ToString());
                 }
+            }
+            else
+            {
+                sb.AppendLine("No Events");
             }
             
             return sb.ToString();
