@@ -18,7 +18,7 @@ namespace GbLive.GiantBomb
         private readonly bool _isLive = false;
         public bool IsLive => _isLive;
 
-        private readonly List<UpcomingEvent> _events = new List<UpcomingEvent>();
+        private readonly List<UpcomingEvent> _events = default;
         public IReadOnlyList<UpcomingEvent> Events => _events.AsReadOnly();
 
         public UpcomingResponse(bool isLive, string liveShowName, IEnumerable<UpcomingEvent> events)
@@ -26,13 +26,7 @@ namespace GbLive.GiantBomb
             _isLive = isLive;
             _liveShowName = liveShowName ?? Settings.NameOfUntitledLiveShow;
 
-            if (events.Any())
-            {
-                foreach (UpcomingEvent each in events)
-                {
-                    _events.Add(each);
-                }
-            }
+            _events = new List<UpcomingEvent>(events);
         }
 
         public UpcomingResponse(bool wasSuccessful, string errorMessage)

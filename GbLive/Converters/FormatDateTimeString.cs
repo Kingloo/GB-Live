@@ -9,7 +9,7 @@ namespace GbLive.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is DateTime time)
+            if (value is DateTimeOffset time)
             {
                 string format = "ddd MMM dd  -  HH:mm";
 
@@ -22,7 +22,7 @@ namespace GbLive.Converters
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-            => DateTime.MaxValue;
+            => DateTimeOffset.MaxValue;
 
         public override object ProvideValue(IServiceProvider serviceProvider)
             => this;

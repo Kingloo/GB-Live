@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using GbLive.Common;
 using Newtonsoft.Json;
@@ -14,12 +11,13 @@ namespace GbLive.GiantBomb
 {
     public static class GiantBombService
     {
-        private static HttpClient client = null;
+        private static HttpClient client = default;
 
         private static void InitClient()
         {
             var handler = new HttpClientHandler
             {
+                AllowAutoRedirect = true,
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
                 MaxAutomaticRedirections = 2
             };
@@ -37,31 +35,39 @@ namespace GbLive.GiantBomb
             }
             
             (string raw, HttpStatusCode status) = await DownloadUpcomingAsync().ConfigureAwait(false);
-            
+
             if (status != HttpStatusCode.OK)
             {
                 return new UpcomingResponse(false, "downloading JSON failed");
             }
-            
-            return Parse(raw) is JObject json
-                ? Process(json)
-                : new UpcomingResponse(false, "response did parse into JSON");
+
+            if (Parse(raw) is JObject json)
+            {
+                return Process(json);
+            }
+            else
+            {
+                return new UpcomingResponse(false, "response did parse into JSON");
+            }
         }
         
         private static async Task<(string raw, HttpStatusCode status)> DownloadUpcomingAsync()
         {
+            string text = string.Empty;
+            HttpStatusCode status = HttpStatusCode.OK;
+
             try
             {
-                using (HttpResponseMessage response = await client.GetAsync(Settings.Upcoming).ConfigureAwait(false))
+                using (var response = await client.GetAsync(Settings.Upcoming, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false))
                 {
-                    if (!response.IsSuccessStatusCode)
+                    if (response.IsSuccessStatusCode)
                     {
-                        return (string.Empty, response.StatusCode);
+                        text = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                     }
-                    
-                    string text = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-                    return (text, response.StatusCode);
+                    else
+                    {
+                        status = response.StatusCode;
+                    }
                 }
             }
             catch (HttpRequestException) { }
@@ -71,7 +77,7 @@ namespace GbLive.GiantBomb
                 await Log.LogExceptionAsync(ex).ConfigureAwait(false);
             }
 
-            return (string.Empty, default(HttpStatusCode));
+            return (text, status);
         }
 
         private static JObject Parse(string raw)
@@ -130,20 +136,16 @@ namespace GbLive.GiantBomb
 
                 Log.LogMessage(errorMessage);
 
-                return Enumerable.Empty<UpcomingEvent>();
+                yield break;
             }
-
-            var events = new List<UpcomingEvent>();
 
             foreach (JToken each in upcoming)
             {
                 if (UpcomingEvent.TryCreate(each, out UpcomingEvent ue))
                 {
-                    events.Add(ue);
+                    yield return ue;
                 }
             }
-
-            return events;
         }
     }
 }

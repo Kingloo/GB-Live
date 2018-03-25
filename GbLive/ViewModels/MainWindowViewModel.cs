@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +12,10 @@ namespace GbLive.ViewModels
 {
     public class MainWindowViewModel : BindableBase
     {
-        private DispatcherTimer updateTimer = null;
+        private readonly DispatcherTimer updateTimer = new DispatcherTimer
+        {
+            Interval = Settings.UpdateInterval
+        };
 
         #region Properties
         private bool _isLive = false;
@@ -37,26 +39,14 @@ namespace GbLive.ViewModels
         
         public MainWindowViewModel()
         {
-            StartUpdateTimer();
-        }
-
-        private void StartUpdateTimer()
-        {
-            updateTimer = new DispatcherTimer
-            {
-                Interval = Settings.UpdateInterval
-            };
-
             updateTimer.Tick += async (s, e) => await UpdateAsync();
 
             updateTimer.Start();
         }
 
-        public void GoToHome()
-            => Utils.OpenUriInBrowser(Settings.Home);
+        public void GoToHome() => Utils.OpenUriInBrowser(Settings.Home);
 
-        public void GoToChat()
-            => Utils.OpenUriInBrowser(Settings.Chat);
+        public void GoToChat() => Utils.OpenUriInBrowser(Settings.Chat);
 
         public async Task UpdateAsync()
         {

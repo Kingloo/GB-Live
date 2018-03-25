@@ -10,14 +10,14 @@ namespace GbLive.GiantBomb
 {
     public class UpcomingEvent : IComparable<UpcomingEvent>, IEquatable<UpcomingEvent>
     {
-        private DispatcherCountdownTimer countdown = null;
+        private DispatcherCountdownTimer countdown = default;
 
         #region Properties
         private readonly string _title = string.Empty;
         public string Title => _title;
 
-        private readonly DateTime _time = DateTime.MinValue;
-        public DateTime Time => _time;
+        private readonly DateTimeOffset _time = DateTimeOffset.MinValue;
+        public DateTimeOffset Time => _time;
 
         private readonly bool _isPremium = false;
         public bool IsPremium => _isPremium;
@@ -29,7 +29,7 @@ namespace GbLive.GiantBomb
         public Uri Image => _image;
         #endregion
         
-        private UpcomingEvent(string title, DateTime time, bool isPremium, string eventType, Uri image)
+        private UpcomingEvent(string title, DateTimeOffset time, bool isPremium, string eventType, Uri image)
         {
             _title = title;
             _time = time;
@@ -53,7 +53,7 @@ namespace GbLive.GiantBomb
             }
 
             string title = (string)token["title"] ?? "Untitled Event";
-            DateTime time = GetTime(token);
+            DateTimeOffset time = GetTime(token);
             bool isPremium = GetPremium(token);
             string eventType = (string)token["type"] ?? "Unknown";
             Uri image = GetImage(token);
@@ -63,20 +63,20 @@ namespace GbLive.GiantBomb
             return true;
         }
 
-        private static DateTime GetTime(JToken token)
+        private static DateTimeOffset GetTime(JToken token)
         {
             string time = (string)token["date"];
 
-            if (DateTime.TryParse(time, out DateTime dt))
+            if (DateTimeOffset.TryParse(time, out DateTimeOffset dt))
             {
                 TimeSpan pacificUtcOffset = TimeZoneInfo
                     .GetSystemTimeZones()
                     .Single(i => i.Id == "Pacific Standard Time")
-                    .GetUtcOffset(DateTime.UtcNow);
+                    .GetUtcOffset(DateTimeOffset.UtcNow);
 
                 TimeSpan localUtcOffset = TimeZoneInfo
                     .Local
-                    .GetUtcOffset(DateTime.UtcNow);
+                    .GetUtcOffset(DateTimeOffset.UtcNow);
 
                 TimeSpan offset = localUtcOffset - pacificUtcOffset;
 
@@ -88,7 +88,7 @@ namespace GbLive.GiantBomb
 
                 Log.LogMessage(errorMessage);
 
-                return DateTime.MinValue;
+                return DateTimeOffset.MinValue;
             }
         }
 
@@ -139,7 +139,7 @@ namespace GbLive.GiantBomb
             }
         }
 
-        private static Int64 CalculateTicksUntilTime(DateTime time)
+        private static Int64 CalculateTicksUntilTime(DateTimeOffset time)
         {
             if (time < DateTime.Now)
             {
