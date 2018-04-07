@@ -38,7 +38,7 @@ namespace GbLive.GiantBomb
 
             if (status != HttpStatusCode.OK)
             {
-                return new UpcomingResponse(false, "downloading JSON failed");
+                return new UpcomingResponse(false, $"downloading JSON failed ({status.ToString()})");
             }
 
             if (Parse(raw) is JObject json)
@@ -47,26 +47,24 @@ namespace GbLive.GiantBomb
             }
             else
             {
-                return new UpcomingResponse(false, "response did parse into JSON");
+                return new UpcomingResponse(false, "response did not parse into JSON");
             }
         }
         
         private static async Task<(string raw, HttpStatusCode status)> DownloadUpcomingAsync()
         {
             string text = string.Empty;
-            HttpStatusCode status = HttpStatusCode.OK;
+            HttpStatusCode status = HttpStatusCode.Unused;
+
+            HttpResponseMessage response = default;
 
             try
             {
-                using (var response = await client.GetAsync(Settings.Upcoming, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false))
+                using (response = await client.GetAsync(Settings.Upcoming, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false))
                 {
                     if (response.IsSuccessStatusCode)
                     {
                         text = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        status = response.StatusCode;
                     }
                 }
             }
@@ -74,7 +72,19 @@ namespace GbLive.GiantBomb
             catch (TaskCanceledException ex) when (ex.InnerException is HttpRequestException) { }
             catch (TaskCanceledException ex)
             {
-                await Log.LogExceptionAsync(ex).ConfigureAwait(false);
+                if (ex.InnerException is Exception inner)
+                {
+                    await Log.LogExceptionAsync(inner).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                if (response != null)
+                {
+                    status = response.StatusCode;
+
+                    response.Dispose();
+                }
             }
 
             return (text, status);
@@ -88,10 +98,7 @@ namespace GbLive.GiantBomb
             {
                 json = JObject.Parse(raw);
             }
-            catch (JsonReaderException ex)
-            {
-                Log.LogException(ex);
-            }
+            catch (JsonReaderException) { }
 
             return json;
         }
