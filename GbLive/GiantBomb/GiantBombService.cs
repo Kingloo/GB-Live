@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -11,34 +12,40 @@ namespace GbLive.GiantBomb
 {
     public static class GiantBombService
     {
-        private static HttpClient client = default;
-
-        private static void InitClient()
+        private static HttpClientHandler handler = new HttpClientHandler
         {
-            var handler = new HttpClientHandler
-            {
-                AllowAutoRedirect = true,
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
-                MaxAutomaticRedirections = 2
-            };
+            AllowAutoRedirect = true,
+            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+            MaxAutomaticRedirections = 2
+        };
 
-            client = new HttpClient(handler, disposeHandler: true);
+        private static HttpClient client = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromSeconds(5d)
+        };
 
-            client.DefaultRequestHeaders.Add("User-Agent", Settings.UserAgent);
-        }
-        
         public static async Task<UpcomingResponse> UpdateAsync()
         {
-            if (client == null)
+            if (client.DefaultRequestHeaders.UserAgent.ToString().Equals(string.Empty))
             {
-                InitClient();
+                if (!client.DefaultRequestHeaders.UserAgent.TryParseAdd(Settings.UserAgent))
+                {
+                    string message = string.Format(CultureInfo.CurrentCulture, "{0} could not be added as a User-Agent", Settings.UserAgent);
+
+                    await Log.LogMessageAsync(message).ConfigureAwait(false);
+                }
             }
-            
+
             (string raw, HttpStatusCode status) = await DownloadUpcomingAsync().ConfigureAwait(false);
 
             if (status != HttpStatusCode.OK)
             {
-                return new UpcomingResponse(false, $"downloading JSON failed ({status.ToString()})");
+                return new UpcomingResponse(
+                    false,
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        "downloading JSON failed ({0})",
+                        status.ToString()));
             }
 
             if (Parse(raw) is JObject json)
@@ -56,16 +63,16 @@ namespace GbLive.GiantBomb
             string text = string.Empty;
             HttpStatusCode status = HttpStatusCode.Unused;
 
-            HttpResponseMessage response = default;
-
             try
             {
-                using (response = await client.GetAsync(Settings.Upcoming, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false))
+                using (var response = await client.GetAsync(Settings.Upcoming, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false))
                 {
                     if (response.IsSuccessStatusCode)
                     {
                         text = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                     }
+
+                    status = response.StatusCode;
                 }
             }
             catch (HttpRequestException) { }
@@ -75,15 +82,6 @@ namespace GbLive.GiantBomb
                 if (ex.InnerException is Exception inner)
                 {
                     await Log.LogExceptionAsync(inner).ConfigureAwait(false);
-                }
-            }
-            finally
-            {
-                if (response != null)
-                {
-                    status = response.StatusCode;
-
-                    response.Dispose();
                 }
             }
 

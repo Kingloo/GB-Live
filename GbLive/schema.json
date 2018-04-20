@@ -1,0 +1,31 @@
+{
+  'type': 'object',
+  'properties':
+    {
+      'liveNow': 
+      {
+        'type': ['object', 'null'],
+        'properties':
+          {
+            'title': {'type': 'string'},
+            'image': {'type': 'string'}
+          }
+      },
+      'upcoming':
+      {
+        'type': ['array', 'null'],
+        'items':
+          {
+            'type': 'object',
+            'properties':
+            {
+              'type': {'type': 'string'},
+              'title': {'type': 'string'},
+              'image': {'type': 'string'},
+              'date': {'type': 'string'},
+              'premium': {'type': 'boolean'}
+            }
+          }
+      }
+    }
+}
