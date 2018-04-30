@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -12,52 +11,50 @@ namespace GbLive.GiantBomb
 {
     public static class GiantBombService
     {
-        private static HttpClientHandler handler = new HttpClientHandler
-        {
-            AllowAutoRedirect = true,
-            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
-            MaxAutomaticRedirections = 2
-        };
+        private static HttpClient client = null;
 
-        private static HttpClient client = new HttpClient(handler)
-        {
-            Timeout = TimeSpan.FromSeconds(5d)
-        };
 
         public static async Task<UpcomingResponse> UpdateAsync()
         {
-            if (client.DefaultRequestHeaders.UserAgent.ToString().Equals(string.Empty))
+            if (client == null)
             {
-                if (!client.DefaultRequestHeaders.UserAgent.TryParseAdd(Settings.UserAgent))
-                {
-                    string message = string.Format(CultureInfo.CurrentCulture, "{0} could not be added as a User-Agent", Settings.UserAgent);
-
-                    await Log.LogMessageAsync(message).ConfigureAwait(false);
-                }
+                CreateClient();
             }
-
+            
             (string raw, HttpStatusCode status) = await DownloadUpcomingAsync().ConfigureAwait(false);
 
             if (status != HttpStatusCode.OK)
             {
-                return new UpcomingResponse(
-                    false,
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        "downloading JSON failed ({0})",
-                        status.ToString()));
+                string errorMessage = (status == HttpStatusCode.Unused) ? "error" : status.ToString();
+
+                return new UpcomingResponse(wasSuccessful: false, $"downloading failed: {errorMessage}");
             }
 
-            if (Parse(raw) is JObject json)
+            if (!(Parse(raw) is JObject json))
             {
-                return Process(json);
+                return new UpcomingResponse(wasSuccessful: false, "parsing failed");
             }
-            else
-            {
-                return new UpcomingResponse(false, "response did not parse into JSON");
-            }
+
+            return Process(json);
         }
-        
+
+
+        private static void CreateClient()
+        {
+            client = new HttpClient(
+                new HttpClientHandler
+                {
+                    AllowAutoRedirect = true,
+                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                    MaxAutomaticRedirections = 3
+                })
+            {
+                Timeout = TimeSpan.FromSeconds(5d)
+            };
+
+            client.DefaultRequestHeaders.UserAgent.ParseAdd(Settings.UserAgent);
+        }
+
         private static async Task<(string raw, HttpStatusCode status)> DownloadUpcomingAsync()
         {
             string text = string.Empty;
