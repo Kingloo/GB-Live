@@ -1,38 +1,28 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace GbLive.GiantBomb
 {
     public class UpcomingResponse
     {
-        private readonly bool _wasSuccessful = true;
-        public bool WasSuccessful => _wasSuccessful;
-
-        private readonly string _errorMessage = string.Empty;
-        public string ErrorMessage => _errorMessage;
-
-        private readonly string _liveShowName = Settings.NameOfNoLiveShow;
-        public string LiveShowName => _liveShowName;
-
-        private readonly bool _isLive = false;
-        public bool IsLive => _isLive;
-
-        private readonly List<UpcomingEvent> _events = default;
-        public IReadOnlyList<UpcomingEvent> Events => _events.AsReadOnly();
+        public bool WasSuccessful { get; } = true;
+        public string ErrorMessage { get; } = string.Empty;
+        public string LiveShowName { get; } = Settings.NameOfNoLiveShow;
+        public bool IsLive { get; } = false;
+        public IReadOnlyList<UpcomingEvent> Events { get; } = null;
 
         public UpcomingResponse(bool isLive, string liveShowName, IEnumerable<UpcomingEvent> events)
         {
-            _isLive = isLive;
-            _liveShowName = liveShowName ?? Settings.NameOfUntitledLiveShow;
+            IsLive = isLive;
+            LiveShowName = liveShowName ?? Settings.NameOfUntitledLiveShow;
 
-            _events = new List<UpcomingEvent>(events);
+            Events = new List<UpcomingEvent>(events);
         }
 
         public UpcomingResponse(bool wasSuccessful, string errorMessage)
         {
-            _wasSuccessful = wasSuccessful;
-            _errorMessage = errorMessage ?? "An error occurred.";
+            WasSuccessful = wasSuccessful;
+            ErrorMessage = errorMessage ?? "An error occurred.";
         }
         
         public override string ToString()
@@ -43,11 +33,11 @@ namespace GbLive.GiantBomb
             sb.AppendLine(IsLive ? "IsLive: true" : "IsLive: false");
             sb.AppendLine(LiveShowName);
 
-            if (_events.Count > 0)
+            if (Events.Count > 0)
             {
                 sb.AppendLine("Events:");
 
-                foreach (UpcomingEvent each in _events)
+                foreach (UpcomingEvent each in Events)
                 {
                     sb.AppendLine(each.ToString());
                 }

@@ -10,32 +10,23 @@ namespace GbLive.GiantBomb
 {
     public class UpcomingEvent : IComparable<UpcomingEvent>, IEquatable<UpcomingEvent>
     {
-        private DispatcherCountdownTimer countdown = default;
+        private DispatcherCountdownTimer countdown = null;
 
         #region Properties
-        private readonly string _title = string.Empty;
-        public string Title => _title;
-
-        private readonly DateTimeOffset _time = DateTimeOffset.MinValue;
-        public DateTimeOffset Time => _time;
-
-        private readonly bool _isPremium = false;
-        public bool IsPremium => _isPremium;
-
-        private readonly string _eventType = string.Empty;
-        public string EventType => _eventType;
-
-        private readonly Uri _image = Settings.FallbackImage;
-        public Uri Image => _image;
+        public string Title { get; } = string.Empty;
+        public DateTimeOffset Time { get; } = DateTimeOffset.MinValue;
+        public bool IsPremium { get; } = false;
+        public string EventType { get; } = string.Empty;
+        public Uri Image { get; } = Settings.FallbackImage;
         #endregion
         
         private UpcomingEvent(string title, DateTimeOffset time, bool isPremium, string eventType, Uri image)
         {
-            _title = title;
-            _time = time;
-            _isPremium = isPremium;
-            _eventType = eventType;
-            _image = image;
+            Title = title;
+            Time = time;
+            IsPremium = isPremium;
+            EventType = eventType;
+            Image = image;
         }
 
         public static bool TryCreate(JToken token, out UpcomingEvent outEvent)
@@ -115,7 +106,7 @@ namespace GbLive.GiantBomb
 
         public void StartCountdown()
         {
-            if (countdown != null && countdown.IsCountdownRunning)
+            if (countdown != null && countdown.IsRunning)
             {
                 return;
             }
@@ -163,6 +154,8 @@ namespace GbLive.GiantBomb
             /*
                 even though you can start a DispatcherTimer with a ticks of Int64,
                 the equivalent number of milliseconds cannot exceed Int32.MaxValue
+
+                Int32.MaxValue milliseconds is about 24.58 days
              
                 https://referencesource.microsoft.com/#WindowsBase/Base/System/Windows/Threading/DispatcherTimer.cs
                 -> ctor with TimeSpan, DispatcherPriority, EventHandler, Dispatcher
@@ -173,18 +166,9 @@ namespace GbLive.GiantBomb
             return millisecondsUntil <= Convert.ToInt64(Int32.MaxValue);
         }
 
-        public void StopCountdown()
-            => countdown?.Stop();
+        public void StopCountdown() => countdown?.Stop();
 
-        public int CompareTo(UpcomingEvent other)
-        {
-            if (other == null)
-            {
-                throw new ArgumentNullException(nameof(other));
-            }
-
-            return Time.CompareTo(other.Time);
-        }
+        public int CompareTo(UpcomingEvent other) => Time.CompareTo(other.Time);
 
         public bool Equals(UpcomingEvent other)
         {
@@ -209,7 +193,7 @@ namespace GbLive.GiantBomb
             sb.AppendLine(GetType().FullName);
             sb.AppendLine(Title);
             sb.AppendLine(Time.ToString(CultureInfo.CurrentCulture));
-            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Is Premium: {0}", IsPremium));
+            sb.AppendLine(IsPremium ? "Is Premium? true" : "Is Premium? false");
             sb.AppendLine(EventType);
             sb.AppendLine(Image.AbsoluteUri);
             sb.AppendLine(HowMuchTimeLeftOnCountdown(countdown));

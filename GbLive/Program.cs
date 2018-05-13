@@ -15,7 +15,7 @@ namespace GbLive
 
             if (exitCode != 0)
             {
-                string errorMessage = string.Format(CultureInfo.CurrentCulture, "exited - code: {0}", exitCode);
+                string errorMessage = string.Format(CultureInfo.CurrentCulture, "App exited - code: {0}", exitCode);
 
                 Log.LogMessage(errorMessage);
             }

@@ -72,14 +72,22 @@ namespace GbLive.GiantBomb
                     status = response.StatusCode;
                 }
             }
-            catch (HttpRequestException) { }
-            catch (TaskCanceledException ex) when (ex.InnerException is HttpRequestException) { }
+            catch (HttpRequestException ex)
+            {
+                await Log.LogExceptionAsync(ex, "solo").ConfigureAwait(false);
+            }
+            catch (TaskCanceledException ex) when (ex.InnerException is HttpRequestException)
+            {
+                await Log.LogExceptionAsync(ex, "when inner").ConfigureAwait(false);
+            }
             catch (TaskCanceledException ex)
             {
                 if (ex.InnerException is Exception inner)
                 {
                     await Log.LogExceptionAsync(inner).ConfigureAwait(false);
                 }
+
+                await Log.LogMessageAsync("down here").ConfigureAwait(false);
             }
 
             return (text, status);

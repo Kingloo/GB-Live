@@ -14,10 +14,11 @@ namespace GbLive.Common
         #endregion
 
         #region Properties
-        public bool IsCountdownRunning => timer != null;
+        public bool IsRunning
+            => timer != null && timer.IsEnabled;
 
         public TimeSpan TimeLeft
-            => IsCountdownRunning ? ((created + timer.Interval) - DateTime.Now) : TimeSpan.Zero;
+            => IsRunning ? ((created + timer.Interval) - DateTime.Now) : TimeSpan.Zero;
         #endregion
         
         public DispatcherCountdownTimer(TimeSpan span, Action tick)
@@ -31,7 +32,6 @@ namespace GbLive.Common
             this.tick = tick ?? throw new ArgumentNullException(nameof(tick));
 
             timer.Interval = span;
-
             timer.Tick += Timer_Tick;
         }
         
@@ -46,7 +46,7 @@ namespace GbLive.Common
 
         public void Stop()
         {
-            if (IsCountdownRunning)
+            if (IsRunning)
             {
                 timer.Stop();
                 timer.Tick -= Timer_Tick;
@@ -59,10 +59,12 @@ namespace GbLive.Common
         {
             var sb = new StringBuilder();
 
+            var cc = CultureInfo.CurrentCulture;
+
             sb.AppendLine(GetType().FullName);
-            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Created at: {0}", created.ToString(CultureInfo.CurrentCulture)));
-            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Active: {0}", IsCountdownRunning));
-            sb.AppendLine(string.Format(CultureInfo.CurrentCulture, "Time left: {0}", TimeLeft.ToString()));
+            sb.AppendLine(string.Format(cc, "Created at: {0}", created.ToString(cc)));
+            sb.AppendLine(IsRunning ? "Is Running: true" : "Is Running: false");
+            sb.AppendLine(string.Format(cc, "Time left: {0}", TimeLeft.ToString()));
 
             return sb.ToString();
         }
