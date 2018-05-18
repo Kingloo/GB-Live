@@ -23,11 +23,9 @@ namespace GbLive.GiantBomb
             
             (string raw, HttpStatusCode status) = await DownloadUpcomingAsync().ConfigureAwait(false);
 
-            if (status != HttpStatusCode.OK)
+            if (status != HttpStatusCode.OK && status != HttpStatusCode.Unused)
             {
-                string errorMessage = (status == HttpStatusCode.Unused) ? "error" : status.ToString();
-
-                return new UpcomingResponse(wasSuccessful: false, $"downloading failed: {errorMessage}");
+                return new UpcomingResponse(wasSuccessful: false, $"downloading failed: {status.ToString()}");
             }
 
             if (!(Parse(raw) is JObject json))
@@ -41,13 +39,14 @@ namespace GbLive.GiantBomb
 
         private static void CreateClient()
         {
-            client = new HttpClient(
-                new HttpClientHandler
-                {
-                    AllowAutoRedirect = true,
-                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
-                    MaxAutomaticRedirections = 3
-                })
+            var clientHandler = new HttpClientHandler
+            {
+                AllowAutoRedirect = true,
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                MaxAutomaticRedirections = 2
+            };
+
+            client = new HttpClient(clientHandler)
             {
                 Timeout = TimeSpan.FromSeconds(5d)
             };
@@ -72,22 +71,14 @@ namespace GbLive.GiantBomb
                     status = response.StatusCode;
                 }
             }
-            catch (HttpRequestException ex)
-            {
-                await Log.LogExceptionAsync(ex, "solo").ConfigureAwait(false);
-            }
-            catch (TaskCanceledException ex) when (ex.InnerException is HttpRequestException)
-            {
-                await Log.LogExceptionAsync(ex, "when inner").ConfigureAwait(false);
-            }
+            catch (HttpRequestException) { }
+            catch (TaskCanceledException ex) when (ex.InnerException is HttpRequestException) { }
             catch (TaskCanceledException ex)
             {
                 if (ex.InnerException is Exception inner)
                 {
                     await Log.LogExceptionAsync(inner).ConfigureAwait(false);
                 }
-
-                await Log.LogMessageAsync("down here").ConfigureAwait(false);
             }
 
             return (text, status);
