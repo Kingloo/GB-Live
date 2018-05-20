@@ -1,0 +1,17 @@
+﻿<Window x:Class="GBLive.WPF.GUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:GBLive.WPF">
+
+    <Window.Style>
+        <Style TargetType="{x:Type Window}">
+            <Setter Property="Title" Value="GB Live" />
+            <Setter Property="Width" Value="500" />
+            <Setter Property="SizeToContent" Value="Height" />
+        </Style>
+    </Window.Style>
+    
+    <Grid>
+        <Label Content="hello" />
+    </Grid>
+</Window>
