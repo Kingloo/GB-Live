@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using GBLive.WPF.Common;
-using GBLive.WPF.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
@@ -78,7 +77,7 @@ namespace GBLive.WPF.GiantBomb
                 return new UpcomingResponse(isSuccessful: false, Reason.StringEmpty, isLive: false);
             }
 
-            if (!(text.ParseCatch<JsonReaderException>() is JObject json))
+            if (!(Parse(text) is JObject json))
             {
                 return new UpcomingResponse(isSuccessful: false, Reason.ParseFailed, isLive: false);
             }
@@ -127,6 +126,18 @@ namespace GBLive.WPF.GiantBomb
             }
 
             return (text, statusCode);
+        }
+
+        private static JObject Parse(string raw)
+        {
+            try
+            {
+                return JObject.Parse(raw);
+            }
+            catch (JsonReaderException)
+            {
+                return null;
+            }
         }
 
         private static void LogValidationErrors(IList<ValidationError> errors)

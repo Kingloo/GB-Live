@@ -39,5 +39,15 @@ namespace GBLive.WPF.GUI
                     break;
             }
         }
+
+        private void Label_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            viewModel.GoToChat();
+        }
+
+        private void ItemsControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            viewModel.GoToHome();
+        }
     }
 }

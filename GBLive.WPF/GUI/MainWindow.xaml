@@ -154,9 +154,11 @@
                HorizontalContentAlignment="Center"
                ToolTip="{Binding LiveShowName}"
                Content="{Binding Path=IsLive, Converter={StaticResource liveStatusConverter}}"
-               Style="{Binding Path=IsLive, Converter={StaticResource labelStyleConverter}}" />
+               Style="{Binding Path=IsLive, Converter={StaticResource labelStyleConverter}}"
+               MouseDoubleClick="Label_MouseDoubleClick" />
 
         <ItemsControl Grid.Row="1"
+                      MouseDoubleClick="ItemsControl_MouseDoubleClick"
                       ItemsSource="{Binding Source={StaticResource eventsSortedByTime}}" />
     </Grid>
 </Window>
