@@ -16,13 +16,13 @@ namespace GBLive.Tests.GiantBomb
         [Test]
         public void Ctor_WhenSchemaNull_ThrowsArgNullExc()
         {
-            Assert.Throws<ArgumentNullException>(() => new GiantBombService(null, new JSchema()));
+            Assert.Throws<ArgumentNullException>(() => new GiantBombService(schema: null));
         }
 
         [Test]
         public void Ctor_WhenClientNull_ThrowsArgNullExc()
         {
-            Assert.Throws<ArgumentNullException>(() => new GiantBombService(null, new JSchema()));
+            Assert.Throws<ArgumentNullException>(() => new GiantBombService(client: null, schema: new JSchema()));
         }
 
         [Test]
@@ -80,8 +80,6 @@ namespace GBLive.Tests.GiantBomb
 
         [TestCase("fish")]
         [TestCase("sdvsdklvn")]
-        // valid as json, but not valid GB Upcoming json
-        [TestCase("{\"firstName\":\"John\",\"lastName\":\"Smith\",\"address\":{\"streetAddress\":\"21 2nd Street\"},\"phoneNumbers\":[{\"type\":\"home\"},{\"type\":\"office\"}]}")]
         public async Task UpdateAsync_StatusCodeOkStringDoesNotParse_ReasonParseFailed(string text)
         {
             var schema = LoadSchema();
@@ -99,11 +97,34 @@ namespace GBLive.Tests.GiantBomb
             }
         }
 
+        // valid as json, but not valid GB Upcoming json
+        [TestCase("{\"firstName\":\"John\",\"lastName\":\"Smith\",\"address\":{\"streetAddress\":\"21 2nd Street\"},\"phoneNumbers\":[{\"type\":\"home\"},{\"type\":\"office\"}]}")]
+        public async Task UpdateAsync_StatusCodeOkJsonDoesNotValidate_ReasonValidateFailed(string text)
+        {
+            var schema = LoadSchema();
+
+            using (var client = new TestHttpClient(HttpStatusCode.OK, new StringContent(text)))
+            using (var gbService = new GiantBombService(client, schema))
+            {
+                UpcomingResponse response = await gbService.UpdateAsync();
+
+                Reason expected = Reason.ValidateFailed;
+                Reason actual = response.Reason;
+
+                Assert.AreEqual(expected, actual);
+                Assert.IsFalse(response.IsSuccessful);
+            }
+        }
+
         // valid GB Upcoming json, not live, 2 events
         [TestCase(
             "{\"liveNow\":null,\"upcoming\":[{\"type\":\"Video\",\"title\":\"Quick Look\",\"image\":\"static.giantbomb.com/subaeria.jpg\",\"date\":\"May 20, 2018 06:00 AM\",\"premium\":false},{\"type\":\"Video\",\"title\":\"Quick Look #2\",\"image\":\"static.giantbomb.com/l002.jpg\",\"date\":\"May 21, 2018 06:00 AM\",\"premium\":false}]}",
             false,
             2)]
+        [TestCase(
+            "{\"liveNow\":null,\"upcoming\":[{\"type\":\"Video\",\"title\":\"Quick Look\",\"image\":\"static.giantbomb.com/subaeria.jpg\",\"date\":\"May 20, 2018 06:00 AM\",\"premium\":false}]}",
+            false,
+            1)]
         // valid GB Upcoming json, not live, zero events
         [TestCase(
             "{\"liveNow\":null,\"upcoming\":null}",

@@ -7,9 +7,10 @@ namespace GBLive.WPF.GiantBomb
     {
         None,
         Success,
-        ErrorCode,
+        InternetError,
         StringEmpty,
-        ParseFailed
+        ParseFailed,
+        ValidateFailed
     }
 
     public class UpcomingResponse
@@ -17,20 +18,28 @@ namespace GBLive.WPF.GiantBomb
         public bool IsSuccessful { get; } = false;
         public Reason Reason { get; } = Reason.None;
         public bool IsLive { get; } = false;
-        public IReadOnlyList<UpcomingEvent> Events { get; } = new List<UpcomingEvent>();
+
+        private string _liveShowName = Settings.NameOfNoLiveShow;
+        public string LiveShowName
+        {
+            get => _liveShowName;
+            set => _liveShowName = String.IsNullOrEmpty(value) ? Settings.NameOfUntitledLiveShow : value;
+        }
+
+        private IReadOnlyList<UpcomingEvent> _events = new List<UpcomingEvent>();
+        public IReadOnlyList<UpcomingEvent> Events
+        {
+            get => _events;
+            set => _events = value ?? new List<UpcomingEvent>();
+        }
 
         public UpcomingResponse() { }
 
         public UpcomingResponse(bool isSuccessful, Reason reason, bool isLive)
-            : this(isSuccessful, reason, isLive, new List<UpcomingEvent>())
-        { }
-
-        public UpcomingResponse(bool isSuccessful, Reason reason, bool isLive, IList<UpcomingEvent> events)
         {
             IsSuccessful = isSuccessful;
             Reason = reason;
             IsLive = isLive;
-            Events = (IReadOnlyList<UpcomingEvent>)events ?? throw new ArgumentNullException(nameof(events));
         }
     }
 }

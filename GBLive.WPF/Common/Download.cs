@@ -15,7 +15,7 @@ namespace GBLive.WPF.Common
         Failure,
         Canceled,
         FileAlreadyExists,
-        WebError
+        InternetError
     }
 
     public class DownloadProgress
@@ -116,7 +116,7 @@ namespace GBLive.WPF.Common
             Int64 prevTotalBytesReceived = 0L;
             Int64 reportingThreshold = 1024 * 333; // 333 KiB
 
-            byte[] buffer = new byte[1024 * 1024 * 5]; // 5 MiB
+            byte[] buffer = new byte[1024 * 1024 * 15]; // 15 MiB
 
             try
             {
@@ -126,13 +126,14 @@ namespace GBLive.WPF.Common
 
                     if ((totalBytesReceived - prevTotalBytesReceived) > reportingThreshold)
                     {
-                        progress.Report(
-                            new DownloadProgress(
-                                request.RequestUri,
-                                File.FullName,
-                                bytesRead,
-                                totalBytesReceived,
-                                contentLength));
+                        var dlProgress = new DownloadProgress(
+                            request.RequestUri,
+                            File.FullName,
+                            bytesRead,
+                            totalBytesReceived,
+                            contentLength);
+
+                        progress.Report(dlProgress);
 
                         prevTotalBytesReceived = totalBytesReceived;
                     }
@@ -144,7 +145,7 @@ namespace GBLive.WPF.Common
             }
             catch (HttpRequestException)
             {
-                return DownloadResult.WebError;
+                return DownloadResult.InternetError;
             }
             catch (IOException)
             {

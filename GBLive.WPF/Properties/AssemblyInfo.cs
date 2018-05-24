@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Kingloo Holdings Ltd.")]
-[assembly: AssemblyProduct("GBLive.WPF.Properties")]
+[assembly: AssemblyProduct("")]
 [assembly: AssemblyCopyright("Copyright © Kingloo 2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

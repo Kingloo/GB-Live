@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Threading;
@@ -10,30 +12,24 @@ using GBLive.WPF.GiantBomb;
 
 namespace GBLive.WPF.GUI
 {
-    public interface IMainWindowViewModel : INotifyPropertyChanged
+    public class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     {
-        bool IsLive { get; }
-        string LiveShowName { get; }
-        IReadOnlyCollection<UpcomingEvent> Events { get; }
-        bool IsUpdateTimerRunning { get; }
-        TimeSpan UpdateInterval { get; }
-
-        void StartTimer();
-        void StopTimer();
-        void GoToHome();
-        void GoToChat();
-
-        Task UpdateAsync();
-    }
-
-    public class MainWindowViewModel : IMainWindowViewModel, IDisposable
-    {
+        #region Events
         public event PropertyChangedEventHandler PropertyChanged;
 
         private void OnPropertyChanged(string propertyName)
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        {
+            if (String.IsNullOrEmpty(propertyName))
+            {
+                throw new ArgumentException("property name was null or empty", nameof(propertyName));
+            }
+
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+        #endregion
 
         private DispatcherTimer updateTimer = null;
+        private GiantBombService gbService = new GiantBombService();
 
         #region Properties
         private bool _isLive = false;
@@ -66,10 +62,14 @@ namespace GBLive.WPF.GUI
 
         public bool IsUpdateTimerRunning => updateTimer != null && updateTimer.IsEnabled;
 
-        public TimeSpan UpdateInterval => updateTimer == null ? TimeSpan.Zero : updateTimer.Interval;
+        public TimeSpan UpdateInterval => updateTimer != null ? updateTimer.Interval : TimeSpan.Zero;
         #endregion
 
         public MainWindowViewModel() { }
+
+        public MainWindowViewModel(GiantBombService service)
+            : this(service, false)
+        { }
 
         public MainWindowViewModel(bool autoStartTimer)
         {
@@ -77,6 +77,31 @@ namespace GBLive.WPF.GUI
             {
                 StartTimer();
             }
+        }
+
+        public MainWindowViewModel(GiantBombService service, bool autoStartTimer)
+            : this(autoStartTimer)
+        {
+            gbService = service ?? throw new ArgumentNullException(nameof(service));
+        }
+
+        [SuppressMessage("Microsoft.CodeAnalysis.Diagnostics", "IDE0016:UseThrowExpressionThrowDiagnosticId")]
+        public void SetService(GiantBombService service)
+        {
+            /*
+             * we suppress the code refactor because it would suggest:
+             * 
+             *  gbService = service ?? throw new ArgumentNullException(nameof(service));
+             * 
+             * this wouldn't correctly Dispose of the old one before assigning the new one
+            */
+
+            if (service == null) { throw new ArgumentNullException(nameof(service)); }
+
+            gbService.Dispose();
+            gbService = null;
+
+            gbService = service;
         }
 
         public void StartTimer()
@@ -103,14 +128,65 @@ namespace GBLive.WPF.GUI
             }
         }
 
-        public void GoToHome() => Utils.OpenUriInBrowser(Settings.Home);
+        public void GoToHome() => GiantBombService.GoToHome();
 
-        public void GoToChat() => Utils.OpenUriInBrowser(Settings.Chat);
+        public void GoToChat() => GiantBombService.GoToChat();
 
-        public Task UpdateAsync()
+        public async Task UpdateAsync()
         {
-            return Task.CompletedTask;
+            UpcomingResponse response = await gbService.UpdateAsync();
+
+            if (!response.IsSuccessful)
+            {
+                return;
+            }
+
+            bool wasLive = IsLive;
+
+            IsLive = response.IsLive;
+
+            if (!wasLive && IsLive)
+            {
+                NotificationService.Send(Settings.IsLiveMessage, () => Utils.OpenUriInBrowser(Settings.Chat));
+            }
+
+            LiveShowName = response.LiveShowName;
+
+            AddNewEvents(response.Events);
+            RemoveOldEvents(response.Events);
         }
+
+        private void AddNewEvents(IReadOnlyList<UpcomingEvent> events)
+        {
+            foreach (UpcomingEvent each in events)
+            {
+                if (!_events.Contains(each))
+                {
+                    each.StartCountdown();
+
+                    _events.Add(each);
+                }
+            }
+        }
+
+        private void RemoveOldEvents(IReadOnlyList<UpcomingEvent> events)
+        {
+            var toRemove = _events
+                .Where(x => x.Time < DateTimeOffset.Now || !events.Contains(x))
+                .ToList();
+
+            foreach (UpcomingEvent each in toRemove)
+            {
+                if (_events.Contains(each))
+                {
+                    each.StopCountdown();
+
+                    _events.Remove(each);
+                }
+            }
+        }
+
+        public Task LogEverythingAsync() => Log.LogMessageAsync(ToString());
 
         public override string ToString()
         {
@@ -121,7 +197,17 @@ namespace GBLive.WPF.GUI
             sb.AppendLine($"Live show name: {LiveShowName}");
             sb.AppendLine($"Number of events: {Events.Count}");
             sb.AppendLine(IsUpdateTimerRunning ? "Timer running: true" : "Timer running: false");
-            sb.AppendLine($"Update interval: {UpdateInterval.TotalSeconds}");
+            sb.AppendLine($"Update interval: {UpdateInterval.TotalSeconds} seconds");
+
+            if (Events.Count > 0)
+            {
+                sb.AppendLine();
+
+                foreach (UpcomingEvent each in Events)
+                {
+                    sb.AppendLine(each.ToString());
+                }
+            }
 
             return sb.ToString();
         }
@@ -137,6 +223,11 @@ namespace GBLive.WPF.GUI
                 if (disposing)
                 {
                     StopTimer();
+
+                    if (gbService != null)
+                    {
+                        gbService.Dispose();
+                    }
                 }
 
                 disposedValue = true;

@@ -103,5 +103,13 @@ namespace GBLive.Tests.GUI
                 Assert.AreEqual(autoStart, vm.IsUpdateTimerRunning);
             }
         }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Ctor_ServiceIsNull_ThrowsArgNullExc(bool shouldAutoStart)
+        {
+            Assert.Throws<ArgumentNullException>(() => new MainWindowViewModel(service: null));
+            Assert.Throws<ArgumentNullException>(() => new MainWindowViewModel(service: null, autoStartTimer: shouldAutoStart));
+        }
     }
 }

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using GBLive.WPF.Common;
+using GBLive.WPF.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
@@ -26,33 +27,42 @@ namespace GBLive.WPF.GiantBomb
         {
             Timeout = TimeSpan.FromSeconds(5d)
         };
+
+        private readonly JSchema schema = null;
         #endregion
 
-        public JSchema Schema { get; } = null;
-
-        public GiantBombService(HttpClient client, JSchema schema) : this(schema)
+        public GiantBombService(HttpClient client, JSchema schema)
+            : this(schema)
         {
             this.client = client ?? throw new ArgumentNullException(nameof(client));
         }
 
         public GiantBombService(JSchema schema)
+            : this()
         {
-            Schema = schema ?? throw new ArgumentNullException(nameof(schema));
-
-            SetUserAgent();
+            this.schema = schema ?? throw new ArgumentNullException(nameof(schema));
         }
 
-        private void SetUserAgent()
+        public GiantBombService()
+        {
+            SetUserAgent(Settings.UserAgent);
+        }
+
+        private void SetUserAgent(string userAgent)
         {
             client.DefaultRequestHeaders.UserAgent.Clear();
 
-            if (!client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", Settings.UserAgent))
+            if (!client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", userAgent))
             {
                 throw new ArgumentException(
                     "attempted User-Agent could not be added",
-                    nameof(Settings.UserAgent));
+                    nameof(userAgent));
             }
         }
+
+        public static void GoToHome() => Utils.OpenUriInBrowser(Settings.Home);
+
+        public static void GoToChat() => Utils.OpenUriInBrowser(Settings.Chat);
 
         public async Task<UpcomingResponse> UpdateAsync()
         {
@@ -60,7 +70,7 @@ namespace GBLive.WPF.GiantBomb
 
             if (statusCode != HttpStatusCode.OK)
             {
-                return new UpcomingResponse(isSuccessful: false, Reason.ErrorCode, isLive: false);
+                return new UpcomingResponse(isSuccessful: false, Reason.InternetError, isLive: false);
             }
 
             if (String.IsNullOrEmpty(text))
@@ -68,9 +78,14 @@ namespace GBLive.WPF.GiantBomb
                 return new UpcomingResponse(isSuccessful: false, Reason.StringEmpty, isLive: false);
             }
 
-            if (!(Parse(text) is JObject json))
+            if (!(text.ParseCatch<JsonReaderException>() is JObject json))
             {
                 return new UpcomingResponse(isSuccessful: false, Reason.ParseFailed, isLive: false);
+            }
+
+            if (!Validate(json))
+            {
+                return new UpcomingResponse(isSuccessful: false, Reason.ValidateFailed, isLive: false);
             }
 
             return ProcessJson(json);
@@ -100,9 +115,11 @@ namespace GBLive.WPF.GiantBomb
                     statusCode = response.StatusCode;
                 }
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException) { }
+            catch (TaskCanceledException ex) when (ex.InnerException is HttpRequestException) { }
+            catch (TaskCanceledException ex) when (ex.InnerException is Exception exc)
             {
-                await Log.LogExceptionAsync(ex).ConfigureAwait(false);
+                await Log.LogExceptionAsync(exc).ConfigureAwait(false);
             }
             finally
             {
@@ -112,46 +129,86 @@ namespace GBLive.WPF.GiantBomb
             return (text, statusCode);
         }
 
-        private JObject Parse(string raw)
+        private static void LogValidationErrors(IList<ValidationError> errors)
         {
-            try
+            var sb = new StringBuilder();
+
+            if (errors.Count > 0)
             {
-                JObject json = JObject.Parse(raw);
-
-                if (json.IsValid(Schema, out IList<ValidationError> errors))
+                foreach (ValidationError error in errors)
                 {
-                    return json;
-                }
-                else
-                {
-                    var sb = new StringBuilder();
-
-                    if (errors.Count > 0)
-                    {
-                        foreach (ValidationError error in errors)
-                        {
-                            sb.AppendLine($"{error.ErrorType}: {error.Message}");
-                        }
-                    }
-                    else
-                    {
-                        sb.AppendLine("no errors");
-                    }
-
-                    Log.LogMessage(sb.ToString());
-
-                    return null;
+                    sb.AppendLine($"{error.ErrorType}: {error.Message}");
                 }
             }
-            catch (JsonReaderException)
+            else
             {
-                return null;
+                sb.AppendLine("validation failed but no validation errors supplied");
             }
+
+            Log.LogMessage(sb.ToString());
+        }
+
+        private bool Validate(JObject json)
+        {
+            if (schema == null)
+            {
+                return true;
+            }
+
+            if (!json.IsValid(schema, out IList<ValidationError> errors))
+            {
+                LogValidationErrors(errors);
+
+                return false;
+            }
+
+            return true;
         }
 
         private static UpcomingResponse ProcessJson(JObject json)
         {
-            return new UpcomingResponse(isSuccessful: true, Reason.Success, isLive: true);
+            bool isLive = false;
+
+            if (json.TryGetValue("liveNow", StringComparison.Ordinal, out JToken liveNow))
+            {
+                isLive = liveNow.HasValues;
+            }
+
+            var response = new UpcomingResponse(isSuccessful: true, Reason.Success, isLive);
+
+            if (isLive)
+            {
+                response.LiveShowName = (string)liveNow["title"] ?? Settings.NameOfUntitledLiveShow;
+            }
+
+            if (TryGetEvents(json, out IReadOnlyList<UpcomingEvent> events))
+            {
+                response.Events = events;
+            }
+
+            return response;
+        }
+
+        private static bool TryGetEvents(JObject json, out IReadOnlyList<UpcomingEvent> events)
+        {
+            if (!json.TryGetValue("upcoming", StringComparison.Ordinal, out JToken upcoming))
+            {
+                events = null;
+                return false;
+            }
+
+            var upcomingEvents = new List<UpcomingEvent>();
+
+            foreach (JObject each in upcoming)
+            {
+                if (UpcomingEvent.TryCreate(each, out UpcomingEvent ue))
+                {
+                    upcomingEvents.Add(ue);
+                }
+            }
+
+            events = upcomingEvents.AsReadOnly();
+            return true;
         }
 
 
@@ -172,7 +229,11 @@ namespace GBLive.WPF.GiantBomb
             }
         }
 
-        public void Dispose() => Dispose(true);
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
         #endregion
     }
 }
