@@ -29,10 +29,11 @@ namespace GBLive.WPF
         {
             try
             {
-                var stream = File.OpenText(@"GiantBomb\schema.json");
-                var reader = new JsonTextReader(stream);
-
-                return JSchema.Load(reader);
+                using (var stream = File.OpenText(@"GiantBomb\schema.json"))
+                using (var reader = new JsonTextReader(stream))
+                {
+                    return JSchema.Load(reader);
+                }
             }
             catch (Exception)
             {
