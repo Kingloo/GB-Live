@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using GBLive.WPF.Common;
 using GBLive.WPF.GiantBomb;
 using GBLive.WPF.GUI;
 using Newtonsoft.Json;
@@ -12,6 +13,8 @@ namespace GBLive.WPF
         [STAThread]
         public static int Main()
         {
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
             JSchema schema = LoadSchema();
 
             using (var service = schema == null ? new GiantBombService() : new GiantBombService(schema))
@@ -23,6 +26,18 @@ namespace GBLive.WPF
             }
 
             return 0;
+        }
+
+        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            if (e.ExceptionObject is Exception ex)
+            {
+                Log.LogException(ex);
+            }
+            else
+            {
+                Log.LogMessage("exited with UnhandledException");
+            }
         }
 
         private static JSchema LoadSchema()

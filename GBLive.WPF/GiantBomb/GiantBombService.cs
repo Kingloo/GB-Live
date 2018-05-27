@@ -116,9 +116,9 @@ namespace GBLive.WPF.GiantBomb
             }
             catch (HttpRequestException) { }
             catch (TaskCanceledException ex) when (ex.InnerException is HttpRequestException) { }
-            catch (TaskCanceledException ex) when (ex.InnerException is Exception exc)
+            catch (Exception ex)
             {
-                await Log.LogExceptionAsync(exc).ConfigureAwait(false);
+                await Log.LogExceptionAsync(ex).ConfigureAwait(false);
             }
             finally
             {
