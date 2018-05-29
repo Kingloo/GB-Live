@@ -100,7 +100,7 @@ namespace GBLive.WPF.GiantBomb
 
             try
             {
-                using (var response = await client.SendAsync(request, CancellationToken.None).ConfigureAwait(false))
+                using (var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, CancellationToken.None).ConfigureAwait(false))
                 {
                     if (response.IsSuccessStatusCode)
                     {
@@ -117,6 +117,7 @@ namespace GBLive.WPF.GiantBomb
             }
             catch (HttpRequestException) { }
             catch (TaskCanceledException ex) when (ex.InnerException is HttpRequestException) { }
+            catch (TaskCanceledException) { }
             catch (Exception ex)
             {
                 await Log.LogExceptionAsync(ex).ConfigureAwait(false);

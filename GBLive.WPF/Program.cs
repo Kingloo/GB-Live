@@ -36,7 +36,7 @@ namespace GBLive.WPF
             }
             else
             {
-                Log.LogMessage("exited with UnhandledException");
+                Log.LogMessage("exited with empty UnhandledException");
             }
         }
 

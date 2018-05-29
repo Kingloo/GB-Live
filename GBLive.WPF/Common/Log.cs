@@ -43,11 +43,11 @@ namespace GBLive.WPF.Common
             WriteToFile(text);
         }
 
-        public static async Task LogMessageAsync(string message)
+        public static Task LogMessageAsync(string message)
         {
             string text = FormatMessage(message);
 
-            await WriteToFileAsync(text).ConfigureAwait(false);
+            return WriteToFileAsync(text);
         }
 
 
@@ -62,59 +62,29 @@ namespace GBLive.WPF.Common
 
         public static void LogException(Exception ex, string message, bool includeStackTrace)
         {
-            if (ex == null) { return; }
+            if (ex == null) { throw new ArgumentNullException(nameof(ex)); }
 
-            StringBuilder sb = new StringBuilder();
+            string text = FormatException(ex, message, includeStackTrace);
 
-            sb.Append(ex.GetType().FullName);
-            sb.Append(" - ");
-            sb.Append(ex.Message);
-
-            if (!String.IsNullOrWhiteSpace(message))
-            {
-                sb.Append(" - ");
-                sb.Append(message);
-            }
-            
-            if (includeStackTrace)
-            {
-                sb.AppendLine(ex.StackTrace);
-            }
-
-            LogMessage(sb.ToString());
+            LogMessage(text);
         }
 
-        public static async Task LogExceptionAsync(Exception ex)
-            => await LogExceptionAsync(ex, string.Empty, false).ConfigureAwait(false);
+        public static Task LogExceptionAsync(Exception ex)
+            => LogExceptionAsync(ex, string.Empty, false);
 
-        public static async Task LogExceptionAsync(Exception ex, string message)
-            => await LogExceptionAsync(ex, message, false).ConfigureAwait(false);
+        public static Task LogExceptionAsync(Exception ex, string message)
+            => LogExceptionAsync(ex, message, false);
 
-        public static async Task LogExceptionAsync(Exception ex, bool includeStackTrace)
-            => await LogExceptionAsync(ex, string.Empty, includeStackTrace).ConfigureAwait(false);
+        public static Task LogExceptionAsync(Exception ex, bool includeStackTrace)
+            => LogExceptionAsync(ex, string.Empty, includeStackTrace);
 
-        public static async Task LogExceptionAsync(Exception ex, string message, bool includeStackTrace)
+        public static Task LogExceptionAsync(Exception ex, string message, bool includeStackTrace)
         {
-            if (ex == null) { return; }
+            if (ex == null) { throw new ArgumentNullException(nameof(ex)); }
 
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append(ex.GetType().FullName);
-            sb.Append(" - ");
-            sb.Append(ex.Message);
-
-            if (!String.IsNullOrWhiteSpace(message))
-            {
-                sb.Append(" - ");
-                sb.Append(message);
-            }
+            string text = FormatException(ex, message, includeStackTrace);
             
-            if (includeStackTrace)
-            {
-                sb.AppendLine(ex.StackTrace);
-            }
-            
-            await LogMessageAsync(sb.ToString()).ConfigureAwait(false);
+            return LogMessageAsync(text);
         }
 
 
@@ -126,6 +96,28 @@ namespace GBLive.WPF.Common
             string processName = Process.GetCurrentProcess().MainModule.ModuleName;
 
             return string.Format(cc, "{0} - {1} - {2}", timestamp, processName, message);
+        }
+
+        private static string FormatException(Exception ex, string message, bool includeStackTrace)
+        {
+            var sb = new StringBuilder();
+
+            sb.Append(ex.GetType().FullName);
+            sb.Append(" - ");
+            sb.Append(ex.Message);
+
+            if (!String.IsNullOrWhiteSpace(message))
+            {
+                sb.Append(" - ");
+                sb.Append(message);
+            }
+            
+            if (includeStackTrace)
+            {
+                sb.AppendLine(ex.StackTrace);
+            }
+
+            return sb.ToString();
         }
 
 
