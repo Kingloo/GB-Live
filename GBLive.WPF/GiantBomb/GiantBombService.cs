@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using GBLive.Extensions;
 using GBLive.WPF.Common;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -59,9 +60,9 @@ namespace GBLive.WPF.GiantBomb
             }
         }
 
-        public static void GoToHome() => Utils.OpenUriInBrowser(Settings.Home);
+        public static void GoToHome() => Settings.Home.OpenInBrowser();
 
-        public static void GoToChat() => Utils.OpenUriInBrowser(Settings.Chat);
+        public static void GoToChat() => Settings.Chat.OpenInBrowser();
 
         public async Task<UpcomingResponse> UpdateAsync()
         {

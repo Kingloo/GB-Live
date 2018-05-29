@@ -115,10 +115,10 @@
     <Compile Include="Common\Download.cs" />
     <Compile Include="Common\Log.cs" />
     <Compile Include="Common\NotificationService.cs" />
-    <Compile Include="Common\Utils.cs" />
     <Compile Include="Converters\BooleanConverters.cs" />
     <Compile Include="Converters\BooleanConverterBase.cs" />
     <Compile Include="Converters\FormatDateTimeOffsetToString.cs" />
+    <Compile Include="Extensions\Uri.cs" />
     <Compile Include="GiantBomb\GiantBombService.cs" />
     <Compile Include="GiantBomb\Settings.cs" />
     <Compile Include="GiantBomb\UpcomingEvent.cs" />

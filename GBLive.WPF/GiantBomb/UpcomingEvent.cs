@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using GBLive.Extensions;
 using GBLive.WPF.Common;
 using Newtonsoft.Json.Linq;
 
@@ -115,8 +116,7 @@ namespace GBLive.WPF.GiantBomb
 
             if (IsTicksValid(ticksUntilEvent))
             {
-                void goToHome() => Utils.OpenUriInBrowser(Settings.Home);
-
+                void goToHome() => Settings.Home.OpenInBrowser();
                 void notify() => NotificationService.Send(Title, goToHome);
 
                 countdown = new DispatcherCountdownTimer(TimeSpan.FromTicks(ticksUntilEvent), notify);
@@ -166,7 +166,7 @@ namespace GBLive.WPF.GiantBomb
         {
             StopCountdown();
 
-            void goToHome() => Utils.OpenUriInBrowser(Settings.Home);
+            void goToHome() => Settings.Home.OpenInBrowser();
 
             NotificationService.Send(Title, goToHome);
         }

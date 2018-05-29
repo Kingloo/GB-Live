@@ -60,11 +60,11 @@ namespace GBLive.WPF.Common
                 
 #if DEBUG
                 var notifyWindowCloseTimer = new DispatcherCountdownTimer(
-                    TimeSpan.FromSeconds(2),
+                    TimeSpan.FromSeconds(2d),
                     () => Close());
 #else
                 var notifyWindowCloseTimer = new DispatcherCountdownTimer(
-                    TimeSpan.FromSeconds(15),
+                    TimeSpan.FromSeconds(15d),
                     () => Close());
 #endif
                 notifyWindowCloseTimer.Start();
@@ -96,8 +96,8 @@ namespace GBLive.WPF.Common
 
                 double desiredWidth = 475d;
 
-                double top = SystemParameters.WorkArea.Top + 50;
-                double left = SystemParameters.WorkArea.Right - desiredWidth - 100;
+                double top = SystemParameters.WorkArea.Top + 50d;
+                double left = SystemParameters.WorkArea.Right - desiredWidth - 100d;
 
                 style.Setters.Add(new Setter(TopProperty, top));
                 style.Setters.Add(new Setter(LeftProperty, left));
@@ -112,7 +112,7 @@ namespace GBLive.WPF.Common
             {
                 if (numRows < 1)
                 {
-                    throw new ArgumentException("there must be at least 1 row", nameof(numRows));
+                    throw new ArgumentOutOfRangeException(nameof(numRows), "there must be at least 1 row");
                 }
 
                 Grid grid = new Grid
@@ -167,7 +167,7 @@ namespace GBLive.WPF.Common
 
                 style.Setters.Add(new Setter(BackgroundProperty, Brushes.Black));
                 style.Setters.Add(new Setter(ForegroundProperty, Brushes.White));
-                style.Setters.Add(new Setter(MarginProperty, new Thickness(15, 0, 15, 0)));
+                style.Setters.Add(new Setter(MarginProperty, new Thickness(15d, 0d, 15d, 0d)));
                 style.Setters.Add(new Setter(FontFamilyProperty, new FontFamily("Calibri")));
                 style.Setters.Add(new Setter(FontSizeProperty, 22d));
                 style.Setters.Add(new Setter(HeightProperty, 75d));
@@ -199,7 +199,7 @@ namespace GBLive.WPF.Common
 
                 style.Setters.Add(new Setter(BackgroundProperty, Brushes.Black));
                 style.Setters.Add(new Setter(ForegroundProperty, Brushes.White));
-                style.Setters.Add(new Setter(MarginProperty, new Thickness(0, 0, 15, 0)));
+                style.Setters.Add(new Setter(MarginProperty, new Thickness(0d, 0d, 15d, 0d)));
                 style.Setters.Add(new Setter(FontFamilyProperty, new FontFamily("Calibri")));
                 style.Setters.Add(new Setter(FontSizeProperty, 14d));
                 style.Setters.Add(new Setter(HeightProperty, 40d));

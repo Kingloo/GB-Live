@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Threading;
+using GBLive.Extensions;
 using GBLive.WPF.Common;
 using GBLive.WPF.GiantBomb;
 
@@ -147,7 +148,7 @@ namespace GBLive.WPF.GUI
 
             if (!wasLive && IsLive)
             {
-                NotificationService.Send(Settings.IsLiveMessage, () => Utils.OpenUriInBrowser(Settings.Chat));
+                NotificationService.Send(Settings.IsLiveMessage, () => Settings.Chat.OpenInBrowser());
             }
 
             LiveShowName = response.LiveShowName;
