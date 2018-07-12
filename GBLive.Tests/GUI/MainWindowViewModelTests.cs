@@ -11,97 +11,88 @@ namespace GBLive.Tests.GUI
         [Test]
         public void IsLive_DefaultFalse()
         {
-            using (var vm = new MainWindowViewModel())
-            {
-                Assert.IsFalse(vm.IsLive);
-            }
+            var vm = new MainWindowViewModel();
+
+            Assert.IsFalse(vm.IsLive);
         }
 
         [Test]
         public void LiveShowName_DefaultMatchesFromSettings()
         {
-            using (var vm = new MainWindowViewModel())
-            {
-                string expected = Settings.NameOfNoLiveShow;
-                string actual = vm.LiveShowName;
+            var vm = new MainWindowViewModel();
 
-                Assert.AreEqual(expected, actual);
-            }
+            string expected = Settings.NameOfNoLiveShow;
+            string actual = vm.LiveShowName;
+
+            Assert.AreEqual(expected, actual);
         }
 
         [Test]
         public void Events_NotNullAndEmpty()
         {
-            using (var vm = new MainWindowViewModel())
-            {
-                Assert.IsNotNull(vm.Events);
+            var vm = new MainWindowViewModel();
 
-                Assert.Zero(
-                    vm.Events.Count,
-                    $"Events actually had {vm.Events.Count} events");
-            }
+            Assert.IsNotNull(vm.Events);
+
+            Assert.Zero(
+                vm.Events.Count,
+                $"Events actually had {vm.Events.Count} events");
         }
 
         [Test]
         public void UpdateInterval_TimerNull_Zero()
         {
-            using (var vm = new MainWindowViewModel())
-            {
-                Assert.AreEqual(
+            var vm = new MainWindowViewModel();
+
+            Assert.AreEqual(
                     TimeSpan.Zero,
                     vm.UpdateInterval,
                     $"timer running: {vm.IsUpdateTimerRunning}");
-            }
         }
 
         [Test]
         public void UpdateInterval_TimerRunning_SameAsFromSettings()
         {
-            using (var vm = new MainWindowViewModel(autoStartTimer: true))
-            {
-                Assert.AreEqual(Settings.UpdateInterval, vm.UpdateInterval);
-            }
+            var vm = new MainWindowViewModel(autoStartTimer: true);
+
+            Assert.AreEqual(Settings.UpdateInterval, vm.UpdateInterval);
         }
 
         [Test]
         public void Ctor_Parameterless_TimerDoesNotStart()
         {
-            using (var vm = new MainWindowViewModel())
-            {
-                Assert.IsFalse(vm.IsUpdateTimerRunning);
-            }
+            var vm = new MainWindowViewModel();
+
+            Assert.IsFalse(vm.IsUpdateTimerRunning);
         }
 
         [Test]
         public void StartTimer_StartsTimer()
         {
-            using (var vm = new MainWindowViewModel())
-            {
-                vm.StartTimer();
+            var vm = new MainWindowViewModel();
 
-                Assert.IsTrue(vm.IsUpdateTimerRunning);
-            }
+            vm.StartTimer();
+
+            Assert.IsTrue(vm.IsUpdateTimerRunning);
         }
 
         [Test]
         public void StopTimer_StopsTimer()
         {
-            using (var vm = new MainWindowViewModel(autoStartTimer: true))
-            {
-                vm.StopTimer();
+            var vm = new MainWindowViewModel(autoStartTimer: true);
 
-                Assert.IsFalse(vm.IsUpdateTimerRunning);
-            }
+            vm.StopTimer();
+
+            Assert.IsFalse(vm.IsUpdateTimerRunning);
         }
 
         [TestCase(true)]
         [TestCase(false)]
         public void Ctor_AutoStart(bool autoStart)
         {
-            using (var vm = new MainWindowViewModel(autoStartTimer: autoStart))
-            {
-                Assert.AreEqual(autoStart, vm.IsUpdateTimerRunning);
-            }
+            var vm = new MainWindowViewModel(autoStartTimer: autoStart);
+
+            Assert.AreEqual(autoStart, vm.IsUpdateTimerRunning);
         }
 
         [TestCase(true)]

@@ -13,7 +13,7 @@ using Newtonsoft.Json.Schema;
 
 namespace GBLive.WPF.GiantBomb
 {
-    public class GiantBombService : IDisposable
+    public class GiantBombService
     {
         #region Fields
         private static readonly HttpClientHandler defaultHandler = new HttpClientHandler
@@ -223,30 +223,5 @@ namespace GBLive.WPF.GiantBomb
             events = upcomingEvents.AsReadOnly();
             return true;
         }
-
-
-        #region IDisposable Support
-        private bool disposedValue = false;
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    client?.Dispose();
-                    defaultHandler?.Dispose();
-                }
-
-                disposedValue = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-        #endregion
     }
 }

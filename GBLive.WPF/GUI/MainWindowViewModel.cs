@@ -13,7 +13,7 @@ using GBLive.WPF.GiantBomb;
 
 namespace GBLive.WPF.GUI
 {
-    public class MainWindowViewModel : INotifyPropertyChanged, IDisposable
+    public class MainWindowViewModel : INotifyPropertyChanged
     {
         #region Events
         public event PropertyChangedEventHandler PropertyChanged;
@@ -86,23 +86,9 @@ namespace GBLive.WPF.GUI
             gbService = service ?? throw new ArgumentNullException(nameof(service));
         }
 
-        [SuppressMessage("Microsoft.CodeAnalysis.Diagnostics", "IDE0016:UseThrowExpressionThrowDiagnosticId")]
         public void SetService(GiantBombService service)
         {
-            /*
-             * we suppress the code refactor because it would suggest:
-             * 
-             *  gbService = service ?? throw new ArgumentNullException(nameof(service));
-             * 
-             * this wouldn't correctly Dispose of the old one before assigning the new one
-            */
-
-            if (service == null) { throw new ArgumentNullException(nameof(service)); }
-
-            gbService.Dispose();
-            gbService = null;
-
-            gbService = service;
+            gbService = service ?? throw new ArgumentNullException(nameof(service));
         }
 
         public void StartTimer()
@@ -137,23 +123,23 @@ namespace GBLive.WPF.GUI
         {
             UpcomingResponse response = await gbService.UpdateAsync();
 
-            if (!response.IsSuccessful)
+            if (response.IsSuccessful)
             {
-                return;
+                bool wasLive = IsLive;
+
+                IsLive = response.IsLive;
+
+                if (!wasLive && IsLive)
+                {
+                    //NotificationService.Send(Settings.IsLiveMessage, () => Settings.Chat.OpenInBrowser());
+                    NotificationService.Send(Settings.IsLiveMessage, GoToChat);
+                }
+
+                LiveShowName = response.LiveShowName;
+
+                AddNewEvents(response.Events);
             }
 
-            bool wasLive = IsLive;
-
-            IsLive = response.IsLive;
-
-            if (!wasLive && IsLive)
-            {
-                NotificationService.Send(Settings.IsLiveMessage, () => Settings.Chat.OpenInBrowser());
-            }
-
-            LiveShowName = response.LiveShowName;
-
-            AddNewEvents(response.Events);
             RemoveOldEvents(response.Events);
         }
 
@@ -212,30 +198,5 @@ namespace GBLive.WPF.GUI
 
             return sb.ToString();
         }
-
-        
-        #region IDisposable Support
-        private bool disposedValue = false;
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    StopTimer();
-
-                    if (gbService != null)
-                    {
-                        gbService.Dispose();
-                    }
-                }
-
-                disposedValue = true;
-            }
-        }
-
-        public void Dispose() => Dispose(true);
-        #endregion
     }
 }

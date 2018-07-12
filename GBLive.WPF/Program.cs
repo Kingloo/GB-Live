@@ -17,13 +17,15 @@ namespace GBLive.WPF
 
             JSchema schema = LoadSchema();
 
-            using (var service = schema == null ? new GiantBombService() : new GiantBombService(schema))
-            using (var viewModel = new MainWindowViewModel(service, autoStartTimer: true))
-            {
-                var window = new MainWindow(viewModel);
+            var service = (schema == null)
+                ? new GiantBombService()
+                : new GiantBombService(schema);
 
-                window.ShowDialog();
-            }
+            var viewModel = new MainWindowViewModel(service, autoStartTimer: true);
+
+            var window = new MainWindow(viewModel);
+
+            window.ShowDialog();
 
             return 0;
         }
@@ -42,17 +44,26 @@ namespace GBLive.WPF
 
         private static JSchema LoadSchema()
         {
+            StreamReader file = null;
+
             try
             {
-                using (var stream = File.OpenText(@"GiantBomb\schema.json"))
-                using (var reader = new JsonTextReader(stream))
+                file = File.OpenText(@"GiantBomb\schema.json");
+
+                using (var reader = new JsonTextReader(file))
                 {
+                    file = null;
+
                     return JSchema.Load(reader);
                 }
             }
             catch (Exception)
             {
                 return null;
+            }
+            finally
+            {
+                file?.Dispose();
             }
         }
     }

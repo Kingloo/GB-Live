@@ -1,8 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 using GBLive.WPF.GiantBomb;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Schema;
@@ -25,134 +22,124 @@ namespace GBLive.Tests.GiantBomb
             Assert.Throws<ArgumentNullException>(() => new GiantBombService(client: null, schema: new JSchema()));
         }
 
-        [Test]
-        public async Task UpdateAsync_UpcomingJsonUri_MatchesSettings()
-        {
-            using (var client = new TestHttpClient(HttpStatusCode.OK, new StringContent(string.Empty)))
-            using (var gbService = new GiantBombService(client, new JSchema()))
-            {
-                UpcomingResponse response = await gbService.UpdateAsync();
+        //[TestCase(HttpStatusCode.NotModified)]
+        //[TestCase(HttpStatusCode.NotFound)]
+        //[TestCase(HttpStatusCode.Unauthorized)]
+        //[TestCase(HttpStatusCode.BadGateway)]
+        //[TestCase(HttpStatusCode.BadRequest)]
+        //public async Task UpdateAsync_StatusCodeNotOk_UpcomingResponseIsNotSuccessful(HttpStatusCode statusCode)
+        //{
+        //    using (var client = new TestHttpClient(statusCode, null))
+        //    {
+        //        var gbService = new GiantBombService(client, new JSchema());
 
-                Uri expected = Settings.Upcoming;
-                Uri actual = client.RequestedUri;
+        //        UpcomingResponse response = await gbService.UpdateAsync();
 
-                Assert.AreEqual(expected, actual);
-            }
-        }
+        //        bool expected = false;
+        //        bool actual = response.IsSuccessful;
 
-        [TestCase(HttpStatusCode.NotModified)]
-        [TestCase(HttpStatusCode.NotFound)]
-        [TestCase(HttpStatusCode.Unauthorized)]
-        [TestCase(HttpStatusCode.BadGateway)]
-        [TestCase(HttpStatusCode.BadRequest)]
-        public async Task UpdateAsync_StatusCodeNotOk_UpcomingResponseIsNotSuccessful(HttpStatusCode statusCode)
-        {
-            using (var client = new TestHttpClient(statusCode, null))
-            using (var gbService = new GiantBombService(client, new JSchema()))
-            {
-                UpcomingResponse response = await gbService.UpdateAsync();
+        //        Assert.AreEqual(expected, actual);
 
-                bool expected = false;
-                bool actual = response.IsSuccessful;
+        //        Assert.IsNotNull(response.Events);
+        //        Assert.Zero(response.Events.Count);
+        //    }
+        //}
 
-                Assert.AreEqual(expected, actual);
+        //[Test]
+        //public async Task UpdateAsync_StatusCodeOkResponseStringEmpty_ReasonStringEmpty()
+        //{
+        //    using (var client = new TestHttpClient(HttpStatusCode.OK, new StringContent(string.Empty)))
+        //    {
+        //        var gbService = new GiantBombService(client, new JSchema());
 
-                Assert.IsNotNull(response.Events);
-                Assert.Zero(response.Events.Count);
-            }
-        }
+        //        UpcomingResponse response = await gbService.UpdateAsync();
 
-        [Test]
-        public async Task UpdateAsync_StatusCodeOkResponseStringEmpty_ReasonStringEmpty()
-        {
-            using (var client = new TestHttpClient(HttpStatusCode.OK, new StringContent(string.Empty)))
-            using (var gbService = new GiantBombService(client, new JSchema()))
-            {
-                UpcomingResponse response = await gbService.UpdateAsync();
+        //        Reason expected = Reason.StringEmpty;
+        //        Reason actual = response.Reason;
 
-                Reason expected = Reason.StringEmpty;
-                Reason actual = response.Reason;
+        //        Assert.AreEqual(expected, actual);
+        //        Assert.IsFalse(response.IsSuccessful);
+        //    }
+        //}
 
-                Assert.AreEqual(expected, actual);
-                Assert.IsFalse(response.IsSuccessful);
-            }
-        }
+        //[TestCase("fish")]
+        //[TestCase("sdvsdklvn")]
+        //public async Task UpdateAsync_StatusCodeOkStringDoesNotParse_ReasonParseFailed(string text)
+        //{
+        //    var schema = LoadSchema();
 
-        [TestCase("fish")]
-        [TestCase("sdvsdklvn")]
-        public async Task UpdateAsync_StatusCodeOkStringDoesNotParse_ReasonParseFailed(string text)
-        {
-            var schema = LoadSchema();
+        //    using (var client = new TestHttpClient(HttpStatusCode.OK, new StringContent(text)))
+        //    {
+        //        var gbService = new GiantBombService(client, schema);
 
-            using (var client = new TestHttpClient(HttpStatusCode.OK, new StringContent(text)))
-            using (var gbService = new GiantBombService(client, schema))
-            {
-                UpcomingResponse response = await gbService.UpdateAsync();
+        //        UpcomingResponse response = await gbService.UpdateAsync();
 
-                Reason expected = Reason.ParseFailed;
-                Reason actual = response.Reason;
+        //        Reason expected = Reason.ParseFailed;
+        //        Reason actual = response.Reason;
 
-                Assert.AreEqual(expected, actual);
-                Assert.IsFalse(response.IsSuccessful);
-            }
-        }
+        //        Assert.AreEqual(expected, actual);
+        //        Assert.IsFalse(response.IsSuccessful);
+        //    }
+        //}
 
         // valid as json, but not valid GB Upcoming json
-        [TestCase("{\"firstName\":\"John\",\"lastName\":\"Smith\",\"address\":{\"streetAddress\":\"21 2nd Street\"},\"phoneNumbers\":[{\"type\":\"home\"},{\"type\":\"office\"}]}")]
-        public async Task UpdateAsync_StatusCodeOkJsonDoesNotValidate_ReasonValidateFailed(string text)
-        {
-            var schema = LoadSchema();
+        //[TestCase("{\"firstName\":\"John\",\"lastName\":\"Smith\",\"address\":{\"streetAddress\":\"21 2nd Street\"},\"phoneNumbers\":[{\"type\":\"home\"},{\"type\":\"office\"}]}")]
+        //public async Task UpdateAsync_StatusCodeOkJsonDoesNotValidate_ReasonValidateFailed(string text)
+        //{
+        //    var schema = LoadSchema();
 
-            using (var client = new TestHttpClient(HttpStatusCode.OK, new StringContent(text)))
-            using (var gbService = new GiantBombService(client, schema))
-            {
-                UpcomingResponse response = await gbService.UpdateAsync();
+        //    using (var client = new TestHttpClient(HttpStatusCode.OK, new StringContent(text)))
+        //    {
+        //        var gbService = new GiantBombService(client, schema);
 
-                Reason expected = Reason.ValidateFailed;
-                Reason actual = response.Reason;
+        //        UpcomingResponse response = await gbService.UpdateAsync();
 
-                Assert.AreEqual(expected, actual);
-                Assert.IsFalse(response.IsSuccessful);
-            }
-        }
+        //        Reason expected = Reason.ValidateFailed;
+        //        Reason actual = response.Reason;
+
+        //        Assert.AreEqual(expected, actual);
+        //        Assert.IsFalse(response.IsSuccessful);
+        //    }
+        //}
 
         // valid GB Upcoming json, not live, 2 events
-        [TestCase(
-            "{\"liveNow\":null,\"upcoming\":[{\"type\":\"Video\",\"title\":\"Quick Look\",\"image\":\"static.giantbomb.com/subaeria.jpg\",\"date\":\"May 20, 2018 06:00 AM\",\"premium\":false},{\"type\":\"Video\",\"title\":\"Quick Look #2\",\"image\":\"static.giantbomb.com/l002.jpg\",\"date\":\"May 21, 2018 06:00 AM\",\"premium\":false}]}",
-            false,
-            2)]
-        [TestCase(
-            "{\"liveNow\":null,\"upcoming\":[{\"type\":\"Video\",\"title\":\"Quick Look\",\"image\":\"static.giantbomb.com/subaeria.jpg\",\"date\":\"May 20, 2018 06:00 AM\",\"premium\":false}]}",
-            false,
-            1)]
-        // valid GB Upcoming json, not live, zero events
-        [TestCase(
-            "{\"liveNow\":null,\"upcoming\":null}",
-            false,
-            0)]
-        // valid GB Upcoming json, live, zero events
-        [TestCase(
-            "{\"liveNow\":{\"title\":\"Live Show\",\"image\":\"static.giantbomb.com/image.jpg\"},\"upcoming\":null}",
-            true,
-            0)]
-        public async Task UpdateAsync_ValidJson_ParseSuccess(string json, bool isLive, int eventsCount)
-        {
-            var schema = LoadSchema();
+        //[TestCase(
+        //    "{\"liveNow\":null,\"upcoming\":[{\"type\":\"Video\",\"title\":\"Quick Look\",\"image\":\"static.giantbomb.com/subaeria.jpg\",\"date\":\"May 20, 2018 06:00 AM\",\"premium\":false},{\"type\":\"Video\",\"title\":\"Quick Look #2\",\"image\":\"static.giantbomb.com/l002.jpg\",\"date\":\"May 21, 2018 06:00 AM\",\"premium\":false}]}",
+        //    false,
+        //    2)]
+        //[TestCase(
+        //    "{\"liveNow\":null,\"upcoming\":[{\"type\":\"Video\",\"title\":\"Quick Look\",\"image\":\"static.giantbomb.com/subaeria.jpg\",\"date\":\"May 20, 2018 06:00 AM\",\"premium\":false}]}",
+        //    false,
+        //    1)]
+        //// valid GB Upcoming json, not live, zero events
+        //[TestCase(
+        //    "{\"liveNow\":null,\"upcoming\":null}",
+        //    false,
+        //    0)]
+        //// valid GB Upcoming json, live, zero events
+        //[TestCase(
+        //    "{\"liveNow\":{\"title\":\"Live Show\",\"image\":\"static.giantbomb.com/image.jpg\"},\"upcoming\":null}",
+        //    true,
+        //    0)]
+        //public async Task UpdateAsync_ValidJson_ParseSuccess(string json, bool isLive, int eventsCount)
+        //{
+        //    var schema = LoadSchema();
 
-            using (var client = new TestHttpClient(HttpStatusCode.OK, new StringContent(json)))
-            using (var gbService = new GiantBombService(client, schema))
-            {
-                UpcomingResponse response = await gbService.UpdateAsync();
+        //    using (var client = new TestHttpClient(HttpStatusCode.OK, new StringContent(json)))
+        //    {
+        //        var gbService = new GiantBombService(client, schema);
 
-                Reason expected = Reason.Success;
-                Reason actual = response.Reason;
+        //        UpcomingResponse response = await gbService.UpdateAsync();
 
-                Assert.AreEqual(expected, actual, "reasons differed");
+        //        Reason expected = Reason.Success;
+        //        Reason actual = response.Reason;
 
-                Assert.AreEqual(isLive, response.IsLive, "live status differed");
-                Assert.AreEqual(eventsCount, response.Events.Count, "event count differed");
-            }
-        }
+        //        Assert.AreEqual(expected, actual, "reasons differed");
+
+        //        Assert.AreEqual(isLive, response.IsLive, "live status differed");
+        //        Assert.AreEqual(eventsCount, response.Events.Count, "event count differed");
+        //    }
+        //}
 
         public JSchema LoadSchema()
         {
