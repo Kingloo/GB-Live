@@ -131,16 +131,25 @@ namespace GBLive.WPF.GUI
 
                 if (!wasLive && IsLive)
                 {
-                    //NotificationService.Send(Settings.IsLiveMessage, () => Settings.Chat.OpenInBrowser());
                     NotificationService.Send(Settings.IsLiveMessage, GoToChat);
                 }
 
                 LiveShowName = response.LiveShowName;
 
                 AddNewEvents(response.Events);
+
+                // events that are no longer in the API response
+                RemoveCertainEvents(
+                    from each in _events
+                    where !response.Events.Contains(each)
+                    select each);
             }
 
-            RemoveOldEvents(response.Events);
+            // events whose .Time is now in the past
+            RemoveCertainEvents(
+                from each in _events
+                where each.Time < DateTimeOffset.Now
+                select each);
         }
 
         private void AddNewEvents(IReadOnlyList<UpcomingEvent> events)
@@ -156,11 +165,9 @@ namespace GBLive.WPF.GUI
             }
         }
 
-        private void RemoveOldEvents(IReadOnlyList<UpcomingEvent> events)
+        private void RemoveCertainEvents(IEnumerable<UpcomingEvent> events)
         {
-            var toRemove = _events
-                .Where(x => x.Time < DateTimeOffset.Now || !events.Contains(x))
-                .ToList();
+            var toRemove = events.ToList();
 
             foreach (UpcomingEvent each in toRemove)
             {
