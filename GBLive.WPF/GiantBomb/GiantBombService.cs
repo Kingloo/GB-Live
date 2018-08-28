@@ -106,9 +106,10 @@ namespace GBLive.WPF.GiantBomb
                     {
                         if (response.Content is HttpContent content)
                         {
-                            text = await content.ReadAsStringAsync().ConfigureAwait(false);
-
-                            content.Dispose();
+                            using (content)
+                            {
+                                text = await content.ReadAsStringAsync().ConfigureAwait(false);
+                            }
                         }
                     }
 
