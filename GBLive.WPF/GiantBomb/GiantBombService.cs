@@ -23,7 +23,7 @@ namespace GBLive.WPF.GiantBomb
             MaxAutomaticRedirections = 2
         };
 
-        private HttpClient client = new HttpClient(defaultHandler)
+        private readonly HttpClient client = new HttpClient(defaultHandler)
         {
             Timeout = TimeSpan.FromSeconds(5d)
         };
