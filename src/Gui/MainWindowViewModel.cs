@@ -78,11 +78,15 @@ namespace GBLive.Gui
 
             foreach (var add in toAdd)
             {
+                add.StartCountdown();
+
                 _events.Add(add);
             }
 
             foreach (var remove in toRemove)
             {
+                remove.StopCountdown();
+
                 _events.Remove(remove);
             }
 
@@ -90,6 +94,8 @@ namespace GBLive.Gui
             {
                 if (_events.Contains(each))
                 {
+                    each.StopCountdown();
+
                     _events.Remove(each);
                 }
             }
@@ -130,9 +136,9 @@ namespace GBLive.Gui
             timer = null;
         }
 
-        private void Timer_Tick(object sender, EventArgs e)
+        private async void Timer_Tick(object sender, EventArgs e)
         {
-
+            await UpdateAsync();
         }       
     }
 }

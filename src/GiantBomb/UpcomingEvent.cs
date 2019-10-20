@@ -15,8 +15,7 @@ namespace GBLive.GiantBomb
         public string EventType { get; set; } = "Unknown";
         public Uri Image { get; set; } = Settings.FallbackImage;
 
-        public UpcomingEvent()
-        { }
+        public UpcomingEvent() { }
 
         public void StartCountdown()
         {
