@@ -11,7 +11,12 @@ namespace GBLive.Extensions
 
             if (uri.IsAbsoluteUri)
             {
-                Process.Start(uri.AbsoluteUri);
+                ProcessStartInfo pInfo = new ProcessStartInfo(uri.AbsoluteUri)
+                {
+                    UseShellExecute = true
+                };
+
+                Process.Start(pInfo);
             }
         }
     }
