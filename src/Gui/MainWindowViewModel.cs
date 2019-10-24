@@ -61,6 +61,7 @@ namespace GBLive.Gui
             bool wasLive = IsLive;
 
             IsLive = response.IsLive;
+            LiveShowTitle = response.LiveShowTitle;
 
             if (!wasLive && IsLive)
             {

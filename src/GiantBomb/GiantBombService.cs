@@ -90,11 +90,13 @@ namespace GBLive.GiantBomb
                 JObject json = JObject.Parse(text);
 
                 bool isLive = json.TryGetValue("liveNow", StringComparison.Ordinal, out JToken liveNow) ? liveNow.HasValues : false;
+                string liveShowTitle = (string)liveNow["title"];
                 
                 response = new UpcomingResponse
                 {
                     Reason = Reason.Success,
                     IsLive = isLive,
+                    LiveShowTitle = liveShowTitle,
                     Events = GetEvents(json)
                 };
 
