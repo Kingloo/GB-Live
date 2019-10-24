@@ -4,7 +4,8 @@
              xmlns:local="clr-namespace:GBLive"
              xmlns:gb="clr-namespace:GBLive.GiantBomb"
              xmlns:converters="clr-namespace:GBLive.Converters"
-             Startup="Application_Startup">
+             Startup="Application_Startup"
+             DispatcherUnhandledException="Application_DispatcherUnhandledException">
     <Application.Resources>
         <Style TargetType="{x:Type FrameworkElement}">
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
