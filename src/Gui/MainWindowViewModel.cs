@@ -73,9 +73,18 @@ namespace GBLive.Gui
 
         private void AddNewRemoveOldRemoveExpired(IEnumerable<UpcomingEvent> events)
         {
-            var toAdd = events.Where(x => !_events.Contains(x)).ToList();
-            var toRemove = _events.Where(x => !events.Contains(x)).ToList();
-            var expired = _events.Where(x => x.Time < DateTimeOffset.Now).ToList();
+            var toAdd = events
+                .Where(x => !_events.Contains(x))
+                .Where(x => x.Time > DateTimeOffset.Now) // we only want events in the future just in case they continue to include an old one
+                .ToList();
+            
+            var toRemove = _events
+                .Where(x => !events.Contains(x))
+                .ToList();
+            
+            var expired = _events
+                .Where(x => x.Time < DateTimeOffset.Now)
+                .ToList();
 
             foreach (var add in toAdd)
             {
