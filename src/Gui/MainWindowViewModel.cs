@@ -86,21 +86,21 @@ namespace GBLive.Gui
                 .Where(x => x.Time < DateTimeOffset.Now)
                 .ToList();
 
-            foreach (var add in toAdd)
+            foreach (UpcomingEvent add in toAdd)
             {
                 add.StartCountdown();
 
                 _events.Add(add);
             }
 
-            foreach (var remove in toRemove)
+            foreach (UpcomingEvent remove in toRemove)
             {
                 remove.StopCountdown();
 
                 _events.Remove(remove);
             }
 
-            foreach (var each in expired)
+            foreach (UpcomingEvent each in expired)
             {
                 if (_events.Contains(each))
                 {
