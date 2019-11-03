@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Text;
 using GBLive.Common;
 using GBLive.Extensions;
@@ -62,9 +63,14 @@ namespace GBLive.GiantBomb
             /*
                 even though you can start a DispatcherTimer with a ticks of Int64,
                 the equivalent number of milliseconds cannot exceed Int32.MaxValue
-                Int32.MaxValue milliseconds is about 24.58 days
+                Int32.MaxValue's worth of milliseconds is about 24.58 days
              
                 https://referencesource.microsoft.com/#WindowsBase/Base/System/Windows/Threading/DispatcherTimer.cs
+
+                or
+
+                https://github.com/dotnet/wpf/blob/master/src/Microsoft.DotNet.Wpf/src/WindowsBase/System/Windows/Threading/DispatcherTimer.cs
+
                 -> ctor with TimeSpan, DispatcherPriority, EventHandler, Dispatcher
             */
 
@@ -73,13 +79,7 @@ namespace GBLive.GiantBomb
             return millisecondsUntilEvent <= Convert.ToInt64(Int32.MaxValue);
         }
 
-        public void StopCountdown()
-        {
-            if (countdown != null)
-            {
-                countdown.Stop();
-            }
-        }
+        public void StopCountdown() => countdown?.Stop();
 
         public bool Equals(UpcomingEvent other)
         {
@@ -89,7 +89,7 @@ namespace GBLive.GiantBomb
             }
 
             bool sameTitle = Title.Equals(other.Title, StringComparison.Ordinal);
-            bool sameTime = Time.Equals(other.Time);
+            bool sameTime = Time.EqualsExact(other.Time);
             bool samePremium = IsPremium == other.IsPremium;
             bool sameEventType = EventType.Equals(other.EventType, StringComparison.Ordinal);
             bool sameImage = Image.Equals(other.Image);
@@ -102,8 +102,8 @@ namespace GBLive.GiantBomb
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine(Title);
-            sb.AppendLine(Time.ToString());
-            sb.AppendLine(IsPremium.ToString());
+            sb.AppendLine(Time.ToString(CultureInfo.CurrentCulture));
+            sb.AppendLine(IsPremium.ToString(CultureInfo.CurrentCulture));
             sb.AppendLine(EventType);
             sb.AppendLine(Image.AbsoluteUri);
 
