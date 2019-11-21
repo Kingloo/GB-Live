@@ -7,8 +7,7 @@ namespace GBLive.Tests.GiantBombTests.SettingsTests
     {
         private const string secureScheme = "https";
         private const int securePort = 443;
-
-        
+                
         [Test]
         public void Home_IsHttps()
         {

@@ -5,7 +5,6 @@ namespace GBLive.Tests.GiantBombTests.SettingsTests
 {
     public class UpdateIntervalTests
     {
-
         private readonly TimeSpan updateIntervalMinimum = TimeSpan.FromMinutes(1d);
         private readonly TimeSpan updateIntervalMaximum = TimeSpan.FromMinutes(10d);
 

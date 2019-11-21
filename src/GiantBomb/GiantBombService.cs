@@ -85,33 +85,35 @@ namespace GBLive.GiantBomb
 
         private static bool TryParse(string text, out UpcomingResponse response)
         {
+            JObject json = default;
+
             try
             {
-                JObject json = JObject.Parse(text);
-
-                bool isLive = json.TryGetValue("liveNow", StringComparison.Ordinal, out JToken liveNow)
-                    ? liveNow.HasValues
-                    : false;
-                
-                string liveShowTitle = (liveNow != null && liveNow.HasValues)
-                    ? (string)liveNow["title"]
-                    : Settings.NameOfUntitledLiveShow;
-                
-                response = new UpcomingResponse
-                {
-                    Reason = Reason.Success,
-                    IsLive = isLive,
-                    LiveShowTitle = liveShowTitle,
-                    Events = GetEvents(json)
-                };
-
-                return true;
+                json = JObject.Parse(text);
             }
             catch (JsonReaderException)
             {
                 response = null;
                 return false;
             }
+
+            bool isLive = json.TryGetValue("liveNow", StringComparison.Ordinal, out JToken liveNow)
+                ? liveNow.HasValues
+                : false;
+
+            string liveShowTitle = (liveNow != null && liveNow.HasValues)
+                ? (string)liveNow["title"]
+                : Settings.NameOfUntitledLiveShow;
+
+            response = new UpcomingResponse
+            {
+                Reason = Reason.Success,
+                IsLive = isLive,
+                LiveShowTitle = liveShowTitle,
+                Events = GetEvents(json)
+            };
+
+            return true;
         }
 
         private static IEnumerable<UpcomingEvent> GetEvents(JObject json)
@@ -150,7 +152,7 @@ namespace GBLive.GiantBomb
 
                 string uri = each.TryGetValue("image", sco, out JToken imageToken)
                     ? (string)imageToken
-                    : "";
+                    : string.Empty;
                 
                 Uri image = Uri.TryCreate($"https://{uri}", UriKind.Absolute, out Uri u) ? u : Settings.FallbackImage;
 

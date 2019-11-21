@@ -144,7 +144,6 @@ namespace GBLive.Common
                     sw.Flush();
                 }
             }
-            catch (FileNotFoundException) { }
             catch (IOException) { }
             finally
             {
@@ -175,7 +174,6 @@ namespace GBLive.Common
                     await sw.FlushAsync().ConfigureAwait(false);
                 }
             }
-            catch (FileNotFoundException) { }
             catch (IOException) { }
             finally
             {
