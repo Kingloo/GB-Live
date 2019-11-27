@@ -8,6 +8,7 @@
     <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
     <StartupObject>GBLive.Program</StartupObject>
     <ApplicationIcon>giantbomb_logo.ico</ApplicationIcon>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

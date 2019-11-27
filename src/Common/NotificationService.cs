@@ -24,13 +24,13 @@ namespace GBLive.Common
         /// </summary>
         private const int timerTickMax = 15;
 
-        private static DispatcherTimer queuePullTimer = null;
+        private static DispatcherTimer? queuePullTimer = null;
 
 
 
-        public static void Send(string title) => Send(title, string.Empty, null);
+        public static void Send(string title) => Send(title, string.Empty, () => {});
 
-        public static void Send(string title, string description) => Send(title, description, null);
+        public static void Send(string title, string description) => Send(title, description, () => {});
 
         public static void Send(string title, Action action) => Send(title, string.Empty, action);
 
@@ -86,7 +86,7 @@ namespace GBLive.Common
             if (timerTickCount > timerTickMax)
             // if there was nothing to pop for x number of ticks, we turn the timer off
             {
-                queuePullTimer.Stop();
+                queuePullTimer?.Stop();
 
                 timerTickCount = 0; // and reset the counter
             }
@@ -105,7 +105,7 @@ namespace GBLive.Common
 
         private sealed class Notification : Window
         {
-            private readonly DispatcherCountdownTimer closeTimer = null;
+            private readonly DispatcherCountdownTimer closeTimer;
 
             internal Notification(string title, string description, Action action)
             {

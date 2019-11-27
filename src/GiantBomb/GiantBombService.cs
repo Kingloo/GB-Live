@@ -56,15 +56,14 @@ namespace GBLive.GiantBomb
                 };
             }
 
-            if (!TryParse(text, out UpcomingResponse response))
+            if (TryParse(text, out UpcomingResponse? response) && response != null)
             {
-                return new UpcomingResponse
-                {
-                    Reason = Reason.ParseFailed
-                };
+                return response;
             }
-
-            return response;
+            else
+            {
+                return new UpcomingResponse { Reason = Reason.ParseFailed };
+            }
         }
 
         private static void SetUserAgentHeader()
@@ -83,9 +82,9 @@ namespace GBLive.GiantBomb
             }
         }
 
-        private static bool TryParse(string text, out UpcomingResponse response)
+        private static bool TryParse(string text, out UpcomingResponse? response)
         {
-            JObject json = default;
+            JObject json;
 
             try
             {
@@ -154,7 +153,7 @@ namespace GBLive.GiantBomb
                     ? (string)imageToken
                     : string.Empty;
                 
-                Uri image = Uri.TryCreate($"https://{uri}", UriKind.Absolute, out Uri u) ? u : Settings.FallbackImage;
+                Uri image = Uri.TryCreate($"https://{uri}", UriKind.Absolute, out Uri? u) ? u : Settings.FallbackImage;
 
                 UpcomingEvent ue = new UpcomingEvent
                 {

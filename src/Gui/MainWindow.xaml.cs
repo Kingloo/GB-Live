@@ -8,7 +8,7 @@ namespace GBLive.Gui
 {
     public partial class MainWindow : Window
     {
-        private readonly MainWindowViewModel viewModel = null;
+        private readonly MainWindowViewModel viewModel;
 
         public MainWindow(MainWindowViewModel vm)
         {

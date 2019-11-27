@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GBLive.GiantBomb
 {
@@ -16,7 +17,7 @@ namespace GBLive.GiantBomb
         public Reason Reason { get; set; } = Reason.None;
         public bool IsLive { get; set; } = false;
         public string LiveShowTitle { get; set; } = Settings.NameOfUntitledLiveShow;
-        public IEnumerable<UpcomingEvent> Events { get; set; } = null;
+        public IEnumerable<UpcomingEvent> Events { get; set; } = Enumerable.Empty<UpcomingEvent>();
 
         public UpcomingResponse() { }
     }

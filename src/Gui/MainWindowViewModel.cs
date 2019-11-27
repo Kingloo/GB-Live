@@ -13,12 +13,12 @@ namespace GBLive.Gui
 {
     public class MainWindowViewModel : INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         private void OnPropertyChanged(string propertyName)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-        private DispatcherTimer timer = null;
+        private DispatcherTimer? timer = null;
 
         private readonly ObservableCollection<UpcomingEvent> _events = new ObservableCollection<UpcomingEvent>();
         public IReadOnlyCollection<UpcomingEvent> Events => _events;

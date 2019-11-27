@@ -9,7 +9,7 @@ namespace GBLive.Common
     {
         #region Fields
         private readonly DateTime created = DateTime.Now;
-        private readonly Action tick = null;
+        private readonly Action tick;
         private DispatcherTimer timer = new DispatcherTimer(DispatcherPriority.Background);
         #endregion
 
@@ -50,8 +50,6 @@ namespace GBLive.Common
             {
                 timer.Stop();
                 timer.Tick -= Timer_Tick;
-
-                timer = null;
             }
         }
 

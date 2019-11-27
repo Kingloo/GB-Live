@@ -8,7 +8,7 @@ namespace GBLive.GiantBomb
 {
     public class UpcomingEvent : IEquatable<UpcomingEvent>
     {
-        private DispatcherCountdownTimer countdown = null;
+        private DispatcherCountdownTimer? countdown = null;
 
         public string Title { get; set; } = "Untitled Event";
         public DateTimeOffset Time { get; set; } = DateTimeOffset.MinValue;

@@ -123,7 +123,7 @@ namespace GBLive.Common
 
         private static void WriteToFile(string text)
         {
-            FileStream fs = default;
+            FileStream? fs = default;
 
             try
             {
@@ -153,7 +153,7 @@ namespace GBLive.Common
 
         private static async Task WriteToFileAsync(string text)
         {
-            FileStream fsAsync = default;
+            FileStream? fsAsync = default;
 
             try
             {

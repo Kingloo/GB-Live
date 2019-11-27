@@ -22,7 +22,7 @@ namespace GBLive.Common
         };
 
         public static Task<(HttpStatusCode, string)> DownloadStringAsync(Uri uri)
-            => DownloadStringAsync(uri, null);
+            => DownloadStringAsync(uri, (_) => { });
 
         public static async Task<(HttpStatusCode, string)> DownloadStringAsync(Uri uri, Action<HttpRequestMessage> configureRequest)
         {
@@ -33,7 +33,7 @@ namespace GBLive.Common
 
             var request = new HttpRequestMessage(HttpMethod.Get, uri);
 
-            configureRequest?.Invoke(request);
+            configureRequest.Invoke(request);
 
             try
             {

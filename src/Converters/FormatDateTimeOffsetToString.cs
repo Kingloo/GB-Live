@@ -6,7 +6,7 @@ namespace GBLive.Converters
 {
     public class FormatDateTimeOffsetToString : IValueConverter
     {
-        public string ErrorMessage { get; set; }
+        public string ErrorMessage { get; set; } = string.Empty;
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
