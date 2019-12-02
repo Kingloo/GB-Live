@@ -65,7 +65,7 @@ namespace GBLive.Common
             }
         }
 
-        private static void QueuePullTimer_Tick(object sender, EventArgs e)
+        private static void QueuePullTimer_Tick(object? sender, EventArgs e)
         {
             if (notificationQueue.Count > 0)
             {

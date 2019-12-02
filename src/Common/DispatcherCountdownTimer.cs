@@ -35,7 +35,7 @@ namespace GBLive.Common
             timer.Tick += Timer_Tick;
         }
         
-        private void Timer_Tick(object sender, EventArgs e)
+        private void Timer_Tick(object? sender, EventArgs e)
         {
             tick();
             

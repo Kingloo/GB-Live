@@ -73,25 +73,25 @@ namespace GBLive.Gui
 
         private void AddNewRemoveOldRemoveExpired(IEnumerable<UpcomingEvent> events)
         {
+            // add events that that we don't already have, and that are in the future
+
             var toAdd = events
                 .Where(x => !_events.Contains(x))
-                .Where(x => x.Time > DateTimeOffset.Now) // we only want events in the future just in case they continue to include an old one
+                .Where(x => x.Time > DateTimeOffset.Now)
                 .ToList();
             
-            var toRemove = _events
-                .Where(x => !events.Contains(x))
-                .ToList();
-            
-            var expired = _events
-                .Where(x => x.Time < DateTimeOffset.Now)
-                .ToList();
-
             foreach (UpcomingEvent add in toAdd)
             {
                 add.StartCountdown();
 
                 _events.Add(add);
             }
+
+            // remove events that we have locally but that are no longer in the API response
+
+            var toRemove = _events
+                .Where(x => !events.Contains(x))
+                .ToList();
 
             foreach (UpcomingEvent remove in toRemove)
             {
@@ -100,14 +100,17 @@ namespace GBLive.Gui
                 _events.Remove(remove);
             }
 
+            // remove any events that the API response contains but whose time is in the past
+
+            var expired = _events
+                .Where(x => x.Time < DateTimeOffset.Now)
+                .ToList();
+
             foreach (UpcomingEvent each in expired)
             {
-                if (_events.Contains(each))
-                {
-                    each.StopCountdown();
+                each.StopCountdown();
 
-                    _events.Remove(each);
-                }
+                _events.Remove(each);
             }
         }
 
@@ -146,7 +149,7 @@ namespace GBLive.Gui
             timer = null;
         }
 
-        private async void Timer_Tick(object sender, EventArgs e)
+        private async void Timer_Tick(object? sender, EventArgs e)
         {
             await UpdateAsync();
         }       
