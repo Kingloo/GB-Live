@@ -101,9 +101,10 @@ namespace GBLive.Gui
             }
 
             // remove any events that the API response contains but whose time is in the past
+            // well, 10 minutes in the past to allow for some leeway
 
             var expired = _events
-                .Where(x => x.Time < DateTimeOffset.Now)
+                .Where(x => x.Time < DateTimeOffset.Now.AddMinutes(-10d))
                 .ToList();
 
             foreach (UpcomingEvent each in expired)
