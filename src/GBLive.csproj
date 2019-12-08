@@ -2,13 +2,13 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>8.0</LangVersion>
+    <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
     <StartupObject>GBLive.Program</StartupObject>
     <ApplicationIcon>giantbomb_logo.ico</ApplicationIcon>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
