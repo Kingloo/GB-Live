@@ -79,7 +79,7 @@ namespace GBLive.Gui
                 .Where(x => !_events.Contains(x))
                 .Where(x => x.Time > DateTimeOffset.Now)
                 .ToList();
-            
+
             foreach (UpcomingEvent add in toAdd)
             {
                 add.StartCountdown();

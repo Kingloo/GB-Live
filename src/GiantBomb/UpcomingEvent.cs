@@ -97,6 +97,8 @@ namespace GBLive.GiantBomb
             return sameTitle && sameTime && samePremium && sameEventType && sameImage;
         }
 
+        public override bool Equals(object? obj) => (obj is UpcomingEvent ue) ? Equals(ue) : false;
+
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();

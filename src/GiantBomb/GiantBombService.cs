@@ -164,7 +164,10 @@ namespace GBLive.GiantBomb
                     Image = image
                 };
 
-                events.Add(ue);
+                if (!events.Contains(ue))
+                {
+                    events.Add(ue);
+                }
             }
 
             return events;
