@@ -8,21 +8,24 @@ using System.Windows.Threading;
 using GBLive.Common;
 using GBLive.Extensions;
 using GBLive.GiantBomb;
+using GBLive.GiantBomb.Interfaces;
+using Microsoft.Extensions.Options;
 
 namespace GBLive.Gui
 {
-    public class MainWindowViewModel : INotifyPropertyChanged
+    public class MainWindowViewModel : IMainWindowViewModel, IDisposable
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
         private void OnPropertyChanged(string propertyName)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
+        private readonly ILogClass _logger;
+        private readonly IGiantBombContext _gbContext;
+        private readonly IOptions<Settings> _settings;
+
         private DispatcherTimer? timer = null;
-
-        private readonly ObservableCollection<UpcomingEvent> _events = new ObservableCollection<UpcomingEvent>();
-        public IReadOnlyCollection<UpcomingEvent> Events => _events;
-
+        
         private bool _isLive = false;
         public bool IsLive
         {
@@ -35,7 +38,7 @@ namespace GBLive.Gui
             }
         }
 
-        private string _liveShowTitle = Settings.NameOfNoLiveShow;
+        private string _liveShowTitle = string.Empty;
         public string LiveShowTitle
         {
             get => _liveShowTitle;
@@ -47,77 +50,126 @@ namespace GBLive.Gui
             }
         }
 
-        public MainWindowViewModel() { }
+        private readonly ObservableCollection<IShow> _shows = new ObservableCollection<IShow>();
+        public IReadOnlyCollection<IShow> Shows => _shows;
+
+        public MainWindowViewModel(ILogClass logger, IGiantBombContext gbContext, IOptions<Settings> settings)
+        {
+            _logger = logger;
+            _gbContext = gbContext;
+            _settings = settings;
+        }
 
         public async Task UpdateAsync()
         {
-            UpcomingResponse response = await GiantBombService.UpdateAsync();
+            await _logger.MessageAsync("update started", Severity.Debug);
+
+            IResponse response = await _gbContext.UpdateAsync();
+
+            await _logger.MessageAsync($"response contains {response.Shows.Count} shows", Severity.Debug);
 
             if (response.Reason != Reason.Success)
             {
+                await _logger.MessageAsync($"update failed: {response.Reason.ToString()}", Severity.Warning);
+
                 return;
             }
 
             bool wasLive = IsLive;
 
             IsLive = response.IsLive;
-            LiveShowTitle = response.LiveShowTitle;
-
-            if (!wasLive && IsLive)
+            LiveShowTitle = IsLive ? response.LiveShowTitle : _settings.Value.NameOfNoLiveShow;
+            
+            if (_settings.Value.ShouldNotify)
             {
-                NotificationService.Send(Settings.IsLiveMessage, GoToChat);
-            }
+                if (!wasLive && IsLive)
+                {
+                    NotificationService.Send(_settings.Value.IsLiveMessage, OpenChatPage);
 
-            AddNewRemoveOldRemoveExpired(response.Events);
+                    await _logger.MessageAsync("GiantBomb went live", Severity.Information);
+                }
+            }
+            
+            AddNewRemoveOldRemoveExpired(response.Shows);
+
+            await _logger.MessageAsync("update succeeded", Severity.Debug);
         }
 
-        private void AddNewRemoveOldRemoveExpired(IEnumerable<UpcomingEvent> events)
+        private void AddNewRemoveOldRemoveExpired(IEnumerable<IShow> shows)
         {
             // add events that that we don't already have, and that are in the future
 
-            var toAdd = events
-                .Where(x => !_events.Contains(x))
+            var toAdd = shows
+                .Where(x => !_shows.Contains(x))
                 .Where(x => x.Time > DateTimeOffset.Now)
                 .ToList();
 
-            foreach (UpcomingEvent add in toAdd)
+            foreach (IShow add in toAdd)
             {
-                add.StartCountdown();
+                void notify() => NotificationService.Send(add.Title, OpenHomePage);
 
-                _events.Add(add);
+                add.StartCountdown(notify);
+
+                _shows.Add(add);
+
+                _logger.Message($"added show {add.ToString()}", Severity.Debug);
             }
 
             // remove events that we have locally but that are no longer in the API response
 
-            var toRemove = _events
-                .Where(x => !events.Contains(x))
+            var toRemove = _shows
+                .Where(x => !shows.Contains(x))
                 .ToList();
 
-            foreach (UpcomingEvent remove in toRemove)
+            foreach (IShow remove in toRemove)
             {
                 remove.StopCountdown();
 
-                _events.Remove(remove);
+                _shows.Remove(remove);
+
+                _logger.Message($"removed show {remove.ToString()}", Severity.Debug);
             }
 
             // remove any events that the API response contains but whose time is in the past
             // well, 10 minutes in the past to allow for some leeway
 
-            var expired = _events
+            var expired = _shows
                 .Where(x => x.Time < DateTimeOffset.Now.AddMinutes(-10d))
                 .ToList();
 
-            foreach (UpcomingEvent each in expired)
+            foreach (IShow each in expired)
             {
                 each.StopCountdown();
 
-                _events.Remove(each);
+                _shows.Remove(each);
+
+                _logger.Message($"removed old show {each.ToString()}", Severity.Debug);
             }
         }
 
-        public void GoToHome() => Settings.Home.OpenInBrowser();
+        public void OpenHomePage()
+        {
+            if (_settings.Value.Home is Uri uri)
+            {
+                uri.OpenInBrowser();
+            }
+            else
+            {
+                _logger.Message("home page Uri is null", Severity.Error);
+            }
+        }
 
-        public void GoToChat() => Settings.Chat.OpenInBrowser();
+        public void OpenChatPage()
+        {
+            if (_settings.Value.Chat is Uri uri)
+            {
+                uri.OpenInBrowser();
+            }
+            else
+            {
+                _logger.Message("chat page Uri is null", Severity.Error);
+            }
+        }
 
         public void StartTimer()
         {
@@ -125,7 +177,7 @@ namespace GBLive.Gui
             {
                 timer = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
                 {
-                    Interval = Settings.UpdateInterval
+                    Interval = TimeSpan.FromSeconds(_settings.Value.UpdateIntervalInSeconds)
                 };
 
                 timer.Tick += Timer_Tick;
@@ -153,6 +205,30 @@ namespace GBLive.Gui
         private async void Timer_Tick(object? sender, EventArgs e)
         {
             await UpdateAsync();
-        }       
+        }
+
+        
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _gbContext?.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }

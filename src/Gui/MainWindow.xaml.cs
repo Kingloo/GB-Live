@@ -1,20 +1,21 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Markup;
+using Microsoft.Extensions.Logging;
 
 namespace GBLive.Gui
 {
     public partial class MainWindow : Window
     {
-        private readonly MainWindowViewModel viewModel;
+        private readonly ILogger<MainWindow> _logger;
+        private readonly IMainWindowViewModel viewModel;
 
-        public MainWindow(MainWindowViewModel vm)
+        public MainWindow(ILogger<MainWindow> logger, IMainWindowViewModel vm)
         {
-            if (vm is null) { throw new ArgumentNullException(nameof(vm)); }
-
             InitializeComponent();
+
+            _logger = logger;
 
             Language = XmlLanguage.GetLanguage(CultureInfo.CurrentCulture.IetfLanguageTag);
 
@@ -47,12 +48,14 @@ namespace GBLive.Gui
 
         private void ItemsControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            viewModel.GoToHome();
+            _logger.LogInformation("mouse button changed: {0}", e.ChangedButton);
+
+            viewModel.OpenHomePage();
         }
 
         private void Label_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            viewModel.GoToChat();
+            viewModel.OpenChatPage();
         }
     }
 }

@@ -1,12 +1,18 @@
 ﻿<Application x:Class="GBLive.Gui.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:GBLive"
              xmlns:gb="clr-namespace:GBLive.GiantBomb"
              xmlns:converters="clr-namespace:GBLive.Converters"
              Startup="Application_Startup"
+             Exit="Application_Exit"
              DispatcherUnhandledException="Application_DispatcherUnhandledException">
+    
     <Application.Resources>
+        <x:Static x:Key="IsLiveMessage" Member="gb:Constants.IsLiveMessage" />
+        <x:Static x:Key="IsNotLiveMessage" Member="gb:Constants.IsNotLiveMessage" />
+        <x:Static x:Key="NameOfUntitledLiveShow" Member="gb:Constants.NameOfUntitledLiveShow" />
+        <x:Static x:Key="NameOfNoLiveShow" Member="gb:Constants.NameOfNoLiveShow" />
+        
         <Style TargetType="{x:Type FrameworkElement}">
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="SnapsToDevicePixels" Value="True" />
@@ -42,10 +48,6 @@
             <Setter Property="FontSize" Value="16" />
             <Setter Property="Foreground" Value="Red" />
         </Style>
-
-        <converters:BooleanToStringConverter x:Key="liveStatusConverter"
-                                             True="{Binding Source={x:Static gb:Settings.IsLiveMessage}}"
-                                             False="{Binding Source={x:Static gb:Settings.IsNotLiveMessage}}" />
 
         <converters:BooleanToStyleConverter x:Key="labelStyleConverter"
                                             True="{StaticResource LabelLiveStyle}"

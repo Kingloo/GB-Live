@@ -8,12 +8,14 @@ namespace GBLive.Converters
 {
     public abstract class BooleanConverterBase<T> : DependencyObject, IValueConverter
     {
+        [property:NotNull]
         public T True
         {
             get => (T)GetValue(TrueProperty);
             set => SetValue(TrueProperty, value);
         }
 
+        [property: NotNull]
         public T False
         {
             get => (T)GetValue(FalseProperty);
@@ -32,9 +34,17 @@ namespace GBLive.Converters
             typeof(BooleanConverterBase<T>),
             new PropertyMetadata(null));
 
-        [return: MaybeNull]
         public virtual object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-            => (bool)value ? True : False;
+        {
+            if (value is bool b)
+            {
+                return b ? True : False;
+            }
+            else
+            {
+                throw new NullReferenceException($"bool converter from {targetType.FullName} was passed a null value");
+            }
+        }
 
         public virtual object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => throw new NotImplementedException($"converting from {value.GetType().ToString()} to {targetType.ToString()} is not implemented!");
