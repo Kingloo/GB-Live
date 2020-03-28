@@ -221,4 +221,26 @@ namespace GBLive.Common
         public Task ExceptionAsync(Exception ex, bool includeStackTrace) => Task.CompletedTask;
         public Task ExceptionAsync(Exception ex, string message, bool includeStackTrace) => Task.CompletedTask;
     }
+
+    public static class LogStatic
+    {
+        private const string defaultFileName = "logfile.txt";
+        private static readonly string defaultDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        private static readonly string defaultPath = Path.Combine(defaultDirectory, defaultFileName);
+
+        private static readonly LogClass instance = new LogClass(defaultPath, Severity.Information);
+
+        public static void Message(string message, Severity severity) => instance.Message(message, severity);
+        public static Task MessageAsync(string message, Severity severity) => instance.MessageAsync(message, severity);
+
+        public static void Exception(Exception ex) => instance.Exception(ex);
+        public static void Exception(Exception ex, string message) => instance.Exception(ex, message);
+        public static void Exception(Exception ex, bool includeStackTrace) => instance.Exception(ex, includeStackTrace);
+        public static void Exception(Exception ex, string message, bool includeStackTrace) => instance.Exception(ex, message, includeStackTrace);
+
+        public static Task ExceptionAsync(Exception ex) => instance.ExceptionAsync(ex);
+        public static Task ExceptionAsync(Exception ex, string message) => instance.ExceptionAsync(ex, message);
+        public static Task ExceptionAsync(Exception ex, bool includeStackTrace) => instance.ExceptionAsync(ex, includeStackTrace);
+        public static Task ExceptionAsync(Exception ex, string message, bool includeStackTrace) => instance.ExceptionAsync(ex, message, includeStackTrace);
+    }
 }
