@@ -43,13 +43,21 @@
 
                 <Grid.Resources>
                     <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
-                        <Setter Property="Foreground" Value="{Binding Path=IsPremium, Mode=OneTime, Converter={StaticResource premiumColorConverter}}" />
+                        <!--<Setter Property="Foreground" Value="{Binding Path=IsPremium, Mode=OneTime, Converter={StaticResource premiumColorConverter}}" />-->
+                        <Setter Property="Foreground" Value="White" />
                         <Setter Property="FontSize" Value="17" />
                         <Setter Property="Margin" Value="30,0,0,0" />
                         <Setter Property="Opacity" Value="0.75" />
                         <Setter Property="HorizontalContentAlignment" Value="Left" />
                         <Setter Property="ToolTipService.InitialShowDelay" Value="600" />
                         <Setter Property="ToolTipService.ShowDuration" Value="4500" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsPremium}" Value="true">
+                                <DataTrigger.Setters>
+                                    <Setter Property="Foreground" Value="Gold" />
+                                </DataTrigger.Setters>
+                            </DataTrigger>
+                        </Style.Triggers>
                     </Style>
 
                     <Style TargetType="{x:Type Image}">
@@ -107,13 +115,38 @@
                                                  False="{StaticResource IsNotLiveMessage}" />
         </Grid.Resources>
 
-        <Label Grid.Row="0"
+        <!--<Label Grid.Row="0"
                x:Name="liveStatusLabel"
                HorizontalContentAlignment="Center"
                Content="{Binding Path=IsLive, Converter={StaticResource liveStatusConverter}}"
                ToolTip="{Binding LiveShowTitle}"
                Style="{Binding Path=IsLive, Converter={StaticResource labelStyleConverter}}"
-               MouseDoubleClick="Label_MouseDoubleClick" />
+               MouseDoubleClick="Label_MouseDoubleClick" />-->
+
+        <Label Grid.Row="0"
+               x:Name="liveStatusLabel"
+               HorizontalContentAlignment="Center"
+               Content="{StaticResource IsNotLiveMessage}"
+               FontSize="16"
+               Opacity="0.75"
+               Foreground="Red"
+               ToolTip="{Binding LiveShowTitle}"
+               MouseDoubleClick="Label_MouseDoubleClick">
+            <Label.Style>
+                <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=IsLive}" Value="true">
+                            <DataTrigger.Setters>
+                                <Setter Property="Content" Value="{StaticResource IsLiveMessage}" />
+                                <Setter Property="FontSize" Value="25" />
+                                <Setter Property="Foreground" Value="Green" />
+                                <Setter Property="Opacity" Value="1.0" />
+                            </DataTrigger.Setters>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Label.Style>
+        </Label>
 
         <ItemsControl Grid.Row="1"
                       ItemsSource="{Binding Source={StaticResource showsSortedByTime}}"
