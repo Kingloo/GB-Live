@@ -6,13 +6,15 @@ namespace GBLive.Converters
 {
     public class FormatDateTimeOffsetToString : IValueConverter
     {
+        private const string defaultFormat = "ddd MMM dd";
+
         public string ErrorMessage { get; set; } = string.Empty;
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is DateTimeOffset dt)
             {
-                string format = (parameter is string providedFormat) ? providedFormat : "ddd MMM dd";
+                string format = (parameter is string providedFormat) ? providedFormat : defaultFormat;
 
                 return dt.ToString(format, culture);
             }
