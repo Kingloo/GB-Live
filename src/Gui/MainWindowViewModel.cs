@@ -70,7 +70,7 @@ namespace GBLive.Gui
 
             if (response.Reason != Reason.Success)
             {
-                await _logger.MessageAsync($"update failed: {response.Reason.ToString()}", Severity.Warning);
+                await _logger.MessageAsync($"update failed: {response.Reason}", Severity.Warning);
 
                 return;
             }
@@ -112,7 +112,7 @@ namespace GBLive.Gui
 
                 _shows.Add(add);
 
-                _logger.Message($"added show {add.ToString()}", Severity.Debug);
+                _logger.Message($"added show {add}", Severity.Debug);
             }
 
             // remove events that we have locally but that are no longer in the API response
@@ -127,7 +127,7 @@ namespace GBLive.Gui
 
                 _shows.Remove(remove);
 
-                _logger.Message($"removed show {remove.ToString()}", Severity.Debug);
+                _logger.Message($"removed show {remove}", Severity.Debug);
             }
 
             // remove any events that the API response contains but whose time is in the past
@@ -143,7 +143,7 @@ namespace GBLive.Gui
 
                 _shows.Remove(each);
 
-                _logger.Message($"removed old show {each.ToString()}", Severity.Debug);
+                _logger.Message($"removed old show {each}", Severity.Debug);
             }
         }
 
@@ -191,15 +191,13 @@ namespace GBLive.Gui
 
         public void StopTimer()
         {
-            if (timer is null)
+            if (!(timer is null))
             {
-                return;
+                timer.Stop();
+                timer.Tick -= Timer_Tick;
+
+                timer = null;
             }
-
-            timer.Stop();
-            timer.Tick -= Timer_Tick;
-
-            timer = null;
         }
 
         private async void Timer_Tick(object? sender, EventArgs e)
