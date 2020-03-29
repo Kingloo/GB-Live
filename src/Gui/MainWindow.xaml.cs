@@ -50,12 +50,18 @@ namespace GBLive.Gui
         {
             _logger.LogInformation("mouse button changed: {0}", e.ChangedButton);
 
-            viewModel.OpenHomePage();
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                viewModel.OpenHomePage();
+            }
         }
 
         private void Label_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            viewModel.OpenChatPage();
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                viewModel.OpenChatPage();
+            }
         }
     }
 }
