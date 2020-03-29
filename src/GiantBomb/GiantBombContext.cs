@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -36,6 +37,7 @@ namespace GBLive.GiantBomb
                 {
                     AllowRenegotiation = false,
                     ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http2 },
+                    // GiantBomb does not yet support Tls13, remove Tls12 when they eventually do
                     EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
                     EncryptionPolicy = EncryptionPolicy.RequireEncryption
                 }
@@ -106,7 +108,10 @@ namespace GBLive.GiantBomb
             }
             catch (HttpRequestException ex)
             {
-                await _logger.ExceptionAsync(ex, "downloading upcoming json failed").ConfigureAwait(false);
+                if (ex.InnerException is Win32Exception inner)
+                {
+                    await _logger.ExceptionAsync(ex, inner.Message).ConfigureAwait(false);
+                }
             }
             finally
             {
