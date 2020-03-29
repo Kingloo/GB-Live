@@ -5,7 +5,6 @@
         xmlns:converters="clr-namespace:GBLive.Converters"
         xmlns:gb="clr-namespace:GBLive.GiantBomb"
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-        Name="window"
         Loaded="Window_Loaded"
         KeyDown="Window_KeyDown">
     
