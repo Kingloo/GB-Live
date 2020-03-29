@@ -54,7 +54,7 @@ namespace GBLive.Tests.GiantBomb
         }
 
         [Test]
-        public void TimerDoesNotStartWhenTimeIsTooFarAhead()
+        public void CountdownTimer_ShouldNotStartWhenShowTimeIsTooFarInTheFuture()
         {
             IShow show = new Show
             {
@@ -63,11 +63,11 @@ namespace GBLive.Tests.GiantBomb
 
             show.StartCountdown(() => { });
 
-            Assert.IsFalse(show.IsCountdownTimerRunning);
+            Assert.IsFalse(show.IsCountdownTimerRunning, "countdown shouldn't have started, but it did");
         }
 
         [Test]
-        public void TimerDoesNotStartWhenTimeIsEarlierThanNow()
+        public void CountdownTimer_ShouldNotStartWhenTimeIsEarlierThanNow()
         {
             IShow show = new Show
             {
@@ -80,7 +80,7 @@ namespace GBLive.Tests.GiantBomb
         }
 
         [Test]
-        public void StopCountdownActuallyStopsCountdown()
+        public void StopCountdown_ShouldStopCountdown()
         {
             IShow show = new Show
             {
@@ -91,7 +91,7 @@ namespace GBLive.Tests.GiantBomb
 
             show.StopCountdown();
 
-            Assert.IsFalse(show.IsCountdownTimerRunning);
+            Assert.IsFalse(show.IsCountdownTimerRunning, "the countdown shouldn't have been running, but it was");
         }
     }
 }
