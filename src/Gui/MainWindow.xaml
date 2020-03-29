@@ -52,7 +52,7 @@
                         <Setter Property="ToolTipService.InitialShowDelay" Value="600" />
                         <Setter Property="ToolTipService.ShowDuration" Value="4500" />
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding Path=IsPremium}" Value="true">
+                            <DataTrigger Binding="{Binding Path=IsPremium, Mode=OneTime}" Value="true">
                                 <DataTrigger.Setters>
                                     <Setter Property="Foreground" Value="Gold" />
                                 </DataTrigger.Setters>
