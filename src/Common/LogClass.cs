@@ -11,9 +11,9 @@ namespace GBLive.Common
     {
         None = 0,
         Debug = 1,
-        Error = 2,
+        Information = 2,
         Warning = 3,
-        Information = 4
+        Error = 4
     }
 
     public interface ILogClass
