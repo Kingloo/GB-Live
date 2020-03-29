@@ -16,7 +16,7 @@ namespace GBLive
 
             if (exitCode != 0)
             {
-                string message = string.Format(CultureInfo.CurrentCulture, $"exited with {exitCode}", exitCode);
+                string message = string.Format(CultureInfo.CurrentCulture, "exited with {0}", exitCode);
 
                 Log.Message(message);
             }
