@@ -44,7 +44,7 @@ namespace GBLive.Gui
                             settings.Chat = ctx.Configuration.GetValue<Uri>("GiantBomb:Chat");
                             settings.Upcoming = ctx.Configuration.GetValue<Uri>("GiantBomb:Upcoming");
                             settings.FallbackImage = ctx.Configuration.GetValue<Uri>("GiantBomb:FallbackImage");
-                            settings.UpdateIntervalInSeconds = ctx.Configuration.GetValue<int>("GiantBomb:UpdateIntervalInSeconds");
+                            settings.UpdateIntervalInSeconds = ctx.Configuration.GetValue<double>("GiantBomb:UpdateIntervalInSeconds");
                             settings.ShouldNotify = ctx.Configuration.GetValue<bool>("GiantBomb:ShouldNotify");
                         });
 
