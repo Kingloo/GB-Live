@@ -2,16 +2,16 @@
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Markup;
-using Microsoft.Extensions.Logging;
+using GBLive.Common;
 
 namespace GBLive.Gui
 {
     public partial class MainWindow : Window
     {
-        private readonly ILogger<MainWindow> _logger;
+        private readonly ILogClass _logger;
         private readonly IMainWindowViewModel viewModel;
 
-        public MainWindow(ILogger<MainWindow> logger, IMainWindowViewModel vm)
+        public MainWindow(ILogClass logger, IMainWindowViewModel vm)
         {
             InitializeComponent();
 
@@ -48,7 +48,7 @@ namespace GBLive.Gui
 
         private void ItemsControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            _logger.LogInformation("mouse button changed: {0}", e.ChangedButton);
+            _logger.Message($"mouse button changed: {e.ChangedButton}", Severity.Debug);
 
             if (e.ChangedButton == MouseButton.Left)
             {

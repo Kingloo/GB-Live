@@ -1,8 +1,6 @@
 ﻿<Window x:Class="GBLive.Gui.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:gui="clr-namespace:GBLive.Gui"
-        xmlns:converters="clr-namespace:GBLive.Converters"
         xmlns:gb="clr-namespace:GBLive.GiantBomb"
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         Loaded="Window_Loaded"
@@ -42,7 +40,6 @@
 
                 <Grid.Resources>
                     <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
-                        <!--<Setter Property="Foreground" Value="{Binding Path=IsPremium, Mode=OneTime, Converter={StaticResource premiumColorConverter}}" />-->
                         <Setter Property="Foreground" Value="White" />
                         <Setter Property="FontSize" Value="17" />
                         <Setter Property="Margin" Value="30,0,0,0" />
@@ -51,7 +48,7 @@
                         <Setter Property="ToolTipService.InitialShowDelay" Value="600" />
                         <Setter Property="ToolTipService.ShowDuration" Value="4500" />
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding Path=IsPremium, Mode=OneTime}" Value="true">
+                            <DataTrigger Binding="{Binding Path=IsPremium, Mode=OneTime}" Value="True">
                                 <DataTrigger.Setters>
                                     <Setter Property="Foreground" Value="Gold" />
                                 </DataTrigger.Setters>
@@ -79,8 +76,7 @@
                        FontSize="20"
                        VerticalContentAlignment="Bottom">
                     <Label.Content>
-                        <TextBlock Text="{Binding Path=Title, Mode=OneTime}"
-                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding Path=Title, Mode=OneTime}" TextTrimming="CharacterEllipsis" />
                     </Label.Content>
                     <Label.ToolTip>
                         <TextBlock Text="{Binding Path=Title, Mode=OneTime}" />
@@ -108,36 +104,22 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Grid.Resources>
-            <converters:BooleanToStringConverter x:Key="liveStatusConverter"
-                                                 True="{StaticResource IsLiveMessage}"
-                                                 False="{StaticResource IsNotLiveMessage}" />
-        </Grid.Resources>
-
-        <!--<Label Grid.Row="0"
-               x:Name="liveStatusLabel"
-               HorizontalContentAlignment="Center"
-               Content="{Binding Path=IsLive, Converter={StaticResource liveStatusConverter}}"
-               ToolTip="{Binding LiveShowTitle}"
-               Style="{Binding Path=IsLive, Converter={StaticResource labelStyleConverter}}"
-               MouseDoubleClick="Label_MouseDoubleClick" />-->
-
         <Label Grid.Row="0"
-               x:Name="liveStatusLabel"
                HorizontalContentAlignment="Center"
-               Content="{StaticResource IsNotLiveMessage}"
-               FontSize="16"
-               Opacity="0.75"
-               Foreground="Red"
                ToolTip="{Binding LiveShowTitle}"
                MouseDoubleClick="Label_MouseDoubleClick">
             <Label.Style>
                 <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
+                    <Setter Property="Content" Value="{StaticResource IsNotLiveMessage}" />
+                    <Setter Property="Foreground" Value="Red" />
+                    <Setter Property="FontSize" Value="16" />
+                    <Setter Property="Opacity" Value="0.75" />
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding Path=IsLive}" Value="true">
+                        <DataTrigger Binding="{Binding IsLive}" Value="True">
                             <DataTrigger.Setters>
                                 <Setter Property="Content" Value="{StaticResource IsLiveMessage}" />
-                                <Setter Property="FontSize" Value="25" />
+                                <Setter Property="FontSize" Value="27" />
+                                <Setter Property="FontStretch" Value="UltraExpanded" />
                                 <Setter Property="Foreground" Value="Green" />
                                 <Setter Property="Opacity" Value="1.0" />
                             </DataTrigger.Setters>
@@ -149,7 +131,6 @@
 
         <ItemsControl Grid.Row="1"
                       ItemsSource="{Binding Source={StaticResource showsSortedByTime}}"
-                      MouseDoubleClick="ItemsControl_MouseDoubleClick">
-        </ItemsControl>
+                      MouseDoubleClick="ItemsControl_MouseDoubleClick" />
     </Grid>
 </Window>

@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using GBLive.Common;
-using GBLive.Extensions;
 using GBLive.GiantBomb;
 using GBLive.GiantBomb.Interfaces;
 using Microsoft.Extensions.Options;
@@ -104,16 +103,24 @@ namespace GBLive.Gui
                 .Where(x => x.Time > DateTimeOffset.Now)
                 .ToList();
 
-            foreach (IShow add in toAdd)
+            if (toAdd.Any())
             {
-                void notify() => NotificationService.Send(add.Title, OpenHomePage);
+                foreach (IShow add in toAdd)
+                {
+                    void notify() => NotificationService.Send(add.Title, OpenHomePage);
 
-                add.StartCountdown(notify);
+                    add.StartCountdown(notify);
 
-                _shows.Add(add);
+                    _shows.Add(add);
 
-                _logger.Message($"added show {add}", Severity.Debug);
+                    _logger.Message($"added show {add}", Severity.Debug);
+                }
             }
+            else
+            {
+                _logger.Message($"no shows to add", Severity.Debug);
+            }
+            
 
             // remove events that we have locally but that are no longer in the API response
 
@@ -121,14 +128,22 @@ namespace GBLive.Gui
                 .Where(x => !shows.Contains(x))
                 .ToList();
 
-            foreach (IShow remove in toRemove)
+            if (toRemove.Any())
             {
-                remove.StopCountdown();
+                foreach (IShow remove in toRemove)
+                {
+                    remove.StopCountdown();
 
-                _shows.Remove(remove);
+                    _shows.Remove(remove);
 
-                _logger.Message($"removed show {remove}", Severity.Debug);
+                    _logger.Message($"removed show {remove}", Severity.Debug);
+                }
             }
+            else
+            {
+                _logger.Message($"no shows removed", Severity.Debug);
+            }
+            
 
             // remove any events that the API response contains but whose time is in the past
             // well, 10 minutes in the past to allow for some leeway
@@ -137,13 +152,20 @@ namespace GBLive.Gui
                 .Where(x => x.Time < DateTimeOffset.Now.AddMinutes(-10d))
                 .ToList();
 
-            foreach (IShow each in expired)
+            if (expired.Any())
             {
-                each.StopCountdown();
+                foreach (IShow each in expired)
+                {
+                    each.StopCountdown();
 
-                _shows.Remove(each);
+                    _shows.Remove(each);
 
-                _logger.Message($"removed old show {each}", Severity.Debug);
+                    _logger.Message($"removed old show {each}", Severity.Debug);
+                }
+            }
+            else
+            {
+                _logger.Message($"no expired shows", Severity.Debug);
             }
         }
 
@@ -151,7 +173,10 @@ namespace GBLive.Gui
         {
             if (_settings.Value.Home is Uri uri)
             {
-                uri.OpenInBrowser();
+                if (!SystemLaunch.Uri(uri))
+                {
+                    _logger.Message("home page () failed to open", Severity.Error);
+                }
             }
             else
             {
@@ -163,7 +188,10 @@ namespace GBLive.Gui
         {
             if (_settings.Value.Chat is Uri uri)
             {
-                uri.OpenInBrowser();
+                if (!SystemLaunch.Uri(uri))
+                {
+                    _logger.Message("chat page () failed to open", Severity.Error);
+                }
             }
             else
             {

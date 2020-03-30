@@ -91,11 +91,11 @@ namespace GBLive.Gui
         {
             if (e.Exception is Exception ex)
             {
-                Log.Exception(ex, includeStackTrace: true);
+                LogStatic.Exception(ex, includeStackTrace: true);
             }
             else
             {
-                Log.Message("unhandled exception was empty");
+                LogStatic.Message("unhandled exception was empty", Severity.Error);
             }
         }
 
