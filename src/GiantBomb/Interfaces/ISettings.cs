@@ -15,7 +15,7 @@ namespace GBLive.GiantBomb.Interfaces
         Uri? Upcoming { get; set; }
         Uri? FallbackImage { get; set; }
 
-        int UpdateIntervalInSeconds { get; set; }
+        double UpdateIntervalInSeconds { get; set; }
         bool ShouldNotify { get; set; }
     }
 }

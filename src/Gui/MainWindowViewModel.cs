@@ -81,14 +81,14 @@ namespace GBLive.Gui
             
             if (_settings.Value.ShouldNotify)
             {
-                if (!wasLive && IsLive)
+                if (!wasLive && IsLive) // we only want the notification once, upon changing from not-live to live
                 {
                     NotificationService.Send(_settings.Value.IsLiveMessage, OpenChatPage);
 
-                    await _logger.MessageAsync("GiantBomb went live", Severity.Information);
+                    await _logger.MessageAsync($"GiantBomb went live ({response.LiveShowTitle})", Severity.Information);
                 }
             }
-            
+
             AddNewRemoveOldRemoveExpired(response.Shows);
 
             await _logger.MessageAsync("update succeeded", Severity.Debug);
