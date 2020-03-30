@@ -29,8 +29,8 @@
         <DataTemplate DataType="{x:Type gb:Show}">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="68" />
-                    <RowDefinition Height="68" />
+                    <RowDefinition Height="70" />
+                    <RowDefinition Height="70" />
                 </Grid.RowDefinitions>
 
                 <Grid.ColumnDefinitions>
@@ -41,7 +41,6 @@
                 <Grid.Resources>
                     <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
                         <Setter Property="Foreground" Value="White" />
-                        <Setter Property="FontSize" Value="17" />
                         <Setter Property="Margin" Value="30,0,0,0" />
                         <Setter Property="Opacity" Value="0.75" />
                         <Setter Property="HorizontalContentAlignment" Value="Left" />
@@ -55,25 +54,23 @@
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
-
-                    <Style TargetType="{x:Type Image}">
-                        <Setter Property="Opacity" Value="0.2" />
-                        <Setter Property="Height" Value="Auto" />
-                        <Setter Property="VerticalAlignment" Value="Center" />
-                        <Setter Property="Width" Value="Auto" />
-                        <Setter Property="HorizontalAlignment" Value="Center" />
-                        <Setter Property="Stretch" Value="UniformToFill" />
-                    </Style>
                 </Grid.Resources>
 
                 <Image Grid.ColumnSpan="2"
                        Grid.RowSpan="2"
+                       Opacity="0.25"
+                       Height="Auto"
+                       VerticalAlignment="Center"
+                       Width="Auto"
+                       HorizontalAlignment="Center"
+                       Stretch="UniformToFill"
                        Source="{Binding Path=Image, Mode=OneTime}" />
+
 
                 <Label Grid.ColumnSpan="2"
                        Grid.Row="0"
                        Padding="0,0,20,5"
-                       FontSize="20"
+                       FontSize="21"
                        VerticalContentAlignment="Bottom">
                     <Label.Content>
                         <TextBlock Text="{Binding Path=Title, Mode=OneTime}" TextTrimming="CharacterEllipsis" />
@@ -100,7 +97,7 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="70" />
+            <RowDefinition Height="80" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -108,17 +105,33 @@
                HorizontalContentAlignment="Center"
                ToolTip="{Binding LiveShowTitle}"
                MouseDoubleClick="Label_MouseDoubleClick">
+            <Label.Resources>
+                <Style TargetType="{x:Type TextBlock}">
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="TextDecorations" Value="Underline" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Label.Resources>
             <Label.Style>
                 <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
-                    <Setter Property="Content" Value="{StaticResource IsNotLiveMessage}" />
+                    <Setter Property="Content">
+                        <Setter.Value>
+                            <TextBlock Text="{StaticResource IsNotLiveMessage}" />
+                        </Setter.Value>
+                    </Setter>
                     <Setter Property="Foreground" Value="Red" />
-                    <Setter Property="FontSize" Value="16" />
                     <Setter Property="Opacity" Value="0.75" />
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding IsLive}" Value="True">
                             <DataTrigger.Setters>
-                                <Setter Property="Content" Value="{StaticResource IsLiveMessage}" />
-                                <Setter Property="FontSize" Value="27" />
+                                <Setter Property="Content">
+                                    <Setter.Value>
+                                        <TextBlock Text="{StaticResource IsLiveMessage}" />
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="FontSize" Value="30" />
                                 <Setter Property="FontStretch" Value="UltraExpanded" />
                                 <Setter Property="Foreground" Value="Green" />
                                 <Setter Property="Opacity" Value="1.0" />
@@ -131,6 +144,34 @@
 
         <ItemsControl Grid.Row="1"
                       ItemsSource="{Binding Source={StaticResource showsSortedByTime}}"
-                      MouseDoubleClick="ItemsControl_MouseDoubleClick" />
+                      MouseDoubleClick="ItemsControl_MouseDoubleClick">
+            <ItemsControl.Style>
+                <Style TargetType="{x:Type ItemsControl}" BasedOn="{StaticResource {x:Type ItemsControl}}">
+                    <Style.Triggers>
+                        <Trigger Property="HasItems" Value="False">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate>
+                                        <Label Content="No shows scheduled">
+                                            <Label.Style>
+                                                <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
+                                                    <Setter Property="Foreground" Value="White" />
+                                                    <Setter Property="Background" Value="#333333" />
+                                                    <Setter Property="Opacity" Value="0.5" />
+                                                    <Setter Property="Height" Value="105" />
+                                                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                                    <Setter Property="FontStyle" Value="Italic" />
+                                                    <Setter Property="FontSize" Value="19" />
+                                                </Style>
+                                            </Label.Style>
+                                        </Label>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </ItemsControl.Style>
+        </ItemsControl>
     </Grid>
 </Window>
