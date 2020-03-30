@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:gb="clr-namespace:GBLive.GiantBomb"
              xmlns:converters="clr-namespace:GBLive.Converters"
+             ShutdownMode="OnMainWindowClose"
              Startup="Application_Startup"
              Exit="Application_Exit"
              DispatcherUnhandledException="Application_DispatcherUnhandledException">
@@ -26,6 +27,7 @@
 
         <Style TargetType="{x:Type Control}" BasedOn="{StaticResource {x:Type FrameworkElement}}">
             <Setter Property="FontFamily" Value="Calibri" />
+            <Setter Property="FontSize" Value="18" />
             <Setter Property="Foreground" Value="White" />
             <Setter Property="IsTabStop" Value="False" />
         </Style>
@@ -38,5 +40,6 @@
 
         <converters:FormatDateTimeOffsetToString x:Key="dateTimeOffsetConverter"
                                                  ErrorMessage="Time Conversion Error!" />
+
     </Application.Resources>
 </Application>
