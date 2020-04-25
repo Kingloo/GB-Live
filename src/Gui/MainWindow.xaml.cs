@@ -15,6 +15,10 @@ namespace GBLive.Gui
         {
             InitializeComponent();
 
+            Loaded += Window_Loaded;
+            KeyDown += Window_KeyDown;
+            Closing += Window_Closing;
+
             _logger = logger;
 
             Language = XmlLanguage.GetLanguage(CultureInfo.CurrentCulture.IetfLanguageTag);
@@ -39,8 +43,15 @@ namespace GBLive.Gui
                     Close();
                     break;
                 case Key.F5:
-                    await viewModel.UpdateAsync();
-                    break;
+                    {
+                        _logger.Message("pressed F5, update started", Severity.Debug);
+
+                        await viewModel.UpdateAsync();
+
+                        _logger.Message("update finished", Severity.Debug);
+
+                        break;
+                    }
                 default:
                     break;
             }
@@ -48,8 +59,6 @@ namespace GBLive.Gui
 
         private void ItemsControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            _logger.Message($"mouse button changed: {e.ChangedButton}", Severity.Debug);
-
             if (e.ChangedButton == MouseButton.Left)
             {
                 viewModel.OpenHomePage();
@@ -62,6 +71,15 @@ namespace GBLive.Gui
             {
                 viewModel.OpenChatPage();
             }
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            _logger.Message("main window closing", Severity.Debug);
+
+            Loaded -= Window_Loaded;
+            KeyDown -= Window_KeyDown;
+            Closing -= Window_Closing;
         }
     }
 }

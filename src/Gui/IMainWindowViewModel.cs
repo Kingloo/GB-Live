@@ -6,7 +6,7 @@ using GBLive.GiantBomb.Interfaces;
 
 namespace GBLive.Gui
 {
-    public interface IMainWindowViewModel : INotifyPropertyChanged, IDisposable
+    public interface IMainWindowViewModel : INotifyPropertyChanged
     {
         bool IsLive { get; set; }
         string LiveShowTitle { get; set; }
