@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace GBLive.GiantBomb.Interfaces
 {
-    public interface IGiantBombContext : IDisposable
+    public interface IGiantBombContext
     {
         Task<IResponse> UpdateAsync();
     }

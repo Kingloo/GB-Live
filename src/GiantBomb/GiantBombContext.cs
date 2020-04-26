@@ -15,7 +15,7 @@ using Microsoft.Extensions.Options;
 
 namespace GBLive.GiantBomb
 {
-    public class GiantBombContext : IGiantBombContext
+    public class GiantBombContext : IGiantBombContext, IDisposable
     {
         private readonly SocketsHttpHandler handler;
         private readonly HttpClient client;

@@ -12,7 +12,7 @@ using Microsoft.Extensions.Options;
 
 namespace GBLive.Gui
 {
-    public class MainWindowViewModel : IMainWindowViewModel, IDisposable
+    public class MainWindowViewModel : IMainWindowViewModel, INotifyPropertyChanged, IDisposable
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -243,7 +243,7 @@ namespace GBLive.Gui
             {
                 if (disposing)
                 {
-                    _gbContext?.Dispose();
+                    (_gbContext as IDisposable)?.Dispose();
                 }
 
                 disposedValue = true;
