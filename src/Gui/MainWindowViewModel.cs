@@ -8,7 +8,6 @@ using System.Windows.Threading;
 using GBLive.Common;
 using GBLive.GiantBomb;
 using GBLive.GiantBomb.Interfaces;
-using Microsoft.Extensions.Options;
 
 namespace GBLive.Gui
 {
@@ -19,9 +18,9 @@ namespace GBLive.Gui
         private void OnPropertyChanged(string propertyName)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-        private readonly ILogClass _logger;
+        private readonly ILog _logger;
         private readonly IGiantBombContext _gbContext;
-        private readonly IOptions<Settings> _settings;
+        private readonly ISettings _settings;
 
         private DispatcherTimer? timer = null;
         
@@ -52,7 +51,7 @@ namespace GBLive.Gui
         private readonly ObservableCollection<IShow> _shows = new ObservableCollection<IShow>();
         public IReadOnlyCollection<IShow> Shows => _shows;
 
-        public MainWindowViewModel(ILogClass logger, IGiantBombContext gbContext, IOptions<Settings> settings)
+        public MainWindowViewModel(ILog logger, IGiantBombContext gbContext, ISettings settings)
         {
             _logger = logger;
             _gbContext = gbContext;
@@ -77,13 +76,13 @@ namespace GBLive.Gui
             bool wasLive = IsLive;
 
             IsLive = response.IsLive;
-            LiveShowTitle = IsLive ? response.LiveShowTitle : _settings.Value.NameOfNoLiveShow;
+            LiveShowTitle = IsLive ? response.LiveShowTitle : _settings.NameOfNoLiveShow;
             
-            if (_settings.Value.ShouldNotify)
+            if (_settings.ShouldNotify)
             {
                 if (!wasLive && IsLive) // we only want the notification once, upon changing from not-live to live
                 {
-                    NotificationService.Send(_settings.Value.IsLiveMessage, OpenChatPage);
+                    NotificationService.Send(_settings.IsLiveMessage, OpenChatPage);
 
                     await _logger.MessageAsync($"GiantBomb went live ({response.LiveShowTitle})", Severity.Information);
                 }
@@ -171,7 +170,7 @@ namespace GBLive.Gui
 
         public void OpenHomePage()
         {
-            if (_settings.Value.Home is Uri uri)
+            if (_settings.Home is Uri uri)
             {
                 if (!SystemLaunch.Uri(uri))
                 {
@@ -186,7 +185,7 @@ namespace GBLive.Gui
 
         public void OpenChatPage()
         {
-            if (_settings.Value.Chat is Uri uri)
+            if (_settings.Chat is Uri uri)
             {
                 if (!SystemLaunch.Uri(uri))
                 {
@@ -205,7 +204,7 @@ namespace GBLive.Gui
             {
                 timer = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
                 {
-                    Interval = TimeSpan.FromSeconds(_settings.Value.UpdateIntervalInSeconds)
+                    Interval = TimeSpan.FromSeconds(_settings.UpdateIntervalInSeconds)
                 };
 
                 timer.Tick += Timer_Tick;

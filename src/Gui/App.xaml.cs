@@ -1,90 +1,36 @@
 ﻿using System;
 using System.IO;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Threading;
 using GBLive.Common;
 using GBLive.GiantBomb;
 using GBLive.GiantBomb.Interfaces;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace GBLive.Gui
 {
     public partial class App : Application
     {
-        private readonly IHost host;
+        public App() { }
 
-        public App()
+        private void Application_Startup(object sender, StartupEventArgs e)
         {
-            host = BuildGenericHost();
+            ILog logger = new Log(GetDefaultLogFilePath(), Severity.Warning);
 
-            InitializeComponent();
-        }
+            ISettings settings = LoadSettings();
+            
+            settings.IsLiveMessage              = Constants.IsLiveMessage;
+            settings.IsNotLiveMessage           = Constants.IsNotLiveMessage;
+            settings.NameOfUntitledLiveShow     = Constants.NameOfUntitledLiveShow;
+            settings.NameOfNoLiveShow           = Constants.NameOfNoLiveShow;
 
-        private static IHost BuildGenericHost()
-        {
-            return new HostBuilder()
-                .ConfigureAppConfiguration((ctx, config) =>
-                    {
-                        config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: false);
-                    }
-                )
-                .ConfigureServices((ctx, services) =>
-                    {
-                        services.Configure<Settings>(settings =>
-                        {
-                            settings.IsLiveMessage = Constants.IsLiveMessage;
-                            settings.IsNotLiveMessage = Constants.IsNotLiveMessage;
-                            settings.NameOfNoLiveShow = Constants.NameOfNoLiveShow;
-                            settings.NameOfUntitledLiveShow = Constants.NameOfUntitledLiveShow;
+            IGiantBombContext gbContext = new GiantBombContext(logger, settings);
 
-                            settings.UserAgent = ctx.Configuration.GetValue<string>("GiantBomb:UserAgent");
-                            settings.Home = ctx.Configuration.GetValue<Uri>("GiantBomb:Home");
-                            settings.Chat = ctx.Configuration.GetValue<Uri>("GiantBomb:Chat");
-                            settings.Upcoming = ctx.Configuration.GetValue<Uri>("GiantBomb:Upcoming");
-                            settings.FallbackImage = ctx.Configuration.GetValue<Uri>("GiantBomb:FallbackImage");
-                            settings.UpdateIntervalInSeconds = ctx.Configuration.GetValue<double>("GiantBomb:UpdateIntervalInSeconds");
-                            settings.ShouldNotify = ctx.Configuration.GetValue<bool>("GiantBomb:ShouldNotify");
-                        });
+            IMainWindowViewModel viewModel = new MainWindowViewModel(logger, gbContext, settings);
 
-                        string logFilePath = ctx.Configuration.GetValue<string>("ILogClass:Path");
-
-                        if (String.IsNullOrWhiteSpace(logFilePath))
-                        {
-                            logFilePath = DefaultLogFilePath();
-                        }
-
-                        Severity severity = ctx.Configuration.GetValue<Severity>("ILogClass:Severity");
-
-                        ILogClass myLogger = new LogClass(logFilePath, severity);
-
-                        services.AddSingleton(typeof(ILogClass), myLogger);
-
-                        services.AddTransient<IGiantBombContext, GiantBombContext>();
-                        services.AddTransient<IMainWindowViewModel, MainWindowViewModel>();
-
-                        services.AddSingleton<MainWindow>();
-                    }
-                )
-                .Build();
-        }
-
-        private async void Application_Startup(object sender, StartupEventArgs e)
-        {
-            await host.StartAsync();
-
-            MainWindow = host.Services.GetRequiredService<MainWindow>();
+            MainWindow = new MainWindow(logger, viewModel);
 
             MainWindow.Show();
-        }
-
-        private async void Application_Exit(object sender, ExitEventArgs e)
-        {
-            using (host)
-            {
-                await host.StopAsync();
-            }
         }
 
         private void Application_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
@@ -95,16 +41,28 @@ namespace GBLive.Gui
             }
             else
             {
-                LogStatic.Message("unhandled exception was empty", Severity.Error);
+                LogStatic.Message("unhandled exception was empty");
             }
         }
 
-        private static string DefaultLogFilePath()
+        private static string GetDefaultLogFilePath()
         {
-            string homeDir = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            string filename = "logfile.txt";
+            string defaultLogFileDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string defaultLogFileName = "logfile.txt";
 
-            return Path.Combine(homeDir, filename);
+            return Path.Combine(defaultLogFileDirectory, defaultLogFileName);
+        }
+
+        private static ISettings LoadSettings()
+        {
+            string directory = Directory.GetCurrentDirectory();
+            string filename = "GiantBombSettings.json";
+
+            string path = Path.Combine(directory, filename);
+
+            string raw = File.ReadAllText(path);
+
+            return JsonSerializer.Deserialize<Settings>(raw);
         }
     }
 }

@@ -5,9 +5,6 @@ using GBLive.Common;
 using GBLive.GiantBomb;
 using GBLive.GiantBomb.Interfaces;
 using GBLive.Gui;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using NUnit.Framework;
 
 namespace GBLive.Tests.Gui
@@ -15,8 +12,8 @@ namespace GBLive.Tests.Gui
     [TestFixture]
     public class MainWindowViewModelTests
     {
-        private readonly ILogClass nullLog = new NullLog();
-        private Settings settings = new Settings();
+        private readonly ILog nullLog = new NullLog();
+        private readonly ISettings settings = new Settings();
 
         private readonly IReadOnlyCollection<IShow> shows = new List<IShow>
         {
@@ -51,7 +48,7 @@ namespace GBLive.Tests.Gui
                 Response = response
             };
 
-            using var viewModel = new MainWindowViewModel(nullLog, fakeContext, Options.Create(settings));
+            using var viewModel = new MainWindowViewModel(nullLog, fakeContext, settings);
 
             await viewModel.UpdateAsync();
 
@@ -71,7 +68,7 @@ namespace GBLive.Tests.Gui
                 Response = response
             };
 
-            using var viewModel = new MainWindowViewModel(nullLog, fakeContext, Options.Create(settings));
+            using var viewModel = new MainWindowViewModel(nullLog, fakeContext, settings);
 
             await viewModel.UpdateAsync();
 
@@ -92,7 +89,7 @@ namespace GBLive.Tests.Gui
                 Response = response
             };
 
-            using var viewModel = new MainWindowViewModel(nullLog, fakeContext, Options.Create(settings));
+            using var viewModel = new MainWindowViewModel(nullLog, fakeContext, settings);
 
             await viewModel.UpdateAsync();
 
@@ -114,7 +111,7 @@ namespace GBLive.Tests.Gui
                 Response = response
             };
 
-            using var viewModel = new MainWindowViewModel(nullLog, fakeContext, Options.Create(settings));
+            using var viewModel = new MainWindowViewModel(nullLog, fakeContext, settings);
 
             await viewModel.UpdateAsync();
 

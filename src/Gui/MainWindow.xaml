@@ -150,7 +150,7 @@
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate>
-                                        <Label Content="No shows scheduled">
+                                        <Label>
                                             <Label.Style>
                                                 <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
                                                     <Setter Property="Foreground" Value="White" />
@@ -162,6 +162,9 @@
                                                     <Setter Property="FontSize" Value="19" />
                                                 </Style>
                                             </Label.Style>
+                                            <Label.Content>
+                                                <TextBlock Text="No shows scheduled" />
+                                            </Label.Content>
                                         </Label>
                                     </ControlTemplate>
                                 </Setter.Value>

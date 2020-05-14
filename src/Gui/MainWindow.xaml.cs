@@ -8,10 +8,10 @@ namespace GBLive.Gui
 {
     public partial class MainWindow : Window
     {
-        private readonly ILogClass _logger;
+        private readonly ILog _logger;
         private readonly IMainWindowViewModel viewModel;
 
-        public MainWindow(ILogClass logger, IMainWindowViewModel vm)
+        public MainWindow(ILog logger, IMainWindowViewModel vm)
         {
             InitializeComponent();
 
@@ -75,8 +75,6 @@ namespace GBLive.Gui
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            _logger.Message("main window closing", Severity.Debug);
-
             Loaded -= Window_Loaded;
             KeyDown -= Window_KeyDown;
             Closing -= Window_Closing;

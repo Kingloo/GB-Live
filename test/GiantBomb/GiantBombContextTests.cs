@@ -4,9 +4,6 @@ using System.Threading.Tasks;
 using GBLive.Common;
 using GBLive.GiantBomb;
 using GBLive.GiantBomb.Interfaces;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using NUnit.Framework;
 
 namespace GBLive.Tests.GiantBomb
@@ -14,7 +11,7 @@ namespace GBLive.Tests.GiantBomb
     [TestFixture]
     public class GiantBombContextTests
     {
-        private readonly ILogClass nullLog = new NullLog();
+        private readonly ILog nullLog = new NullLog();
 
         private TestServer? server;
         private const int port = 9876;
@@ -53,7 +50,7 @@ namespace GBLive.Tests.GiantBomb
                 UserAgent = "dummy user agent"
             };
 
-            IGiantBombContext gbContext = new GiantBombContext(nullLog, Options.Create(settings));
+            IGiantBombContext gbContext = new GiantBombContext(nullLog, settings);
 
             IResponse response = await gbContext.UpdateAsync().ConfigureAwait(false);
 

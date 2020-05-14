@@ -11,7 +11,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using GBLive.Common;
 using GBLive.GiantBomb.Interfaces;
-using Microsoft.Extensions.Options;
 
 namespace GBLive.GiantBomb
 {
@@ -20,10 +19,10 @@ namespace GBLive.GiantBomb
         private readonly SocketsHttpHandler handler;
         private readonly HttpClient client;
 
-        private readonly ILogClass _logger;
-        private readonly IOptions<Settings> _settings;
+        private readonly ILog _logger;
+        private readonly ISettings _settings;
 
-        public GiantBombContext(ILogClass logger, IOptions<Settings> settings)
+        public GiantBombContext(ILog logger, ISettings settings)
         {
             _logger = logger;
             _settings = settings;
@@ -48,24 +47,24 @@ namespace GBLive.GiantBomb
                 Timeout = TimeSpan.FromSeconds(7d)
             };
 
-            if (!client.DefaultRequestHeaders.UserAgent.TryParseAdd(_settings.Value.UserAgent))
+            if (!client.DefaultRequestHeaders.UserAgent.TryParseAdd(_settings.UserAgent))
             {
-                string message = $"could not add UserAgent ({_settings.Value.UserAgent})";
+                string message = $"could not add UserAgent ({_settings.UserAgent})";
 
                 _logger.Message(message, Severity.Error);
 
-                throw new ArgumentException(message, _settings.Value.UserAgent);
+                throw new ArgumentException(message, _settings.UserAgent);
             }
         }
 
         public async Task<IResponse> UpdateAsync()
         {
-            if (_settings.Value.Upcoming is null)
+            if (_settings.Upcoming is null)
             {
                 return new Response { Reason = Reason.MissingUri };
             }
 
-            (HttpStatusCode status, ReadOnlySpan<byte> raw) = await DownloadStringAsync(_settings.Value.Upcoming).ConfigureAwait(false);
+            (HttpStatusCode status, ReadOnlySpan<byte> raw) = await DownloadStringAsync(_settings.Upcoming).ConfigureAwait(false);
 
             if (status != HttpStatusCode.OK)
             {
@@ -239,7 +238,7 @@ namespace GBLive.GiantBomb
 
             if (element.TryGetProperty("image", out JsonElement image))
             {
-                show.Image = Uri.TryCreate($"https://{image.GetString()}", UriKind.Absolute, out Uri? uri) ? uri : _settings.Value.FallbackImage;
+                show.Image = Uri.TryCreate($"https://{image.GetString()}", UriKind.Absolute, out Uri? uri) ? uri : _settings.FallbackImage;
             }
 
             return show;

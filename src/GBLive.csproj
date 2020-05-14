@@ -3,23 +3,22 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <AssemblyName>GB Live</AssemblyName>
+    <UseWPF>true</UseWPF>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
-    <UseWPF>true</UseWPF>
+    <AssemblyName>GB Live</AssemblyName>
     <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
     <StartupObject>GBLive.Program</StartupObject>
     <ApplicationIcon>giantbomb_logo.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="appsettings.json">
+    <Content Include="GiantBombSettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.2" />
+    <Content Include="LogSettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

@@ -11,6 +11,7 @@ namespace GBLive
         public static int Main()
         {
             App app = new App();
+            app.InitializeComponent();
 
             int exitCode = app.Run();
 
@@ -18,7 +19,7 @@ namespace GBLive
             {
                 string message = string.Format(CultureInfo.CurrentCulture, "exited with code: {0}", exitCode);
 
-                LogStatic.Message(message, Severity.Error);
+                LogStatic.Message(message);
             }
 
             return exitCode;

@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using GBLive.GiantBomb.Interfaces;
 
 namespace GBLive.GiantBomb
@@ -20,5 +21,28 @@ namespace GBLive.GiantBomb
         public bool ShouldNotify { get; set; } = false;
         
         public Settings() { }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine(base.ToString());
+
+            sb.AppendLine($"{nameof(IsLiveMessage)}: {IsLiveMessage}");
+            sb.AppendLine($"{nameof(IsNotLiveMessage)}: {IsNotLiveMessage}");
+            sb.AppendLine($"{nameof(NameOfUntitledLiveShow)}: {NameOfUntitledLiveShow}");
+            sb.AppendLine($"{nameof(NameOfNoLiveShow)}: {NameOfNoLiveShow}");
+            sb.AppendLine($"{nameof(UserAgent)}: {UserAgent}");
+
+            sb.AppendLine($"{nameof(Home)}: {(Home?.AbsoluteUri ?? "no home uri")}");
+            sb.AppendLine($"{nameof(Chat)}: {(Chat?.AbsoluteUri ?? "no chat uri")}");
+            sb.AppendLine($"{nameof(Upcoming)}: {(Upcoming?.AbsoluteUri ?? "no upcoming uri")}");
+            sb.AppendLine($"{nameof(FallbackImage)}: {(FallbackImage?.AbsoluteUri ?? "no fallback image uri")}");
+
+            sb.AppendLine($"{nameof(UpdateIntervalInSeconds)}: {UpdateIntervalInSeconds}");
+            sb.AppendLine($"{nameof(ShouldNotify)}: {ShouldNotify}");
+
+            return sb.ToString();
+        }
     }
 }

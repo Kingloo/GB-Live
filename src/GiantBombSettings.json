@@ -1,0 +1,9 @@
+﻿{
+	"UserAgent": "GB Live (GitHub) - Desktop app showing upcoming events and live status - polls /upcoming_json every 2 mins",
+	"Home": "https://www.giantbomb.com/",
+	"Chat": "https://www.giantbomb.com/chat",
+	"Upcoming": "https://www.giantbomb.com/upcoming_json",
+	"FallbackImage": "https://static.giantbomb.com/bundles/phoenixsite/images/core/loose/apple-touch-icon-precomposed-gb.png",
+	"UpdateIntervalInSeconds": 120,
+	"ShouldNotify": true
+}
