@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30104.148
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GBLive", "src\GBLive.csproj", "{A34EEADA-4D66-45CB-838A-640A783FBCF2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GBLive", "src\GBLive.csproj", "{A34EEADA-4D66-45CB-838A-640A783FBCF2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GBLive.Tests", "test\GBLive.Tests.csproj", "{9BDBE379-94B3-4C53-9756-69FF0A22D7D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GBLive.Tests", "test\GBLive.Tests.csproj", "{9BDBE379-94B3-4C53-9756-69FF0A22D7D2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +15,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{A34EEADA-4D66-45CB-838A-640A783FBCF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -44,5 +41,11 @@ Global
 		{9BDBE379-94B3-4C53-9756-69FF0A22D7D2}.Release|x64.Build.0 = Release|Any CPU
 		{9BDBE379-94B3-4C53-9756-69FF0A22D7D2}.Release|x86.ActiveCfg = Release|Any CPU
 		{9BDBE379-94B3-4C53-9756-69FF0A22D7D2}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {656255AF-EE2D-435B-8403-984878A75BDE}
 	EndGlobalSection
 EndGlobal
