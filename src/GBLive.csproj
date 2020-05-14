@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>GB Live</AssemblyName>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
