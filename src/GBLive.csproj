@@ -7,7 +7,6 @@
     <UseWPF>true</UseWPF>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
-    <AssemblyName>GB Live</AssemblyName>
     <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
     <StartupObject>GBLive.Program</StartupObject>
     <ApplicationIcon>giantbomb_logo.ico</ApplicationIcon>

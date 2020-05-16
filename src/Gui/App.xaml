@@ -24,6 +24,12 @@
         <Style TargetType="{x:Type Grid}" BasedOn="{StaticResource {x:Type FrameworkElement}}" />
         <Style TargetType="{x:Type StackPanel}" BasedOn="{StaticResource {x:Type FrameworkElement}}" />
 
+        <Style TargetType="{x:Type Image}" BasedOn="{StaticResource {x:Type FrameworkElement}}">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Stretch" Value="UniformToFill" />
+        </Style>
+
         <Style TargetType="{x:Type Control}" BasedOn="{StaticResource {x:Type FrameworkElement}}">
             <Setter Property="FontFamily" Value="Calibri" />
             <Setter Property="FontSize" Value="18" />
@@ -34,6 +40,10 @@
         <Style TargetType="{x:Type ItemsControl}" BasedOn="{StaticResource {x:Type Control}}" />
 
         <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Control}}">
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="ToolTipService.InitialShowDelay" Value="500" />
+            <Setter Property="ToolTipService.ShowDuration" Value="2500" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
 

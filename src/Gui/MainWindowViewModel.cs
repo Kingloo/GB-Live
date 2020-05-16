@@ -20,10 +20,10 @@ namespace GBLive.Gui
 
         private readonly ILog _logger;
         private readonly IGiantBombContext _gbContext;
-        private readonly ISettings _settings;
-
         private DispatcherTimer? timer = null;
-        
+
+        public ISettings Settings { get; }
+
         private bool _isLive = false;
         public bool IsLive
         {
@@ -55,7 +55,7 @@ namespace GBLive.Gui
         {
             _logger = logger;
             _gbContext = gbContext;
-            _settings = settings;
+            Settings = settings;
         }
 
         public async Task UpdateAsync()
@@ -76,13 +76,13 @@ namespace GBLive.Gui
             bool wasLive = IsLive;
 
             IsLive = response.IsLive;
-            LiveShowTitle = IsLive ? response.LiveShowTitle : _settings.NameOfNoLiveShow;
+            LiveShowTitle = IsLive ? response.LiveShowTitle : Settings.NameOfNoLiveShow;
             
-            if (_settings.ShouldNotify)
+            if (Settings.ShouldNotify)
             {
                 if (!wasLive && IsLive) // we only want the notification once, upon changing from not-live to live
                 {
-                    NotificationService.Send(_settings.IsLiveMessage, OpenChatPage);
+                    NotificationService.Send(Settings.IsLiveMessage, OpenChatPage);
 
                     await _logger.MessageAsync($"GiantBomb went live ({response.LiveShowTitle})", Severity.Information);
                 }
@@ -170,7 +170,7 @@ namespace GBLive.Gui
 
         public void OpenHomePage()
         {
-            if (_settings.Home is Uri uri)
+            if (Settings.Home is Uri uri)
             {
                 if (!SystemLaunch.Uri(uri))
                 {
@@ -185,7 +185,7 @@ namespace GBLive.Gui
 
         public void OpenChatPage()
         {
-            if (_settings.Chat is Uri uri)
+            if (Settings.Chat is Uri uri)
             {
                 if (!SystemLaunch.Uri(uri))
                 {
@@ -204,7 +204,7 @@ namespace GBLive.Gui
             {
                 timer = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
                 {
-                    Interval = TimeSpan.FromSeconds(_settings.UpdateIntervalInSeconds)
+                    Interval = TimeSpan.FromSeconds(Settings.UpdateIntervalInSeconds)
                 };
 
                 timer.Tick += Timer_Tick;
