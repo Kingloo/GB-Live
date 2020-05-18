@@ -105,6 +105,7 @@ namespace GBLive.GiantBomb
                     bytes = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
                 }
             }
+            catch (TaskCanceledException) { }
             catch (HttpRequestException ex)
             {
                 if (ex.InnerException is Win32Exception inner)
