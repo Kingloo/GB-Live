@@ -44,7 +44,7 @@ namespace GBLive.GiantBomb
 
             client = new HttpClient(handler, false)
             {
-                Timeout = TimeSpan.FromSeconds(7d)
+                Timeout = TimeSpan.FromSeconds(30d)
             };
 
             if (!client.DefaultRequestHeaders.UserAgent.TryParseAdd(_settings.UserAgent))
@@ -93,12 +93,16 @@ namespace GBLive.GiantBomb
             HttpStatusCode status = HttpStatusCode.Unused;
             byte[] bytes = Array.Empty<byte>();
 
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, uri);
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, uri)
+            {
+                Version = HttpVersion.Version20
+            };
+
             HttpResponseMessage? response = null;
 
             try
             {
-                response = await client.SendAsync(request).ConfigureAwait(false);
+                response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -171,8 +175,7 @@ namespace GBLive.GiantBomb
         private static bool GetIsLive(JsonElement root)
         {
             return root.TryGetProperty("liveNow", out JsonElement liveNow)
-                ? liveNow.ValueKind == JsonValueKind.Object
-                : false;
+                && liveNow.ValueKind == JsonValueKind.Object;
         }
 
         private static string GetLiveShowTitle(JsonElement root)
