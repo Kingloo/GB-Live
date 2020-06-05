@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Security;
 using System.Security.Authentication;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -16,7 +15,7 @@ namespace GBLive.GiantBomb
 {
     public class GiantBombContext : IGiantBombContext, IDisposable
     {
-        private readonly SocketsHttpHandler handler;
+        private readonly HttpClientHandler handler;
         private readonly HttpClient client;
 
         private readonly ILog _logger;
@@ -27,89 +26,76 @@ namespace GBLive.GiantBomb
             _logger = logger;
             _settings = settings;
 
-            handler = new SocketsHttpHandler
+            handler = new HttpClientHandler
             {
-                AllowAutoRedirect = false,
+                AllowAutoRedirect = true,
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
-                MaxConnectionsPerServer = 5,
-                SslOptions = new SslClientAuthenticationOptions
-                {
-                    AllowRenegotiation = false,
-                    ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http2 },
-                    // GiantBomb does not yet support Tls13, remove Tls12 when they eventually do
-                    EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
-                    EncryptionPolicy = EncryptionPolicy.RequireEncryption
-                }
+                MaxAutomaticRedirections = 3,
+                MaxConnectionsPerServer = 1,
+                SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13
             };
 
             client = new HttpClient(handler, false)
             {
-                Timeout = TimeSpan.FromSeconds(30d)
+                Timeout = TimeSpan.FromSeconds(10d)
             };
-
-            if (!client.DefaultRequestHeaders.UserAgent.TryParseAdd(_settings.UserAgent))
-            {
-                string message = $"could not add UserAgent ({_settings.UserAgent})";
-
-                _logger.Message(message, Severity.Error);
-
-                throw new ArgumentException(message, _settings.UserAgent);
-            }
         }
 
         public async Task<IResponse> UpdateAsync()
         {
-            if (_settings.Upcoming is null)
-            {
-                return new Response { Reason = Reason.MissingUri };
-            }
-
-            (HttpStatusCode status, ReadOnlySpan<byte> raw) = await DownloadStringAsync(_settings.Upcoming).ConfigureAwait(false);
+            (HttpStatusCode status, UpcomingData? upcomingData) = await DownloadAsync(_settings.Upcoming).ConfigureAwait(false);
 
             if (status != HttpStatusCode.OK)
             {
                 return new Response { Reason = Reason.InternetError };
             }
-            
-            if (raw.IsEmpty)
+
+            if (upcomingData is null)
             {
                 return new Response { Reason = Reason.Empty };
             }
-            
-            if (!TryParse(raw, out JsonElement? r))
+
+            Response response = new Response
             {
-                return new Response { Reason = Reason.ParseFailed };
-            }
+                Reason = Reason.Success,
+                LiveNow = upcomingData.LiveNow,
+                Shows = ConvertData(upcomingData.Upcoming)
+            };
 
-#nullable disable
-            JsonElement root = (JsonElement)r;
-#nullable enable
-
-            return ProcessJson(root);
+            return response;
         }
 
-        private async Task<(HttpStatusCode, byte[])> DownloadStringAsync(Uri uri)
+        private async Task<(HttpStatusCode, UpcomingData?)> DownloadAsync(Uri uri)
         {
             HttpStatusCode status = HttpStatusCode.Unused;
-            byte[] bytes = Array.Empty<byte>();
+            UpcomingData? upcomingResponse = null;
 
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, uri)
             {
                 Version = HttpVersion.Version20
             };
 
+            request.Headers.Accept.ParseAdd("application/json; charset=utf-8");
+            request.Headers.AcceptEncoding.ParseAdd("gzip, deflate, br");
+            request.Headers.Connection.ParseAdd("close"); // Connection is not used under HTTP/2, but the worst they can do is ignore it
+            request.Headers.Host = "www.giantbomb.com";
+            request.Headers.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0");
+
+            request.Headers.Add("DNT", "1");
+
             HttpResponseMessage? response = null;
+            Stream? stream = null;
 
             try
             {
                 response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
 
-                if (response.IsSuccessStatusCode)
-                {
-                    bytes = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
-                }
+                response.EnsureSuccessStatusCode();
+
+                stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+
+                upcomingResponse = await JsonSerializer.DeserializeAsync<UpcomingData>(stream, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             }
-            catch (TaskCanceledException) { }
             catch (HttpRequestException ex)
             {
                 if (ex.InnerException is Win32Exception inner)
@@ -117,9 +103,15 @@ namespace GBLive.GiantBomb
                     await _logger.ExceptionAsync(ex, inner.Message).ConfigureAwait(false);
                 }
             }
+            catch (OperationCanceledException ex)
+            {
+                await _logger.ExceptionAsync(ex, "probably timed out").ConfigureAwait(false);
+            }
             finally
             {
                 request.Dispose();
+
+                stream?.Dispose();
 
                 if (response != null)
                 {
@@ -129,123 +121,40 @@ namespace GBLive.GiantBomb
                 }
             }
 
-            return (status, bytes);
+            return (status, upcomingResponse);
         }
 
-        private bool TryParse(ReadOnlySpan<byte> raw, out JsonElement? root)
+        private IReadOnlyCollection<Show> ConvertData(IReadOnlyCollection<ShowData> data)
         {
-            Utf8JsonReader reader = new Utf8JsonReader(raw);
+            List<Show> shows = new List<Show>();
 
-            if (JsonDocument.TryParseValue(ref reader, out JsonDocument document))
+            foreach (ShowData each in data)
             {
-                root = document.RootElement;
-                return true;
+                Show show = new Show
+                {
+                    ShowType = each.Type,
+                    Title = each.Title,
+                    Image = GetImageUri(each.Image),
+                    IsPremium = each.Premium,
+                    Time = GetDate(each.Date)
+                };
+
+                shows.Add(show);
+            }
+
+            return shows.AsReadOnly();
+        }
+
+        private Uri GetImageUri(string raw)
+        {
+            if (raw.StartsWith("https://"))
+            {
+                return Uri.TryCreate(raw, UriKind.Absolute, out Uri? uri) ? uri : _settings.FallbackImage;
             }
             else
             {
-                root = null;
-                return false;
+                return Uri.TryCreate($"https://{raw}", UriKind.Absolute, out Uri? uri) ? uri : _settings.FallbackImage;
             }
-        }
-
-        private IResponse ProcessJson(JsonElement element)
-        {
-            IResponse response = new Response
-            {
-                Reason = Reason.Success
-            };
-
-            response.IsLive = GetIsLive(element);
-
-            if (response.IsLive)
-            {
-                string title = GetLiveShowTitle(element);
-
-                if (!String.IsNullOrWhiteSpace(title))
-                {
-                    response.LiveShowTitle = title;
-                }
-            }
-
-            response.Shows = GetShows(element);
-
-            return response;
-        }
-
-        private static bool GetIsLive(JsonElement root)
-        {
-            return root.TryGetProperty("liveNow", out JsonElement liveNow)
-                && liveNow.ValueKind == JsonValueKind.Object;
-        }
-
-        private static string GetLiveShowTitle(JsonElement root)
-        {
-            string title = string.Empty;
-
-            if (root.TryGetProperty("liveNow", out JsonElement liveNow))
-            {
-                if (liveNow.TryGetProperty("title", out JsonElement titleElement))
-                {
-                    title = titleElement.GetString();
-                }
-            }
-
-            return title;
-        }
-
-        private IReadOnlyCollection<IShow> GetShows(JsonElement root)
-        {
-            Collection<IShow> shows = new Collection<IShow>();
-            
-            if (root.TryGetProperty("upcoming", out JsonElement upcoming))
-            {
-                if (upcoming.ValueKind == JsonValueKind.Array)
-                {
-                    foreach (JsonElement each in upcoming.EnumerateArray())
-                    {
-                        IShow show = CreateShow(each);
-
-                        if (!shows.Contains(show))
-                        {
-                            shows.Add(show);
-                        }
-                    }
-                }
-            }
-
-            return shows;
-        }
-
-        private IShow CreateShow(JsonElement element)
-        {
-            IShow show = new Show();
-
-            if (element.TryGetProperty("title", out JsonElement title))
-            {
-                show.Title = title.GetString();
-            }
-
-            if (element.TryGetProperty("date", out JsonElement date))
-            {
-                show.Time = GetDate(date.GetString());
-            }
-
-            if (element.TryGetProperty("premium", out JsonElement isPremium))
-            {
-                show.IsPremium = isPremium.GetBoolean();
-            }
-
-            if (element.TryGetProperty("type", out JsonElement type))
-            {
-                show.ShowType = type.GetString();
-            }
-
-            if (element.TryGetProperty("image", out JsonElement image))
-            {
-                show.Image = Uri.TryCreate($"https://{image.GetString()}", UriKind.Absolute, out Uri? uri) ? uri : _settings.FallbackImage;
-            }
-
-            return show;
         }
 
         private static DateTimeOffset GetDate(string date)
@@ -267,9 +176,8 @@ namespace GBLive.GiantBomb
             return dt.Add(offset);
         }
 
-        
         #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
+        private bool disposedValue = false;
 
         protected virtual void Dispose(bool disposing)
         {

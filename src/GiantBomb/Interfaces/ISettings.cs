@@ -10,10 +10,10 @@ namespace GBLive.GiantBomb.Interfaces
         string NameOfNoLiveShow { get; set; }
         string UserAgent { get; set; }
 
-        Uri? Home { get; set; }
-        Uri? Chat { get; set; }
-        Uri? Upcoming { get; set; }
-        Uri? FallbackImage { get; set; }
+        Uri Home { get; set; }
+        Uri Chat { get; set; }
+        Uri Upcoming { get; set; }
+        Uri FallbackImage { get; set; }
 
         double UpdateIntervalInSeconds { get; set; }
         bool ShouldNotify { get; set; }

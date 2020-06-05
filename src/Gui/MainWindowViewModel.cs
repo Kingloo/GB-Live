@@ -20,9 +20,8 @@ namespace GBLive.Gui
 
         private readonly ILog _logger;
         private readonly IGiantBombContext _gbContext;
+        private readonly ISettings _settings;
         private DispatcherTimer? timer = null;
-
-        public ISettings Settings { get; }
 
         private bool _isLive = false;
         public bool IsLive
@@ -55,7 +54,7 @@ namespace GBLive.Gui
         {
             _logger = logger;
             _gbContext = gbContext;
-            Settings = settings;
+            _settings = settings;
         }
 
         public async Task UpdateAsync()
@@ -75,16 +74,16 @@ namespace GBLive.Gui
 
             bool wasLive = IsLive;
 
-            IsLive = response.IsLive;
-            LiveShowTitle = IsLive ? response.LiveShowTitle : Settings.NameOfNoLiveShow;
-            
-            if (Settings.ShouldNotify)
+            IsLive = response.LiveNow != null;
+            LiveShowTitle = (IsLive && (response.LiveNow != null)) ? response.LiveNow.Title : _settings.NameOfNoLiveShow;
+
+            if (_settings.ShouldNotify)
             {
                 if (!wasLive && IsLive) // we only want the notification once, upon changing from not-live to live
                 {
-                    NotificationService.Send(Settings.IsLiveMessage, OpenChatPage);
+                    NotificationService.Send(_settings.IsLiveMessage, OpenChatPage);
 
-                    await _logger.MessageAsync($"GiantBomb went live ({response.LiveShowTitle})", Severity.Information);
+                    await _logger.MessageAsync($"GiantBomb went live ({response.LiveNow?.Title})", Severity.Information);
                 }
             }
 
@@ -170,7 +169,7 @@ namespace GBLive.Gui
 
         public void OpenHomePage()
         {
-            if (Settings.Home is Uri uri)
+            if (_settings.Home is Uri uri)
             {
                 if (!SystemLaunch.Uri(uri))
                 {
@@ -185,7 +184,7 @@ namespace GBLive.Gui
 
         public void OpenChatPage()
         {
-            if (Settings.Chat is Uri uri)
+            if (_settings.Chat is Uri uri)
             {
                 if (!SystemLaunch.Uri(uri))
                 {
@@ -204,7 +203,7 @@ namespace GBLive.Gui
             {
                 timer = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
                 {
-                    Interval = TimeSpan.FromSeconds(Settings.UpdateIntervalInSeconds)
+                    Interval = TimeSpan.FromSeconds(_settings.UpdateIntervalInSeconds)
                 };
 
                 timer.Tick += Timer_Tick;
@@ -232,7 +231,6 @@ namespace GBLive.Gui
             await UpdateAsync();
         }
 
-        
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
 

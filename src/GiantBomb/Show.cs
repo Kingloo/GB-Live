@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using GBLive.Common;
 using GBLive.GiantBomb.Interfaces;
@@ -15,7 +16,7 @@ namespace GBLive.GiantBomb
         public DateTimeOffset Time { get; set; } = DateTimeOffset.MinValue;
         public bool IsPremium { get; set; } = false;
         public string ShowType { get; set; } = "Unknown";
-        public Uri? Image { get; set; }
+        public Uri Image { get; set; } = new Uri("https://www.giantbomb.com/");
 
         public Show() { }
 
@@ -40,7 +41,7 @@ namespace GBLive.GiantBomb
 
             TimeSpan fromNowUntilShow = dto - DateTimeOffset.Now;
 
-            TimeSpan untilShouldNotify = fromNowUntilShow.Add(TimeSpan.FromSeconds(5d));
+            TimeSpan untilShouldNotify = fromNowUntilShow.Add(TimeSpan.FromSeconds(10d));
 
             return untilShouldNotify.Ticks;
         }
@@ -78,17 +79,19 @@ namespace GBLive.GiantBomb
             }
         }
 
-        public int CompareTo(IShow other) => Time.CompareTo(other.Time);
+        public int CompareTo([AllowNull] IShow other) => (other is Show show) ? Time.CompareTo(show.Time) : 1; // we treat null-other as always earlier
 
-        public bool Equals(IShow other)
+        public bool Equals([AllowNull] IShow other) => (other is Show show) && EqualsInternal(show);
+
+        private bool EqualsInternal(Show show)
         {
             var sco = StringComparison.Ordinal;
 
-            bool sameTitle = Title.Equals(other.Title, sco);
-            bool sameTime = Time.EqualsExact(other.Time);
-            bool samePremium = IsPremium == other.IsPremium;
-            bool sameShowType = ShowType.Equals(other.ShowType, sco);
-            bool sameImage = AreLinksEqual(Image, other.Image);
+            bool sameTitle = Title.Equals(show.Title, sco);
+            bool sameTime = Time.EqualsExact(show.Time);
+            bool samePremium = IsPremium == show.IsPremium;
+            bool sameShowType = ShowType.Equals(show.ShowType, sco);
+            bool sameImage = AreLinksEqual(Image, show.Image);
 
             return sameTitle && sameTime && samePremium && sameShowType && sameImage;
         }

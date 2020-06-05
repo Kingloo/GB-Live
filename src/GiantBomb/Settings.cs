@@ -12,15 +12,17 @@ namespace GBLive.GiantBomb
         public string NameOfNoLiveShow { get; set; } = string.Empty;
         public string UserAgent { get; set; } = string.Empty;
 
-        public Uri? Home { get; set; }
-        public Uri? Chat { get; set; }
-        public Uri? Upcoming { get; set; }
-        public Uri? FallbackImage { get; set; }
+        public Uri Home { get; set; }
+        public Uri Chat { get; set; }
+        public Uri Upcoming { get; set; }
+        public Uri FallbackImage { get; set; }
         
         public double UpdateIntervalInSeconds { get; set; } = -1d;
         public bool ShouldNotify { get; set; } = false;
-        
+
+#nullable disable
         public Settings() { }
+#nullable enable
 
         public override string ToString()
         {

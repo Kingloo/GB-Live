@@ -56,7 +56,7 @@ namespace GBLive.Tests.GiantBomb
 
             Assert.IsTrue(response.Reason == Reason.Success, "reason should have been Success, actually was {0}", response.Reason);
 
-            Assert.AreEqual(wereWeLive, response.IsLive, "we should have been Live?:{0}, we were actually Live?:{1}", wereWeLive, response.IsLive);
+            Assert.AreEqual(wereWeLive, response.LiveNow != null, "we should have been Live?:{0}, we were actually Live?:{1}", wereWeLive, response.LiveNow != null);
             Assert.AreEqual(showsCount, response.Shows.Count, "we should have had {0} shows, we actually had {}", showsCount, response.Shows.Count);
         }
 

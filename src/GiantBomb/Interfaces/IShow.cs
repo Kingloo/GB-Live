@@ -10,7 +10,7 @@ namespace GBLive.GiantBomb.Interfaces
         DateTimeOffset Time { get; set; }
         bool IsPremium { get; set; }
         string ShowType { get; set; }
-        Uri? Image { get; set; }
+        Uri Image { get; set; }
 
         void StartCountdown(Action notify);
         void StopCountdown();

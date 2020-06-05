@@ -103,7 +103,7 @@ namespace GBLive.Tests.Gui
             IResponse response = new Response
             {
                 Reason = Reason.Success,
-                IsLive = expected
+                LiveNow = new LiveNowData()
             };
 
             var fakeContext = new FakeGiantBombContext

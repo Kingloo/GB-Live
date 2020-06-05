@@ -11,22 +11,19 @@ namespace GBLive.Gui
 {
     public partial class App : Application
     {
+        private const string logSettingsFilename = "LogSettings.json";
+        private const string giantBombSettingsFilename = "GiantBombSettings.json";
+
         public App() { }
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            ILog logger = new Log(GetDefaultLogFilePath(), Severity.Warning);
+            ILog logger = CreateLogger();
+            ISettings giantBombSettings = CreateGiantBombSettings();
 
-            ISettings settings = LoadSettings();
-            
-            settings.IsLiveMessage              = Constants.IsLiveMessage;
-            settings.IsNotLiveMessage           = Constants.IsNotLiveMessage;
-            settings.NameOfUntitledLiveShow     = Constants.NameOfUntitledLiveShow;
-            settings.NameOfNoLiveShow           = Constants.NameOfNoLiveShow;
+            IGiantBombContext gbContext = new GiantBombContext(logger, giantBombSettings);
 
-            IGiantBombContext gbContext = new GiantBombContext(logger, settings);
-
-            IMainWindowViewModel viewModel = new MainWindowViewModel(logger, gbContext, settings);
+            IMainWindowViewModel viewModel = new MainWindowViewModel(logger, gbContext, giantBombSettings);
 
             MainWindow = new MainWindow(logger, viewModel);
 
@@ -45,6 +42,23 @@ namespace GBLive.Gui
             }
         }
 
+        private static ILog CreateLogger()
+        {
+            LogSettings logSettings = LoadLogSettings();
+
+            string logPath = !String.IsNullOrWhiteSpace(logSettings.Path) ? logSettings.Path : GetDefaultLogFilePath();
+            Severity severity = Enum.TryParse(logSettings.Severity, out Severity sev) ? sev : Severity.Warning;
+
+            return new Log(logPath, severity);
+        }
+
+        private static LogSettings LoadLogSettings()
+        {
+            string text = LoadText(logSettingsFilename);
+
+            return JsonSerializer.Deserialize<LogSettings>(text);
+        }
+
         private static string GetDefaultLogFilePath()
         {
             string defaultLogFileDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
@@ -53,16 +67,31 @@ namespace GBLive.Gui
             return Path.Combine(defaultLogFileDirectory, defaultLogFileName);
         }
 
-        private static ISettings LoadSettings()
+        private static ISettings CreateGiantBombSettings()
+        {
+            ISettings settings = LoadGiantBombSettings();
+
+            settings.IsLiveMessage          = Constants.IsLiveMessage;
+            settings.IsNotLiveMessage       = Constants.IsNotLiveMessage;
+            settings.NameOfUntitledLiveShow = Constants.NameOfUntitledLiveShow;
+            settings.NameOfNoLiveShow       = Constants.NameOfNoLiveShow;
+
+            return settings;
+        }
+
+        private static ISettings LoadGiantBombSettings()
+        {
+            string text = LoadText(giantBombSettingsFilename);
+
+            return JsonSerializer.Deserialize<Settings>(text);
+        }
+
+        private static string LoadText(string filename)
         {
             string directory = Directory.GetCurrentDirectory();
-            string filename = "GiantBombSettings.json";
+            string fullPath = Path.Combine(directory, filename);
 
-            string path = Path.Combine(directory, filename);
-
-            string raw = File.ReadAllText(path);
-
-            return JsonSerializer.Deserialize<Settings>(raw);
+            return File.ReadAllText(fullPath);
         }
     }
 }
