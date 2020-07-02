@@ -134,6 +134,13 @@
         <ItemsControl Grid.Row="1"
                       ItemsSource="{Binding Source={StaticResource showsSortedByTime}}"
                       MouseDoubleClick="ItemsControl_MouseDoubleClick">
+            <ItemsControl.Resources>
+                <Style TargetType="{x:Type Image}" BasedOn="{StaticResource {x:Type Image}}">
+                    <EventSetter Event="Loaded" Handler="Image_Loaded" />
+                    <EventSetter Event="Unloaded" Handler="Image_Unloaded" />
+                    <EventSetter Event="ImageFailed" Handler="Image_ImageFailed" />
+                </Style>
+            </ItemsControl.Resources>
             <ItemsControl.Style>
                 <Style TargetType="{x:Type ItemsControl}" BasedOn="{StaticResource {x:Type ItemsControl}}">
                     <Style.Triggers>

@@ -79,5 +79,20 @@ namespace GBLive.Gui
             KeyDown -= Window_KeyDown;
             Closing -= Window_Closing;
         }
+
+        private void Image_Loaded(object sender, RoutedEventArgs e)
+        {
+            _logger.Message("image loaded", Severity.Debug);
+        }
+
+        private void Image_Unloaded(object sender, RoutedEventArgs e)
+        {
+            _logger.Message("image unloaded", Severity.Debug);
+        }
+
+        private void Image_ImageFailed(object sender, ExceptionRoutedEventArgs e)
+        {
+            _logger.Message("image failed", Severity.Debug);
+        }
     }
 }

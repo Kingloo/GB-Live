@@ -79,8 +79,12 @@ namespace GBLive.GiantBomb
             request.Headers.AcceptEncoding.ParseAdd("gzip, deflate, br");
             request.Headers.Connection.ParseAdd("close"); // Connection is not used under HTTP/2, but the worst they can do is ignore it
             request.Headers.Host = "www.giantbomb.com";
-            request.Headers.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0");
-
+                        
+            if (!String.IsNullOrWhiteSpace(_settings.UserAgent))
+            {
+                request.Headers.UserAgent.ParseAdd(_settings.UserAgent);
+            }
+            
             request.Headers.Add("DNT", "1");
 
             HttpResponseMessage? response = null;
@@ -94,7 +98,9 @@ namespace GBLive.GiantBomb
 
                 stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
-                upcomingResponse = await JsonSerializer.DeserializeAsync<UpcomingData>(stream, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                var serializerOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+                upcomingResponse = await JsonSerializer.DeserializeAsync<UpcomingData>(stream, serializerOptions).ConfigureAwait(false);
             }
             catch (HttpRequestException ex)
             {

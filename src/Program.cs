@@ -11,7 +11,6 @@ namespace GBLive
         public static int Main()
         {
             App app = new App();
-            app.InitializeComponent();
 
             int exitCode = app.Run();
 

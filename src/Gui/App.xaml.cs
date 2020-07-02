@@ -14,7 +14,10 @@ namespace GBLive.Gui
         private const string logSettingsFilename = "LogSettings.json";
         private const string giantBombSettingsFilename = "GiantBombSettings.json";
 
-        public App() { }
+        public App()
+        {
+            InitializeComponent();
+        }
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {

@@ -32,9 +32,32 @@ namespace GBLive.Tests.GiantBomb
 
             server = new TestServer(port, url);
 
-            server.Samples.Add(notLiveNoShowsKey, notLiveNoShowsData);
-            server.Samples.Add(notLiveOneShowKey, notLiveOneShowData);
-            server.Samples.Add(notLiveFourShowsKey, notLiveFourShowsData);
+            server.Samples.Add(
+                new Sample
+                {
+                    Path = notLiveNoShowsKey,
+                    StatusCode = 200,
+                    ContentType = ContentTypes.JsonUTF8,
+                    Text = notLiveNoShowsData
+                });
+
+            server.Samples.Add(
+                new Sample
+                {
+                    Path = notLiveOneShowKey,
+                    StatusCode = 200,
+                    ContentType = ContentTypes.JsonUTF8,
+                    Text = notLiveOneShowData
+                });
+
+            server.Samples.Add(
+                new Sample
+                {
+                    Path = notLiveFourShowsKey,
+                    StatusCode = 200,
+                    ContentType = ContentTypes.JsonUTF8,
+                    Text = notLiveFourShowsData
+                });
 
             await server.StartAsync().ConfigureAwait(false);
         }
@@ -47,7 +70,7 @@ namespace GBLive.Tests.GiantBomb
             Settings settings = new Settings
             {
                 Upcoming = new Uri($"http://{url}:{port}/{path}"),
-                UserAgent = "dummy user agent"
+                //UserAgent = "dummy user agent"
             };
 
             IGiantBombContext gbContext = new GiantBombContext(nullLog, settings);

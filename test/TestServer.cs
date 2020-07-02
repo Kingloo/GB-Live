@@ -1,20 +1,46 @@
-﻿using System;
+﻿/*
+
+ TestServer requires the following NuGet packages
+ 
+ <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
+ <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
+
+*/
+
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-//using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 
 namespace GBLive.Tests
 {
+    public class ContentTypes
+    {
+        public const string TextPlain = "text/plain";
+        public const string JsonUTF8 = "application/json; charset=utf-8";
+    }
+
+    public class Sample
+    {
+        public string Path { get; set; } = string.Empty;
+        public int StatusCode { get; set; } = 0;
+        public string ContentType { get; set; } = string.Empty;
+        public string Text { get; set; } = string.Empty;
+        public bool RequireUserAgent { get; set; } = false;
+    }
+
     public class TestServer : IDisposable
     {
         private readonly IWebHost webHost;
 
         public int Port { get; }
         public string Url { get; }
-        public IDictionary<string, string> Samples { get; } = new Dictionary<string, string>();
+        public ICollection<Sample> Samples { get; } = new Collection<Sample>();
 
         public TestServer(int port, string url)
         {
@@ -45,27 +71,19 @@ namespace GBLive.Tests
                             {
                                 string path = ctx.Request.Path.Value.Substring(1); // remove the forward slash
 
-                                int statusCode = -1;
-                                string contentType = string.Empty;
-                                byte[] buffer = Array.Empty<byte>();
+                                Sample sample = Samples.Single(s => s.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
 
-                                if (Samples.ContainsKey(path))
+                                if (sample.RequireUserAgent && UserAgentIsMissingOrEmpty(ctx.Request.Headers))
                                 {
-                                    statusCode = 200;
-                                    contentType = "application/json; charset=utf-8";
+                                    ctx.Response.StatusCode = 404;
 
-                                    buffer = Encoding.UTF8.GetBytes(Samples[path]);
-                                }
-                                else
-                                {
-                                    statusCode = 404;
-                                    contentType = "text/plain";
-
-                                    buffer = Encoding.UTF8.GetBytes("no uri here");
+                                    return;
                                 }
 
-                                ctx.Response.StatusCode = statusCode;
-                                ctx.Response.ContentType = contentType;
+                                ctx.Response.StatusCode = sample.StatusCode;
+                                ctx.Response.ContentType = sample.ContentType;
+
+                                byte[] buffer = Encoding.UTF8.GetBytes(sample.Text);
 
                                 await ctx.Response.Body.WriteAsync(buffer).ConfigureAwait(false);
                             }
@@ -75,12 +93,27 @@ namespace GBLive.Tests
                 .Build();
         }
 
+        private static bool UserAgentIsMissingOrEmpty(IHeaderDictionary headers)
+        {
+            string userAgentHeaderName = "User-Agent";
+
+            if (!headers.ContainsKey(userAgentHeaderName))
+            {
+                return false;
+            }
+
+            if (String.IsNullOrWhiteSpace(headers[userAgentHeaderName]))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         public Task StartAsync() => webHost.StartAsync();
 
         public Task StopAsync() => webHost.StopAsync();
 
-
-        #region IDisposable Support
         private bool disposedValue = false;
 
         protected virtual void Dispose(bool disposing)
@@ -101,6 +134,5 @@ namespace GBLive.Tests
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
     }
 }
