@@ -18,13 +18,13 @@ namespace GBLive.GiantBomb
         private readonly HttpClientHandler handler;
         private readonly HttpClient client;
 
-        private readonly ILog _logger;
-        private readonly ISettings _settings;
+        private readonly ILog logger;
+        private readonly ISettings settings;
 
         public GiantBombContext(ILog logger, ISettings settings)
         {
-            _logger = logger;
-            _settings = settings;
+            this.logger = logger;
+            this.settings = settings;
 
             handler = new HttpClientHandler
             {
@@ -43,11 +43,25 @@ namespace GBLive.GiantBomb
 
         public async Task<IResponse> UpdateAsync()
         {
-            (HttpStatusCode status, UpcomingData? upcomingData) = await DownloadAsync(_settings.Upcoming).ConfigureAwait(false);
+            HttpStatusCode status;
+            UpcomingData? upcomingData;
 
-            if (status != HttpStatusCode.OK)
+            try
+            {
+                (status, upcomingData) = await DownloadAsync(settings.Upcoming).ConfigureAwait(false);
+            }
+            catch (HttpRequestException)
             {
                 return new Response { Reason = Reason.InternetError };
+            }
+            catch (OperationCanceledException)
+            {
+                return new Response { Reason = Reason.Timeout };
+            }
+            
+            if (status != HttpStatusCode.OK)
+            {
+                return new Response { Reason = Reason.NotOk };
             }
 
             if (upcomingData is null)
@@ -67,9 +81,6 @@ namespace GBLive.GiantBomb
 
         private async Task<(HttpStatusCode, UpcomingData?)> DownloadAsync(Uri uri)
         {
-            HttpStatusCode status = HttpStatusCode.Unused;
-            UpcomingData? upcomingResponse = null;
-
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, uri)
             {
                 Version = HttpVersion.Version20
@@ -80,54 +91,26 @@ namespace GBLive.GiantBomb
             request.Headers.Connection.ParseAdd("close"); // Connection is not used under HTTP/2, but the worst they can do is ignore it
             request.Headers.Host = "www.giantbomb.com";
                         
-            if (!String.IsNullOrWhiteSpace(_settings.UserAgent))
+            if (!String.IsNullOrWhiteSpace(settings.UserAgent))
             {
-                request.Headers.UserAgent.ParseAdd(_settings.UserAgent);
+                request.Headers.UserAgent.ParseAdd(settings.UserAgent);
             }
             
-            request.Headers.Add("DNT", "1");
+            HttpResponseMessage response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
 
-            HttpResponseMessage? response = null;
-            Stream? stream = null;
+            response.EnsureSuccessStatusCode();
 
-            try
-            {
-                response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+            Stream? stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
-                response.EnsureSuccessStatusCode();
+            var serializerOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
-                stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            UpcomingData upcomingResponse = await JsonSerializer.DeserializeAsync<UpcomingData>(stream, serializerOptions).ConfigureAwait(false);
+            
+            request.Dispose();
+            stream?.Dispose();
+            response.Dispose();
 
-                var serializerOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-
-                upcomingResponse = await JsonSerializer.DeserializeAsync<UpcomingData>(stream, serializerOptions).ConfigureAwait(false);
-            }
-            catch (HttpRequestException ex)
-            {
-                if (ex.InnerException is Win32Exception inner)
-                {
-                    await _logger.ExceptionAsync(ex, inner.Message).ConfigureAwait(false);
-                }
-            }
-            catch (OperationCanceledException ex)
-            {
-                await _logger.ExceptionAsync(ex, "probably timed out").ConfigureAwait(false);
-            }
-            finally
-            {
-                request.Dispose();
-
-                stream?.Dispose();
-
-                if (response != null)
-                {
-                    status = response.StatusCode;
-
-                    response.Dispose();
-                }
-            }
-
-            return (status, upcomingResponse);
+            return (response.StatusCode, upcomingResponse);
         }
 
         private IReadOnlyCollection<Show> ConvertData(IReadOnlyCollection<ShowData> data)
@@ -148,6 +131,8 @@ namespace GBLive.GiantBomb
                 shows.Add(show);
             }
 
+            logger.Message($"converted {data.Count} data entries into {shows.Count} shows", Severity.Debug);
+
             return shows.AsReadOnly();
         }
 
@@ -155,11 +140,11 @@ namespace GBLive.GiantBomb
         {
             if (raw.StartsWith("https://"))
             {
-                return Uri.TryCreate(raw, UriKind.Absolute, out Uri? uri) ? uri : _settings.FallbackImage;
+                return Uri.TryCreate(raw, UriKind.Absolute, out Uri? uri) ? uri : settings.FallbackImage;
             }
             else
             {
-                return Uri.TryCreate($"https://{raw}", UriKind.Absolute, out Uri? uri) ? uri : _settings.FallbackImage;
+                return Uri.TryCreate($"https://{raw}", UriKind.Absolute, out Uri? uri) ? uri : settings.FallbackImage;
             }
         }
 

@@ -4,6 +4,6 @@
 	"Chat": "https://www.giantbomb.com/chat",
 	"Upcoming": "https://giantbomb.com/upcoming_json",
 	"FallbackImage": "https://giantbomb1.cbsistatic.com/bundles/phoenixsite/images/core/loose/apple-touch-icon-precomposed-gb.png",
-	"UpdateIntervalInSeconds": 120,
+	"UpdateIntervalInSeconds": 150,
 	"ShouldNotify": true
 }

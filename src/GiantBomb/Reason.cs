@@ -5,6 +5,8 @@
         None,
         Success,
         MissingUri,
+        Timeout,
+        NotOk,
         InternetError,
         Empty,
         ParseFailed
