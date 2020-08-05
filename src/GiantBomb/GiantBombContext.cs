@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -89,7 +88,7 @@ namespace GBLive.GiantBomb
             request.Headers.Accept.ParseAdd("application/json; charset=utf-8");
             request.Headers.AcceptEncoding.ParseAdd("gzip, deflate, br");
             request.Headers.Connection.ParseAdd("close"); // Connection is not used under HTTP/2, but the worst they can do is ignore it
-            request.Headers.Host = "www.giantbomb.com";
+            request.Headers.Host = "www.giantbomb.com"; // this MUST have www - no idea why
                         
             if (!String.IsNullOrWhiteSpace(settings.UserAgent))
             {
