@@ -50,7 +50,7 @@ namespace GBLive.Tests.Gui
 
             using var viewModel = new MainWindowViewModel(nullLog, fakeContext, settings);
 
-            await viewModel.UpdateAsync();
+            await viewModel.UpdateAsync().ConfigureAwait(false);
 
             Assert.Zero(viewModel.Shows.Count);
         }
@@ -70,7 +70,7 @@ namespace GBLive.Tests.Gui
 
             using var viewModel = new MainWindowViewModel(nullLog, fakeContext, settings);
 
-            await viewModel.UpdateAsync();
+            await viewModel.UpdateAsync().ConfigureAwait(false);
 
             Assert.IsFalse(viewModel.IsLive);
         }
@@ -91,20 +91,21 @@ namespace GBLive.Tests.Gui
 
             using var viewModel = new MainWindowViewModel(nullLog, fakeContext, settings);
 
-            await viewModel.UpdateAsync();
+            await viewModel.UpdateAsync().ConfigureAwait(false);
 
             Assert.AreEqual(shows.Count, viewModel.Shows.Count);
         }
 
-        [TestCase(true, true)]
-        [TestCase(false, false)]
-        public async Task FullResponse_IsLive(bool expected, bool actual)
+        [TestCase(true)]
+        [TestCase(false)]
+        public async Task FullResponse_IsLive(bool isLive)
         {
             IResponse response = new Response
             {
-                Reason = Reason.Success,
-                LiveNow = new LiveNowData()
+                Reason = Reason.Success
             };
+
+            response.LiveNow = isLive ? new LiveNowData() : null;
 
             var fakeContext = new FakeGiantBombContext
             {
@@ -113,7 +114,10 @@ namespace GBLive.Tests.Gui
 
             using var viewModel = new MainWindowViewModel(nullLog, fakeContext, settings);
 
-            await viewModel.UpdateAsync();
+            await viewModel.UpdateAsync().ConfigureAwait(false);
+
+            bool expected = isLive;
+            bool actual = viewModel.IsLive;
 
             Assert.AreEqual(expected, actual);
         }
