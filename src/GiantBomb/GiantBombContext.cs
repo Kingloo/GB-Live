@@ -166,7 +166,6 @@ namespace GBLive.GiantBomb
             return dt.Add(offset);
         }
 
-        #region IDisposable Support
         private bool disposedValue = false;
 
         protected virtual void Dispose(bool disposing)
@@ -188,6 +187,5 @@ namespace GBLive.GiantBomb
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
     }
 }
