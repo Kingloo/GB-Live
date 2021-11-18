@@ -113,7 +113,7 @@ namespace GBLive.Common
             var cc = CultureInfo.CurrentCulture;
 
             string timestamp = DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss (zzz)", cc);
-            string processName = Process.GetCurrentProcess().MainModule.ModuleName;
+            string processName = Process.GetCurrentProcess().MainModule?.ModuleName ?? "unknown process";
 
             return string.Format(cc, "{0} - {1} - {2}", timestamp, processName, message);
         }

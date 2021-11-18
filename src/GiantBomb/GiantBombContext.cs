@@ -103,7 +103,7 @@ namespace GBLive.GiantBomb
 
             var serializerOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
-            UpcomingData upcomingResponse = await JsonSerializer.DeserializeAsync<UpcomingData>(stream, serializerOptions).ConfigureAwait(false);
+            UpcomingData? upcomingResponse = await JsonSerializer.DeserializeAsync<UpcomingData>(stream, serializerOptions).ConfigureAwait(false);
             
             request.Dispose();
             stream?.Dispose();

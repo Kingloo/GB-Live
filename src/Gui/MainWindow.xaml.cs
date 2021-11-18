@@ -73,7 +73,7 @@ namespace GBLive.Gui
             }
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
             Loaded -= Window_Loaded;
             KeyDown -= Window_KeyDown;

@@ -59,7 +59,7 @@ namespace GBLive.Gui
         {
             string text = LoadText(logSettingsFilename);
 
-            return JsonSerializer.Deserialize<LogSettings>(text);
+            return JsonSerializer.Deserialize<LogSettings>(text) ?? throw new ArgumentNullException("loading logging settings failed");
         }
 
         private static string GetDefaultLogFilePath()
@@ -86,7 +86,7 @@ namespace GBLive.Gui
         {
             string text = LoadText(giantBombSettingsFilename);
 
-            return JsonSerializer.Deserialize<Settings>(text);
+            return JsonSerializer.Deserialize<Settings>(text) ?? throw new ArgumentNullException("loading giantbomb settings failed");
         }
 
         private static string LoadText(string filename)
