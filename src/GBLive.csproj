@@ -1,24 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
-    <LangVersion>10.0</LangVersion>
-    <PlatformTarget>x64</PlatformTarget>
-    <UseWPF>true</UseWPF>
-    <Nullable>enable</Nullable>
-    <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
-    <StartupObject>GBLive.Program</StartupObject>
-    <ApplicationIcon>giantbomb_logo.ico</ApplicationIcon>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net6.0-windows</TargetFramework>
+		<LangVersion>10.0</LangVersion>
+		<PlatformTarget>x64</PlatformTarget>
+		<UseWPF>true</UseWPF>
+		<Nullable>enable</Nullable>
+		<EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
+		<StartupObject>GBLive.Program</StartupObject>
+		<ApplicationIcon>giantbomb_logo.ico</ApplicationIcon>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Content Include="GiantBombSettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="LogSettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="GiantBombSettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="LogSettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 
 </Project>

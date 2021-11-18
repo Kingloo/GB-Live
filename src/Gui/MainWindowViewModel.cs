@@ -11,248 +11,248 @@ using GBLive.GiantBomb.Interfaces;
 
 namespace GBLive.Gui
 {
-    public class MainWindowViewModel : IMainWindowViewModel, INotifyPropertyChanged, IDisposable
-    {
-        public event PropertyChangedEventHandler? PropertyChanged;
+	public class MainWindowViewModel : IMainWindowViewModel, INotifyPropertyChanged, IDisposable
+	{
+		public event PropertyChangedEventHandler? PropertyChanged;
 
-        private void OnPropertyChanged(string propertyName)
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		private void OnPropertyChanged(string propertyName)
+			=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-        private readonly ILog _logger;
-        private readonly IGiantBombContext _gbContext;
-        private DispatcherTimer? timer = null;
+		private readonly ILog _logger;
+		private readonly IGiantBombContext _gbContext;
+		private DispatcherTimer? timer = null;
 
-        public ISettings Settings { get; } // needed for MainWindow.xaml data-binding for FallbackImage
+		public ISettings Settings { get; } // needed for MainWindow.xaml data-binding for FallbackImage
 
-        private bool _isLive = false;
-        public bool IsLive
-        {
-            get => _isLive;
-            set
-            {
-                _isLive = value;
+		private bool _isLive = false;
+		public bool IsLive
+		{
+			get => _isLive;
+			set
+			{
+				_isLive = value;
 
-                OnPropertyChanged(nameof(IsLive));
-            }
-        }
+				OnPropertyChanged(nameof(IsLive));
+			}
+		}
 
-        private string _liveShowTitle = string.Empty;
-        public string LiveShowTitle
-        {
-            get => _liveShowTitle;
-            set
-            {
-                _liveShowTitle = value;
+		private string _liveShowTitle = string.Empty;
+		public string LiveShowTitle
+		{
+			get => _liveShowTitle;
+			set
+			{
+				_liveShowTitle = value;
 
-                OnPropertyChanged(nameof(LiveShowTitle));
-            }
-        }
+				OnPropertyChanged(nameof(LiveShowTitle));
+			}
+		}
 
-        private readonly ObservableCollection<IShow> _shows = new ObservableCollection<IShow>();
-        public IReadOnlyCollection<IShow> Shows => _shows;
+		private readonly ObservableCollection<IShow> _shows = new ObservableCollection<IShow>();
+		public IReadOnlyCollection<IShow> Shows => _shows;
 
-        public MainWindowViewModel(ILog logger, IGiantBombContext gbContext, ISettings settings)
-        {
-            _logger = logger;
-            _gbContext = gbContext;
-            Settings = settings;
-        }
+		public MainWindowViewModel(ILog logger, IGiantBombContext gbContext, ISettings settings)
+		{
+			_logger = logger;
+			_gbContext = gbContext;
+			Settings = settings;
+		}
 
-        public async Task UpdateAsync()
-        {
-            await _logger.MessageAsync("update started", Severity.Debug);
+		public async Task UpdateAsync()
+		{
+			await _logger.MessageAsync("update started", Severity.Debug);
 
-            IResponse response = await _gbContext.UpdateAsync();
+			IResponse response = await _gbContext.UpdateAsync();
 
-            await _logger.MessageAsync($"response contains {response.Shows.Count} shows", Severity.Debug);
+			await _logger.MessageAsync($"response contains {response.Shows.Count} shows", Severity.Debug);
 
-            if (response.Reason != Reason.Success)
-            {
-                await _logger.MessageAsync($"update failed: {response.Reason}", Severity.Warning);
+			if (response.Reason != Reason.Success)
+			{
+				await _logger.MessageAsync($"update failed: {response.Reason}", Severity.Warning);
 
-                return;
-            }
+				return;
+			}
 
-            bool wasLive = IsLive;
+			bool wasLive = IsLive;
 
-            IsLive = response.LiveNow != null;
-            LiveShowTitle = (IsLive && (response.LiveNow != null)) ? response.LiveNow.Title : Settings.NameOfNoLiveShow;
+			IsLive = response.LiveNow != null;
+			LiveShowTitle = (IsLive && (response.LiveNow != null)) ? response.LiveNow.Title : Settings.NameOfNoLiveShow;
 
-            if (Settings.ShouldNotify)
-            {
-                if (!wasLive && IsLive) // we only want the notification once, upon changing from not-live to live
-                {
-                    NotificationService.Send(Settings.IsLiveMessage, OpenChatPage);
+			if (Settings.ShouldNotify)
+			{
+				if (!wasLive && IsLive) // we only want the notification once, upon changing from not-live to live
+				{
+					NotificationService.Send(Settings.IsLiveMessage, OpenChatPage);
 
-                    await _logger.MessageAsync($"GiantBomb went live ({response.LiveNow?.Title})", Severity.Information);
-                }
-            }
+					await _logger.MessageAsync($"GiantBomb went live ({response.LiveNow?.Title})", Severity.Information);
+				}
+			}
 
-            AddNewRemoveOldRemoveExpired(response.Shows);
+			AddNewRemoveOldRemoveExpired(response.Shows);
 
-            await _logger.MessageAsync("update succeeded", Severity.Debug);
-        }
+			await _logger.MessageAsync("update succeeded", Severity.Debug);
+		}
 
-        private void AddNewRemoveOldRemoveExpired(IEnumerable<IShow> shows)
-        {
-            // add events that that we don't already have, and that are in the future
+		private void AddNewRemoveOldRemoveExpired(IEnumerable<IShow> shows)
+		{
+			// add events that that we don't already have, and that are in the future
 
-            var toAdd = shows
-                .Where(x => !_shows.Contains(x))
-                .Where(x => x.Time > DateTimeOffset.Now)
-                .ToList();
+			var toAdd = shows
+				.Where(x => !_shows.Contains(x))
+				.Where(x => x.Time > DateTimeOffset.Now)
+				.ToList();
 
-            if (toAdd.Any())
-            {
-                foreach (IShow add in toAdd)
-                {
-                    void notify() => NotificationService.Send(add.Title, OpenHomePage);
+			if (toAdd.Any())
+			{
+				foreach (IShow add in toAdd)
+				{
+					void notify() => NotificationService.Send(add.Title, OpenHomePage);
 
-                    add.StartCountdown(notify);
+					add.StartCountdown(notify);
 
-                    _shows.Add(add);
+					_shows.Add(add);
 
-                    _logger.Message($"added show {add}", Severity.Debug);
-                }
-            }
-            else
-            {
-                _logger.Message($"no shows to add", Severity.Debug);
-            }
-            
+					_logger.Message($"added show {add}", Severity.Debug);
+				}
+			}
+			else
+			{
+				_logger.Message($"no shows to add", Severity.Debug);
+			}
 
-            // remove events that we have locally but that are no longer in the API response
 
-            var toRemove = _shows
-                .Where(x => !shows.Contains(x))
-                .ToList();
+			// remove events that we have locally but that are no longer in the API response
 
-            if (toRemove.Any())
-            {
-                foreach (IShow remove in toRemove)
-                {
-                    remove.StopCountdown();
+			var toRemove = _shows
+				.Where(x => !shows.Contains(x))
+				.ToList();
 
-                    _shows.Remove(remove);
+			if (toRemove.Any())
+			{
+				foreach (IShow remove in toRemove)
+				{
+					remove.StopCountdown();
 
-                    _logger.Message($"removed show {remove}", Severity.Debug);
-                }
-            }
-            else
-            {
-                _logger.Message($"no shows removed", Severity.Debug);
-            }
-            
+					_shows.Remove(remove);
 
-            // remove any events that the API response contains but whose time is in the past
-            // well, 10 minutes in the past to allow for some leeway
+					_logger.Message($"removed show {remove}", Severity.Debug);
+				}
+			}
+			else
+			{
+				_logger.Message($"no shows removed", Severity.Debug);
+			}
 
-            var expired = _shows
-                .Where(x => x.Time < DateTimeOffset.Now.AddMinutes(-10d))
-                .ToList();
 
-            if (expired.Any())
-            {
-                foreach (IShow each in expired)
-                {
-                    each.StopCountdown();
+			// remove any events that the API response contains but whose time is in the past
+			// well, 10 minutes in the past to allow for some leeway
 
-                    _shows.Remove(each);
+			var expired = _shows
+				.Where(x => x.Time < DateTimeOffset.Now.AddMinutes(-10d))
+				.ToList();
 
-                    _logger.Message($"removed old show {each}", Severity.Debug);
-                }
-            }
-            else
-            {
-                _logger.Message($"no expired shows", Severity.Debug);
-            }
-        }
+			if (expired.Any())
+			{
+				foreach (IShow each in expired)
+				{
+					each.StopCountdown();
 
-        public void OpenHomePage()
-        {
-            if (Settings.Home is Uri uri)
-            {
-                if (!SystemLaunch.Uri(uri))
-                {
-                    _logger.Message("home page () failed to open", Severity.Error);
-                }
-            }
-            else
-            {
-                _logger.Message("home page Uri is null", Severity.Error);
-            }
-        }
+					_shows.Remove(each);
 
-        public void OpenChatPage()
-        {
-            if (Settings.Chat is Uri uri)
-            {
-                if (!SystemLaunch.Uri(uri))
-                {
-                    _logger.Message("chat page () failed to open", Severity.Error);
-                }
-            }
-            else
-            {
-                _logger.Message("chat page Uri is null", Severity.Error);
-            }
-        }
+					_logger.Message($"removed old show {each}", Severity.Debug);
+				}
+			}
+			else
+			{
+				_logger.Message($"no expired shows", Severity.Debug);
+			}
+		}
 
-        public void StartTimer()
-        {
-            if (timer is null)
-            {
-                timer = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
-                {
-                    Interval = TimeSpan.FromSeconds(Settings.UpdateIntervalInSeconds)
-                };
+		public void OpenHomePage()
+		{
+			if (Settings.Home is Uri uri)
+			{
+				if (!SystemLaunch.Uri(uri))
+				{
+					_logger.Message("home page () failed to open", Severity.Error);
+				}
+			}
+			else
+			{
+				_logger.Message("home page Uri is null", Severity.Error);
+			}
+		}
 
-                timer.Tick += Timer_Tick;
-            }
+		public void OpenChatPage()
+		{
+			if (Settings.Chat is Uri uri)
+			{
+				if (!SystemLaunch.Uri(uri))
+				{
+					_logger.Message("chat page () failed to open", Severity.Error);
+				}
+			}
+			else
+			{
+				_logger.Message("chat page Uri is null", Severity.Error);
+			}
+		}
 
-            if (!timer.IsEnabled)
-            {
-                timer.Start();
-            }
-        }
+		public void StartTimer()
+		{
+			if (timer is null)
+			{
+				timer = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
+				{
+					Interval = TimeSpan.FromSeconds(Settings.UpdateIntervalInSeconds)
+				};
 
-        public void StopTimer()
-        {
-            if (!(timer is null))
-            {
-                timer.Stop();
-                timer.Tick -= Timer_Tick;
+				timer.Tick += Timer_Tick;
+			}
 
-                timer = null;
-            }
-        }
+			if (!timer.IsEnabled)
+			{
+				timer.Start();
+			}
+		}
 
-        private async void Timer_Tick(object? sender, EventArgs e)
-        {
-            await UpdateAsync();
-        }
+		public void StopTimer()
+		{
+			if (!(timer is null))
+			{
+				timer.Stop();
+				timer.Tick -= Timer_Tick;
 
-        #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
+				timer = null;
+			}
+		}
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    (_gbContext as IDisposable)?.Dispose();
-                }
+		private async void Timer_Tick(object? sender, EventArgs e)
+		{
+			await UpdateAsync();
+		}
 
-                disposedValue = true;
-            }
-        }
+		#region IDisposable Support
+		private bool disposedValue = false; // To detect redundant calls
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-        #endregion
-    }
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposedValue)
+			{
+				if (disposing)
+				{
+					(_gbContext as IDisposable)?.Dispose();
+				}
+
+				disposedValue = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+		#endregion
+	}
 }

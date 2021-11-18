@@ -1,10 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace GBLive.GiantBomb.Interfaces
 {
-    public interface IGiantBombContext
-    {
-        Task<IResponse> UpdateAsync();
-    }
+	public interface IGiantBombContext
+	{
+		Task<IResponse> UpdateAsync();
+	}
 }

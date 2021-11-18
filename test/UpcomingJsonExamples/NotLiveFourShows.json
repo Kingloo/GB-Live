@@ -1,33 +1,33 @@
 ﻿{
-    "liveNow": null,
-    "upcoming": [
-        {
-            "type": "Live Show",
-            "title": "Community Co-Op Corner: I'm Keen On Keener",
-            "image": "giantbomb1.cbsistatic.com/uploads/original/8/87610/3174459-0_division-2-new-york-screenshots-16.jpg",
-            "date": "Mar 15, 2020 02:00 PM",
-            "premium": false
-        },
-        {
-            "type": "Podcast",
-            "title": "title 2",
-            "image": "giantbomb1.cbsistatic.com/uploads/original/8/87610/3174459-0_division-2-new-york-screenshots-16.jpg",
-            "date": "Mar 16, 2020 02:00 PM",
-            "premium": false
-        },
-        {
-            "type": "Article",
-            "title": "title 3",
-            "image": "giantbomb1.cbsistatic.com/uploads/original/8/87610/3174459-0_division-2-new-york-screenshots-16.jpg",
-            "date": "Mar 17, 2020 02:00 PM",
-            "premium": false
-        },
-        {
-            "type": "Video",
-            "title": "Persona 5 Endurance Run",
-            "image": "giantbomb1.cbsistatic.com/uploads/original/8/87610/3174459-0_division-2-new-york-screenshots-16.jpg",
-            "date": "Mar 18, 2020 02:00 PM",
-            "premium": true
-        }
-    ]
+	"liveNow": null,
+	"upcoming": [
+		{
+			"type": "Live Show",
+			"title": "Community Co-Op Corner: I'm Keen On Keener",
+			"image": "giantbomb1.cbsistatic.com/uploads/original/8/87610/3174459-0_division-2-new-york-screenshots-16.jpg",
+			"date": "Mar 15, 2020 02:00 PM",
+			"premium": false
+		},
+		{
+			"type": "Podcast",
+			"title": "title 2",
+			"image": "giantbomb1.cbsistatic.com/uploads/original/8/87610/3174459-0_division-2-new-york-screenshots-16.jpg",
+			"date": "Mar 16, 2020 02:00 PM",
+			"premium": false
+		},
+		{
+			"type": "Article",
+			"title": "title 3",
+			"image": "giantbomb1.cbsistatic.com/uploads/original/8/87610/3174459-0_division-2-new-york-screenshots-16.jpg",
+			"date": "Mar 17, 2020 02:00 PM",
+			"premium": false
+		},
+		{
+			"type": "Video",
+			"title": "Persona 5 Endurance Run",
+			"image": "giantbomb1.cbsistatic.com/uploads/original/8/87610/3174459-0_division-2-new-york-screenshots-16.jpg",
+			"date": "Mar 18, 2020 02:00 PM",
+			"premium": true
+		}
+	]
 }

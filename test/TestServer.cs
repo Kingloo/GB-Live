@@ -1,7 +1,7 @@
 ﻿/*
 
  TestServer requires the following NuGet packages
- 
+
  <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
  <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
 
@@ -19,120 +19,120 @@ using Microsoft.AspNetCore.Http;
 
 namespace GBLive.Tests
 {
-    public class ContentTypes
-    {
-        public const string TextPlain = "text/plain";
-        public const string JsonUTF8 = "application/json; charset=utf-8";
-    }
+	public class ContentTypes
+	{
+		public const string TextPlain = "text/plain";
+		public const string JsonUTF8 = "application/json; charset=utf-8";
+	}
 
-    public class Sample
-    {
-        public string Path { get; set; } = string.Empty;
-        public int StatusCode { get; set; } = 0;
-        public string ContentType { get; set; } = string.Empty;
-        public string Text { get; set; } = string.Empty;
-        public bool RequireUserAgent { get; set; } = false;
-    }
+	public class Sample
+	{
+		public string Path { get; set; } = string.Empty;
+		public int StatusCode { get; set; } = 0;
+		public string ContentType { get; set; } = string.Empty;
+		public string Text { get; set; } = string.Empty;
+		public bool RequireUserAgent { get; set; } = false;
+	}
 
-    public class TestServer : IDisposable
-    {
-        private readonly IWebHost webHost;
+	public class TestServer : IDisposable
+	{
+		private readonly IWebHost webHost;
 
-        public int Port { get; }
-        public string Url { get; }
-        public ICollection<Sample> Samples { get; } = new Collection<Sample>();
+		public int Port { get; }
+		public string Url { get; }
+		public ICollection<Sample> Samples { get; } = new Collection<Sample>();
 
-        public TestServer(int port, string url)
-        {
-            if (port <= 1024 || port > 65535)
-            {
-                throw new ArgumentOutOfRangeException(nameof(port), "port must be >1024 and <=65535");
-            }
+		public TestServer(int port, string url)
+		{
+			if (port <= 1024 || port > 65535)
+			{
+				throw new ArgumentOutOfRangeException(nameof(port), "port must be >1024 and <=65535");
+			}
 
-            if (String.IsNullOrWhiteSpace(url))
-            {
-                throw new ArgumentNullException(nameof(url), "url was not valid");
-            }
+			if (String.IsNullOrWhiteSpace(url))
+			{
+				throw new ArgumentNullException(nameof(url), "url was not valid");
+			}
 
-            Port = port;
-            Url = url;
-            
-            webHost = CreateWebHost();
-        }
+			Port = port;
+			Url = url;
 
-        private IWebHost CreateWebHost()
-        {
-            return new WebHostBuilder()
-                .UseUrls($"http://{Url}:{Port}")
-                .UseKestrel()
-                .Configure(app =>
-                    {
-                        app.Run(async ctx =>
-                            {
-                                string path = ctx.Request.Path.Value.Substring(1); // remove the forward slash
+			webHost = CreateWebHost();
+		}
 
-                                Sample sample = Samples.Single(s => s.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
+		private IWebHost CreateWebHost()
+		{
+			return new WebHostBuilder()
+				.UseUrls($"http://{Url}:{Port}")
+				.UseKestrel()
+				.Configure(app =>
+					{
+						app.Run(async ctx =>
+							{
+								string path = ctx.Request.Path.Value.Substring(1); // remove the forward slash
 
-                                if (sample.RequireUserAgent && UserAgentIsMissingOrEmpty(ctx.Request.Headers))
-                                {
-                                    ctx.Response.StatusCode = 404;
+								Sample sample = Samples.Single(s => s.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
 
-                                    return;
-                                }
+								if (sample.RequireUserAgent && UserAgentIsMissingOrEmpty(ctx.Request.Headers))
+								{
+									ctx.Response.StatusCode = 404;
 
-                                ctx.Response.StatusCode = sample.StatusCode;
-                                ctx.Response.ContentType = sample.ContentType;
+									return;
+								}
 
-                                byte[] buffer = Encoding.UTF8.GetBytes(sample.Text);
+								ctx.Response.StatusCode = sample.StatusCode;
+								ctx.Response.ContentType = sample.ContentType;
 
-                                await ctx.Response.Body.WriteAsync(buffer).ConfigureAwait(false);
-                            }
-                        );
-                    }
-                )
-                .Build();
-        }
+								byte[] buffer = Encoding.UTF8.GetBytes(sample.Text);
 
-        private static bool UserAgentIsMissingOrEmpty(IHeaderDictionary headers)
-        {
-            string userAgentHeaderName = "User-Agent";
+								await ctx.Response.Body.WriteAsync(buffer).ConfigureAwait(false);
+							}
+						);
+					}
+				)
+				.Build();
+		}
 
-            if (!headers.ContainsKey(userAgentHeaderName))
-            {
-                return false;
-            }
+		private static bool UserAgentIsMissingOrEmpty(IHeaderDictionary headers)
+		{
+			string userAgentHeaderName = "User-Agent";
 
-            if (String.IsNullOrWhiteSpace(headers[userAgentHeaderName]))
-            {
-                return false;
-            }
+			if (!headers.ContainsKey(userAgentHeaderName))
+			{
+				return false;
+			}
 
-            return true;
-        }
+			if (String.IsNullOrWhiteSpace(headers[userAgentHeaderName]))
+			{
+				return false;
+			}
 
-        public Task StartAsync() => webHost.StartAsync();
+			return true;
+		}
 
-        public Task StopAsync() => webHost.StopAsync();
+		public Task StartAsync() => webHost.StartAsync();
 
-        private bool disposedValue = false;
+		public Task StopAsync() => webHost.StopAsync();
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    webHost.Dispose();
-                }
+		private bool disposedValue = false;
 
-                disposedValue = true;
-            }
-        }
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposedValue)
+			{
+				if (disposing)
+				{
+					webHost.Dispose();
+				}
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-    }
+				disposedValue = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+	}
 }

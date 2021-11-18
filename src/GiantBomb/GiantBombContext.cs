@@ -12,180 +12,180 @@ using GBLive.GiantBomb.Interfaces;
 
 namespace GBLive.GiantBomb
 {
-    public class GiantBombContext : IGiantBombContext, IDisposable
-    {
-        private readonly HttpClientHandler handler;
-        private readonly HttpClient client;
+	public class GiantBombContext : IGiantBombContext, IDisposable
+	{
+		private readonly HttpClientHandler handler;
+		private readonly HttpClient client;
 
-        private readonly ILog logger;
-        private readonly ISettings settings;
+		private readonly ILog logger;
+		private readonly ISettings settings;
 
-        public GiantBombContext(ILog logger, ISettings settings)
-        {
-            this.logger = logger;
-            this.settings = settings;
+		public GiantBombContext(ILog logger, ISettings settings)
+		{
+			this.logger = logger;
+			this.settings = settings;
 
-            handler = new HttpClientHandler
-            {
-                AllowAutoRedirect = true,
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
-                MaxAutomaticRedirections = 3,
-                MaxConnectionsPerServer = 1,
-                SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13
-            };
+			handler = new HttpClientHandler
+			{
+				AllowAutoRedirect = true,
+				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
+				MaxAutomaticRedirections = 3,
+				MaxConnectionsPerServer = 1,
+				SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13
+			};
 
-            client = new HttpClient(handler, false)
-            {
-                Timeout = TimeSpan.FromSeconds(10d)
-            };
-        }
+			client = new HttpClient(handler, false)
+			{
+				Timeout = TimeSpan.FromSeconds(10d)
+			};
+		}
 
-        public async Task<IResponse> UpdateAsync()
-        {
-            HttpStatusCode status;
-            UpcomingData? upcomingData;
+		public async Task<IResponse> UpdateAsync()
+		{
+			HttpStatusCode status;
+			UpcomingData? upcomingData;
 
-            try
-            {
-                (status, upcomingData) = await DownloadAsync(settings.Upcoming).ConfigureAwait(false);
-            }
-            catch (HttpRequestException)
-            {
-                return new Response { Reason = Reason.InternetError };
-            }
-            catch (OperationCanceledException)
-            {
-                return new Response { Reason = Reason.Timeout };
-            }
-            
-            if (status != HttpStatusCode.OK)
-            {
-                return new Response { Reason = Reason.NotOk };
-            }
+			try
+			{
+				(status, upcomingData) = await DownloadAsync(settings.Upcoming).ConfigureAwait(false);
+			}
+			catch (HttpRequestException)
+			{
+				return new Response { Reason = Reason.InternetError };
+			}
+			catch (OperationCanceledException)
+			{
+				return new Response { Reason = Reason.Timeout };
+			}
 
-            if (upcomingData is null)
-            {
-                return new Response { Reason = Reason.Empty };
-            }
+			if (status != HttpStatusCode.OK)
+			{
+				return new Response { Reason = Reason.NotOk };
+			}
 
-            Response response = new Response
-            {
-                Reason = Reason.Success,
-                LiveNow = upcomingData.LiveNow,
-                Shows = ConvertData(upcomingData.Upcoming)
-            };
+			if (upcomingData is null)
+			{
+				return new Response { Reason = Reason.Empty };
+			}
 
-            return response;
-        }
+			Response response = new Response
+			{
+				Reason = Reason.Success,
+				LiveNow = upcomingData.LiveNow,
+				Shows = ConvertData(upcomingData.Upcoming)
+			};
 
-        private async Task<(HttpStatusCode, UpcomingData?)> DownloadAsync(Uri uri)
-        {
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, uri)
-            {
-                Version = HttpVersion.Version20
-            };
+			return response;
+		}
 
-            request.Headers.Accept.ParseAdd("application/json; charset=utf-8");
-            request.Headers.AcceptEncoding.ParseAdd("gzip, deflate, br");
-            request.Headers.Connection.ParseAdd("close"); // Connection is not used under HTTP/2, but the worst they can do is ignore it
-            request.Headers.Host = "www.giantbomb.com"; // this MUST have www - no idea why
-                        
-            if (!String.IsNullOrWhiteSpace(settings.UserAgent))
-            {
-                request.Headers.UserAgent.ParseAdd(settings.UserAgent);
-            }
-            
-            HttpResponseMessage response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+		private async Task<(HttpStatusCode, UpcomingData?)> DownloadAsync(Uri uri)
+		{
+			HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, uri)
+			{
+				Version = HttpVersion.Version20
+			};
 
-            response.EnsureSuccessStatusCode();
+			request.Headers.Accept.ParseAdd("application/json; charset=utf-8");
+			request.Headers.AcceptEncoding.ParseAdd("gzip, deflate, br");
+			request.Headers.Connection.ParseAdd("close"); // Connection is not used under HTTP/2, but the worst they can do is ignore it
+			request.Headers.Host = "www.giantbomb.com"; // this MUST have www - no idea why
 
-            Stream? stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+			if (!String.IsNullOrWhiteSpace(settings.UserAgent))
+			{
+				request.Headers.UserAgent.ParseAdd(settings.UserAgent);
+			}
 
-            var serializerOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+			HttpResponseMessage response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
 
-            UpcomingData? upcomingResponse = await JsonSerializer.DeserializeAsync<UpcomingData>(stream, serializerOptions).ConfigureAwait(false);
-            
-            request.Dispose();
-            stream?.Dispose();
-            response.Dispose();
+			response.EnsureSuccessStatusCode();
 
-            return (response.StatusCode, upcomingResponse);
-        }
+			Stream? stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
-        private IReadOnlyCollection<Show> ConvertData(IReadOnlyCollection<ShowData> data)
-        {
-            List<Show> shows = new List<Show>();
+			var serializerOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
-            foreach (ShowData each in data)
-            {
-                Show show = new Show
-                {
-                    ShowType = each.Type,
-                    Title = each.Title,
-                    Image = GetImageUri(each.Image),
-                    IsPremium = each.Premium,
-                    Time = GetDate(each.Date)
-                };
+			UpcomingData? upcomingResponse = await JsonSerializer.DeserializeAsync<UpcomingData>(stream, serializerOptions).ConfigureAwait(false);
 
-                shows.Add(show);
-            }
+			request.Dispose();
+			stream?.Dispose();
+			response.Dispose();
 
-            logger.Message($"converted {data.Count} data entries into {shows.Count} shows", Severity.Debug);
+			return (response.StatusCode, upcomingResponse);
+		}
 
-            return shows.AsReadOnly();
-        }
+		private IReadOnlyCollection<Show> ConvertData(IReadOnlyCollection<ShowData> data)
+		{
+			List<Show> shows = new List<Show>();
 
-        private Uri GetImageUri(string raw)
-        {
-            if (raw.StartsWith("https://"))
-            {
-                return Uri.TryCreate(raw, UriKind.Absolute, out Uri? uri) ? uri : settings.FallbackImage;
-            }
-            else
-            {
-                return Uri.TryCreate($"https://{raw}", UriKind.Absolute, out Uri? uri) ? uri : settings.FallbackImage;
-            }
-        }
+			foreach (ShowData each in data)
+			{
+				Show show = new Show
+				{
+					ShowType = each.Type,
+					Title = each.Title,
+					Image = GetImageUri(each.Image),
+					IsPremium = each.Premium,
+					Time = GetDate(each.Date)
+				};
 
-        private static DateTimeOffset GetDate(string date)
-        {
-            if (!DateTimeOffset.TryParse(date, out DateTimeOffset dt))
-            {
-                return DateTimeOffset.MaxValue;
-            }
+				shows.Add(show);
+			}
 
-            TimeSpan pacific = TimeZoneInfo
-                .GetSystemTimeZones()
-                .Single(tz => tz.Id == "Pacific Standard Time")
-                .GetUtcOffset(DateTimeOffset.Now);
+			logger.Message($"converted {data.Count} data entries into {shows.Count} shows", Severity.Debug);
 
-            TimeSpan local = TimeZoneInfo.Local.GetUtcOffset(DateTimeOffset.Now);
+			return shows.AsReadOnly();
+		}
 
-            TimeSpan offset = local - pacific;
+		private Uri GetImageUri(string raw)
+		{
+			if (raw.StartsWith("https://"))
+			{
+				return Uri.TryCreate(raw, UriKind.Absolute, out Uri? uri) ? uri : settings.FallbackImage;
+			}
+			else
+			{
+				return Uri.TryCreate($"https://{raw}", UriKind.Absolute, out Uri? uri) ? uri : settings.FallbackImage;
+			}
+		}
 
-            return dt.Add(offset);
-        }
+		private static DateTimeOffset GetDate(string date)
+		{
+			if (!DateTimeOffset.TryParse(date, out DateTimeOffset dt))
+			{
+				return DateTimeOffset.MaxValue;
+			}
 
-        private bool disposedValue = false;
+			TimeSpan pacific = TimeZoneInfo
+				.GetSystemTimeZones()
+				.Single(tz => tz.Id == "Pacific Standard Time")
+				.GetUtcOffset(DateTimeOffset.Now);
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    client.Dispose();
-                    handler.Dispose();
-                }
+			TimeSpan local = TimeZoneInfo.Local.GetUtcOffset(DateTimeOffset.Now);
 
-                disposedValue = true;
-            }
-        }
+			TimeSpan offset = local - pacific;
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-    }
+			return dt.Add(offset);
+		}
+
+		private bool disposedValue = false;
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposedValue)
+			{
+				if (disposing)
+				{
+					client.Dispose();
+					handler.Dispose();
+				}
+
+				disposedValue = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+	}
 }

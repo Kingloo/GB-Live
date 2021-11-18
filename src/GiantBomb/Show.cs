@@ -6,53 +6,53 @@ using GBLive.GiantBomb.Interfaces;
 
 namespace GBLive.GiantBomb
 {
-    public class Show : IShow
-    {
-        private DispatcherCountdownTimer? countdown;
+	public class Show : IShow
+	{
+		private DispatcherCountdownTimer? countdown;
 
-        public bool IsCountdownTimerRunning => countdown?.IsRunning ?? false;
+		public bool IsCountdownTimerRunning => countdown?.IsRunning ?? false;
 
-        public string Title { get; set; } = "Untitled";
-        public DateTimeOffset Time { get; set; } = DateTimeOffset.MinValue;
-        public bool IsPremium { get; set; } = false;
-        public string ShowType { get; set; } = "Unknown";
-        public Uri Image { get; set; } = new Uri("https://www.giantbomb.com/");
+		public string Title { get; set; } = "Untitled";
+		public DateTimeOffset Time { get; set; } = DateTimeOffset.MinValue;
+		public bool IsPremium { get; set; } = false;
+		public string ShowType { get; set; } = "Unknown";
+		public Uri Image { get; set; } = new Uri("https://www.giantbomb.com/");
 
-        public Show() { }
+		public Show() { }
 
-        public void StartCountdown(Action notify)
-        {
-            if (countdown != null && countdown.IsRunning) { return; }
+		public void StartCountdown(Action notify)
+		{
+			if (countdown != null && countdown.IsRunning) { return; }
 
-            Int64 ticksUntilShow = CalculateTicks(Time);
+			Int64 ticksUntilShow = CalculateTicks(Time);
 
-            if (!IsTicksValid(ticksUntilShow)) { return; }
+			if (!IsTicksValid(ticksUntilShow)) { return; }
 
-            TimeSpan timeUntilShow = TimeSpan.FromTicks(ticksUntilShow);
+			TimeSpan timeUntilShow = TimeSpan.FromTicks(ticksUntilShow);
 
-            countdown = new DispatcherCountdownTimer(timeUntilShow, notify);
+			countdown = new DispatcherCountdownTimer(timeUntilShow, notify);
 
-            countdown.Start();
-        }
+			countdown.Start();
+		}
 
-        private static Int64 CalculateTicks(DateTimeOffset dto)
-        {
-            if (dto < DateTimeOffset.Now) { return -1L; }
+		private static Int64 CalculateTicks(DateTimeOffset dto)
+		{
+			if (dto < DateTimeOffset.Now) { return -1L; }
 
-            TimeSpan fromNowUntilShow = dto - DateTimeOffset.Now;
+			TimeSpan fromNowUntilShow = dto - DateTimeOffset.Now;
 
-            TimeSpan untilShouldNotify = fromNowUntilShow.Add(TimeSpan.FromSeconds(10d));
+			TimeSpan untilShouldNotify = fromNowUntilShow.Add(TimeSpan.FromSeconds(10d));
 
-            return untilShouldNotify.Ticks;
-        }
+			return untilShouldNotify.Ticks;
+		}
 
-        private static bool IsTicksValid(Int64 ticks)
-        {
-            /*
+		private static bool IsTicksValid(Int64 ticks)
+		{
+			/*
                 even though you can start a DispatcherTimer with a ticks of Int64,
                 the equivalent number of milliseconds cannot exceed Int32.MaxValue
                 Int32.MaxValue's worth of milliseconds is ~ 24.58 days
-             
+
                 https://referencesource.microsoft.com/#WindowsBase/Base/System/Windows/Threading/DispatcherTimer.cs
 
                 or
@@ -62,73 +62,73 @@ namespace GBLive.GiantBomb
                 -> ctor with TimeSpan, DispatcherPriority, EventHandler, Dispatcher
             */
 
-            if (ticks < 0L) { return false; }
+			if (ticks < 0L) { return false; }
 
-            Int64 msUntilShow = ticks / 10_000;
+			Int64 msUntilShow = ticks / 10_000;
 
-            return msUntilShow <= Convert.ToInt64(Int32.MaxValue);
-        }
+			return msUntilShow <= Convert.ToInt64(Int32.MaxValue);
+		}
 
-        public void StopCountdown()
-        {
-            if (countdown != null)
-            {
-                countdown.Stop();
+		public void StopCountdown()
+		{
+			if (countdown != null)
+			{
+				countdown.Stop();
 
-                countdown = null;
-            }
-        }
+				countdown = null;
+			}
+		}
 
-        public int CompareTo([AllowNull] IShow other) => (other is Show show) ? Time.CompareTo(show.Time) : 1; // we treat null-other as always earlier
+		public int CompareTo([AllowNull] IShow other) => (other is Show show) ? Time.CompareTo(show.Time) : 1; // we treat null-other as always earlier
 
-        public bool Equals([AllowNull] IShow other) => (other is Show show) && EqualsInternal(show);
+		public bool Equals([AllowNull] IShow other) => (other is Show show) && EqualsInternal(show);
 
-        private bool EqualsInternal(Show show)
-        {
-            var sco = StringComparison.Ordinal;
+		private bool EqualsInternal(Show show)
+		{
+			var sco = StringComparison.Ordinal;
 
-            bool sameTitle = Title.Equals(show.Title, sco);
-            bool sameTime = Time.EqualsExact(show.Time);
-            bool samePremium = IsPremium == show.IsPremium;
-            bool sameShowType = ShowType.Equals(show.ShowType, sco);
-            bool sameImage = AreLinksEqual(Image, show.Image);
+			bool sameTitle = Title.Equals(show.Title, sco);
+			bool sameTime = Time.EqualsExact(show.Time);
+			bool samePremium = IsPremium == show.IsPremium;
+			bool sameShowType = ShowType.Equals(show.ShowType, sco);
+			bool sameImage = AreLinksEqual(Image, show.Image);
 
-            return sameTitle && sameTime && samePremium && sameShowType && sameImage;
-        }
+			return sameTitle && sameTime && samePremium && sameShowType && sameImage;
+		}
 
-        private static bool AreLinksEqual(Uri? one, Uri? two)
-        {
-            if (one is null && two is null)
-            {
-                return true;
-            }
+		private static bool AreLinksEqual(Uri? one, Uri? two)
+		{
+			if (one is null && two is null)
+			{
+				return true;
+			}
 
-            if ((one is null) != (two is null))
-            {
-                return false;
-            }
+			if ((one is null) != (two is null))
+			{
+				return false;
+			}
 
-            if ((!(one is null) && (!(two is null))))
-            {
-                return one.Equals(two);
-            }
+			if ((!(one is null) && (!(two is null))))
+			{
+				return one.Equals(two);
+			}
 
-            return false;
-        }
+			return false;
+		}
 
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder();
+		public override string ToString()
+		{
+			StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(base.ToString());
-            sb.AppendLine(IsCountdownTimerRunning ? "countdown running" : "countdown NOT running");
-            sb.AppendLine(Title);
-            sb.AppendLine(Time.ToString());
-            sb.AppendLine(IsPremium ? "premium" : "not premium");
-            sb.AppendLine(ShowType);
-            sb.AppendLine(Image?.AbsoluteUri ?? "no image uri");
+			sb.AppendLine(base.ToString());
+			sb.AppendLine(IsCountdownTimerRunning ? "countdown running" : "countdown NOT running");
+			sb.AppendLine(Title);
+			sb.AppendLine(Time.ToString());
+			sb.AppendLine(IsPremium ? "premium" : "not premium");
+			sb.AppendLine(ShowType);
+			sb.AppendLine(Image?.AbsoluteUri ?? "no image uri");
 
-            return sb.ToString();
-        }
-    }
+			return sb.ToString();
+		}
+	}
 }
