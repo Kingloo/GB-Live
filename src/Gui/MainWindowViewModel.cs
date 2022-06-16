@@ -60,15 +60,15 @@ namespace GBLive.Gui
 
 		public async Task UpdateAsync()
 		{
-			await _logger.MessageAsync("update started", Severity.Debug);
+			await _logger.MessageAsync("update started", Severity.Debug).ConfigureAwait(true);
 
-			IResponse response = await _gbContext.UpdateAsync();
+			IResponse response = await _gbContext.UpdateAsync().ConfigureAwait(true);
 
-			await _logger.MessageAsync($"response contains {response.Shows.Count} shows", Severity.Debug);
+			await _logger.MessageAsync($"response contains {response.Shows.Count} shows", Severity.Debug).ConfigureAwait(true);
 
 			if (response.Reason != Reason.Success)
 			{
-				await _logger.MessageAsync($"update failed: {response.Reason}", Severity.Warning);
+				await _logger.MessageAsync($"update failed: {response.Reason}", Severity.Warning).ConfigureAwait(true);
 
 				return;
 			}
@@ -84,13 +84,13 @@ namespace GBLive.Gui
 				{
 					NotificationService.Send(Settings.IsLiveMessage, OpenChatPage);
 
-					await _logger.MessageAsync($"GiantBomb went live ({response.LiveNow?.Title})", Severity.Information);
+					await _logger.MessageAsync($"GiantBomb went live ({response.LiveNow?.Title})", Severity.Information).ConfigureAwait(true);
 				}
 			}
 
 			AddNewRemoveOldRemoveExpired(response.Shows);
 
-			await _logger.MessageAsync("update succeeded", Severity.Debug);
+			await _logger.MessageAsync("update succeeded", Severity.Debug).ConfigureAwait(true);
 		}
 
 		private void AddNewRemoveOldRemoveExpired(IEnumerable<IShow> shows)
@@ -219,7 +219,7 @@ namespace GBLive.Gui
 
 		private async void Timer_Tick(object? sender, EventArgs e)
 		{
-			await UpdateAsync();
+			await UpdateAsync().ConfigureAwait(true);
 		}
 
 		private bool disposedValue = false; // To detect redundant calls
