@@ -7,32 +7,45 @@ namespace GBLive.Common
 {
 	public class DispatcherCountdownTimer
 	{
-		#region Fields
-		private readonly DateTime created = DateTime.Now;
+		private readonly TimeSpan span;
 		private readonly Action tick;
-		private DispatcherTimer timer = new DispatcherTimer(DispatcherPriority.Background);
-		#endregion
 
-		#region Properties
-		public bool IsRunning
-			=> timer != null && timer.IsEnabled;
+		private readonly DateTime created = DateTime.Now;
+		private DispatcherTimer? timer = null;
 
-		public TimeSpan TimeLeft
-			=> IsRunning ? ((created + timer.Interval) - DateTime.Now) : TimeSpan.Zero;
-		#endregion
+		public bool IsRunning => timer?.IsEnabled ?? false;
+
+		public TimeSpan TimeLeft => IsRunning
+			? ((created + (timer?.Interval ?? TimeSpan.Zero)) - DateTime.Now)
+			: TimeSpan.Zero;
 
 		public DispatcherCountdownTimer(TimeSpan span, Action tick)
 		{
-			// 10,000 ticks in 1 ms => 10,000 * 1000 ticks in 1 s == 10,000,000 ticks
 			if (span.Ticks < (10_000 * 1000))
 			{
-				throw new ArgumentOutOfRangeException("span.Ticks cannot be less than 1 second", nameof(span));
+				// there are 10_000 ticks in 1 millisecond
+				// therefore there are 10_000 * 1000 ticks in 1 second
+				// 10_000 * 1000 = 10_000_000
+
+				throw new ArgumentOutOfRangeException(nameof(span), "span.Ticks cannot be less than 1 second");
 			}
 
-			this.tick = tick ?? throw new ArgumentNullException(nameof(tick));
+			if (tick is null)
+			{
+				throw new ArgumentNullException(nameof(tick));
+			}
 
+			this.tick = tick;
+			this.span = span;
+		}
+
+		public void Start()
+		{
+			timer = new DispatcherTimer(DispatcherPriority.Background);
 			timer.Interval = span;
 			timer.Tick += Timer_Tick;
+
+			timer.Start();
 		}
 
 		private void Timer_Tick(object? sender, EventArgs e)
@@ -42,14 +55,13 @@ namespace GBLive.Common
 			Stop();
 		}
 
-		public void Start() => timer.Start();
-
 		public void Stop()
 		{
-			if (IsRunning)
+			if (timer is not null)
 			{
 				timer.Stop();
 				timer.Tick -= Timer_Tick;
+				timer = null;
 			}
 		}
 
