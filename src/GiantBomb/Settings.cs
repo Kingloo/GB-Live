@@ -30,6 +30,7 @@ namespace GBLive.GiantBomb
 
 			sb.AppendLine(base.ToString());
 
+#pragma warning disable CA1305
 			sb.AppendLine($"{nameof(IsLiveMessage)}: {IsLiveMessage}");
 			sb.AppendLine($"{nameof(IsNotLiveMessage)}: {IsNotLiveMessage}");
 			sb.AppendLine($"{nameof(NameOfUntitledLiveShow)}: {NameOfUntitledLiveShow}");
@@ -43,6 +44,7 @@ namespace GBLive.GiantBomb
 
 			sb.AppendLine($"{nameof(UpdateIntervalInSeconds)}: {UpdateIntervalInSeconds}");
 			sb.AppendLine($"{nameof(ShouldNotify)}: {ShouldNotify}");
+#pragma warning restore CA1305
 
 			return sb.ToString();
 		}

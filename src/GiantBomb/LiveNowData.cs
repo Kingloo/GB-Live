@@ -15,8 +15,10 @@ namespace GBLive.GiantBomb
 
 			sb.AppendLine("live now");
 
+#pragma warning disable CA1305
 			sb.AppendLine($"title: {Title}");
 			sb.AppendLine($"image: {Image}");
+#pragma warning restore CA1305
 
 			return sb.ToString();
 		}

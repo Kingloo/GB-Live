@@ -18,11 +18,13 @@ namespace GBLive.GiantBomb
 
 			sb.AppendLine("show");
 
+#pragma warning disable CA1305
 			sb.AppendLine($"type: {Type}");
 			sb.AppendLine($"title: {Title}");
 			sb.AppendLine($"image: {Image}");
 			sb.AppendLine($"date: {Date.ToString()}");
 			sb.AppendLine($"is premium: {Premium}");
+#pragma warning restore CA1305
 
 			return sb.ToString();
 		}
