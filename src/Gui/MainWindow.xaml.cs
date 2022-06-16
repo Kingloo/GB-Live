@@ -30,7 +30,7 @@ namespace GBLive.Gui
 
 		private async void Window_Loaded(object sender, RoutedEventArgs e)
 		{
-			await viewModel.UpdateAsync();
+			await viewModel.UpdateAsync().ConfigureAwait(true);
 
 			viewModel.StartTimer();
 		}
@@ -46,7 +46,7 @@ namespace GBLive.Gui
 					{
 						_logger.Message("pressed F5, update started", Severity.Debug);
 
-						await viewModel.UpdateAsync();
+						await viewModel.UpdateAsync().ConfigureAwait(true);
 
 						_logger.Message("update finished", Severity.Debug);
 
