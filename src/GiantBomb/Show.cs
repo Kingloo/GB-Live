@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 using GBLive.Common;
 using GBLive.GiantBomb.Interfaces;
@@ -123,7 +124,7 @@ namespace GBLive.GiantBomb
 			sb.AppendLine(base.ToString());
 			sb.AppendLine(IsCountdownTimerRunning ? "countdown running" : "countdown NOT running");
 			sb.AppendLine(Title);
-			sb.AppendLine(Time.ToString());
+			sb.AppendLine(Time.ToString(CultureInfo.CurrentCulture));
 			sb.AppendLine(IsPremium ? "premium" : "not premium");
 			sb.AppendLine(ShowType);
 			sb.AppendLine(Image?.AbsoluteUri ?? "no image uri");
