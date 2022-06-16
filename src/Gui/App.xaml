@@ -2,7 +2,10 @@
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:gb="clr-namespace:GBLive.GiantBomb"
-	xmlns:converters="clr-namespace:GBLive.Converters" ShutdownMode="OnMainWindowClose" Startup="Application_Startup" DispatcherUnhandledException="Application_DispatcherUnhandledException">
+	xmlns:converters="clr-namespace:GBLive.Converters"
+	ShutdownMode="OnMainWindowClose"
+	Startup="Application_Startup"
+	DispatcherUnhandledException="Application_DispatcherUnhandledException">
 
 	<Application.Resources>
 		<x:Static x:Key="IsLiveMessage" Member="gb:Constants.IsLiveMessage" />
