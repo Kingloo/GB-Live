@@ -29,6 +29,7 @@ namespace GBLive.GiantBomb
 			{
 				AllowAutoRedirect = true,
 				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
+				CheckCertificateRevocationList = true,
 				MaxAutomaticRedirections = 3,
 				MaxConnectionsPerServer = 1,
 				SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13
@@ -106,7 +107,13 @@ namespace GBLive.GiantBomb
 			UpcomingData? upcomingResponse = await JsonSerializer.DeserializeAsync<UpcomingData>(stream, serializerOptions).ConfigureAwait(false);
 
 			request.Dispose();
-			stream?.Dispose();
+			
+			// stream?.Dispose();
+			if (stream is not null)
+			{
+				await stream.DisposeAsync().ConfigureAwait(false);
+			}
+			
 			response.Dispose();
 
 			return (response.StatusCode, upcomingResponse);
@@ -137,7 +144,7 @@ namespace GBLive.GiantBomb
 
 		private Uri GetImageUri(string raw)
 		{
-			if (raw.StartsWith("https://"))
+			if (raw.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
 			{
 				return Uri.TryCreate(raw, UriKind.Absolute, out Uri? uri) ? uri : settings.FallbackImage;
 			}
