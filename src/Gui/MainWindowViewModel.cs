@@ -97,29 +97,19 @@ namespace GBLive.Gui
 		{
 			// add events that that we don't already have, and that are in the future
 
-			var toAdd = shows
-				.Where(x => !_shows.Contains(x))
-				.Where(x => x.Time > DateTimeOffset.Now)
-				.ToList();
-
-			if (toAdd.Any())
+			foreach (var each in shows.Where(x => x.Time > DateTimeOffset.Now))
 			{
-				foreach (IShow add in toAdd)
+				if (!_shows.Contains(each))
 				{
-					void notify() => NotificationService.Send(add.Title, OpenHomePage);
+					void notify() => NotificationService.Send(each.Title, OpenHomePage);
 
-					add.StartCountdown(notify);
+					each.StartCountdown(notify);
 
-					_shows.Add(add);
+					_shows.Add(each);
 
-					_logger.Message($"added show {add}", Severity.Debug);
+					_logger.Message($"added show {each}", Severity.Debug);
 				}
 			}
-			else
-			{
-				_logger.Message($"no shows to add", Severity.Debug);
-			}
-
 
 			// remove events that we have locally but that are no longer in the API response
 
@@ -174,7 +164,7 @@ namespace GBLive.Gui
 			{
 				if (!SystemLaunch.Uri(uri))
 				{
-					_logger.Message("home page () failed to open", Severity.Error);
+					_logger.Message($"home page ({uri.AbsoluteUri}) failed to open", Severity.Error);
 				}
 			}
 			else
@@ -189,7 +179,7 @@ namespace GBLive.Gui
 			{
 				if (!SystemLaunch.Uri(uri))
 				{
-					_logger.Message("chat page () failed to open", Severity.Error);
+					_logger.Message($"chat page ({uri.AbsoluteUri}) failed to open", Severity.Error);
 				}
 			}
 			else
@@ -232,7 +222,6 @@ namespace GBLive.Gui
 			await UpdateAsync();
 		}
 
-		#region IDisposable Support
 		private bool disposedValue = false; // To detect redundant calls
 
 		protected virtual void Dispose(bool disposing)
@@ -253,6 +242,5 @@ namespace GBLive.Gui
 			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
-		#endregion
 	}
 }
