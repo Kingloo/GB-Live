@@ -95,7 +95,7 @@ namespace GBLive.Tests
 
 		private static bool UserAgentIsMissingOrEmpty(IHeaderDictionary headers)
 		{
-			string userAgentHeaderName = "User-Agent";
+			const string userAgentHeaderName = "User-Agent";
 
 			if (!headers.ContainsKey(userAgentHeaderName))
 			{
