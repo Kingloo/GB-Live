@@ -1,4 +1,4 @@
-﻿namespace GBLive.GiantBomb
+namespace GBLive.GiantBomb
 {
 	public static class Constants
 	{

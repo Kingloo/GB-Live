@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using GBLive.GiantBomb;
 using GBLive.GiantBomb.Interfaces;
 

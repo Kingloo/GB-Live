@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -107,13 +107,13 @@ namespace GBLive.GiantBomb
 			UpcomingData? upcomingResponse = await JsonSerializer.DeserializeAsync<UpcomingData>(stream, serializerOptions).ConfigureAwait(false);
 
 			request.Dispose();
-			
+
 			// stream?.Dispose();
 			if (stream is not null)
 			{
 				await stream.DisposeAsync().ConfigureAwait(false);
 			}
-			
+
 			response.Dispose();
 
 			return (response.StatusCode, upcomingResponse);

@@ -1,4 +1,4 @@
-﻿using GBLive.GiantBomb;
+using GBLive.GiantBomb;
 using GBLive.GiantBomb.Interfaces;
 using NUnit.Framework;
 

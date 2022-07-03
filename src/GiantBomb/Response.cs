@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using GBLive.GiantBomb.Interfaces;
 
 namespace GBLive.GiantBomb

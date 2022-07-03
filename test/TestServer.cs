@@ -1,4 +1,4 @@
-﻿/*
+/*
 
  TestServer requires the following NuGet packages
 
@@ -19,7 +19,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace GBLive.Tests
 {
-	public class ContentTypes
+	public static class ContentTypes
 	{
 		public const string TextPlain = "text/plain";
 		public const string JsonUTF8 = "application/json; charset=utf-8";

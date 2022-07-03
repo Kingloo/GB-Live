@@ -1,4 +1,4 @@
-﻿namespace GBLive
+namespace GBLive
 {
 	public class LogSettings
 	{
