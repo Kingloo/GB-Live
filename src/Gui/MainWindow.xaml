@@ -57,27 +57,43 @@
 					</Style>
 				</Grid.Resources>
 
-				<Image Grid.ColumnSpan="2" Grid.RowSpan="2" Opacity="0.25" Source="{Binding Path=Image, Mode=OneTime}" />
+				<Image Grid.ColumnSpan="2"
+					   Grid.RowSpan="2"
+					   Opacity="0.25"
+					   Source="{Binding Path=Image, Mode=OneTime}" />
 
-				<Label Grid.ColumnSpan="2" Grid.Row="0" Padding="0,0,20,5" FontSize="21" VerticalContentAlignment="Bottom">
+				<Label Grid.ColumnSpan="2"
+					   Grid.Row="0"
+					   Padding="0,0,20,5"
+					   FontSize="21"
+					   VerticalContentAlignment="Bottom">
 					<Label.Content>
-						<TextBlock Text="{Binding Path=Title, Mode=OneTime}" TextTrimming="CharacterEllipsis" />
+						<TextBlock Text="{Binding Path=Title, Mode=OneTime}"
+								   TextTrimming="CharacterEllipsis" />
 					</Label.Content>
 					<Label.ToolTip>
 						<TextBlock Text="{Binding Path=Title, Mode=OneTime}" />
 					</Label.ToolTip>
 				</Label>
 
-				<Label Grid.Column="0" Grid.Row="1" Content="{Binding Path=ShowType, Mode=OneTime}" Padding="15,5,0,0" VerticalContentAlignment="Top" />
+				<Label Grid.Column="0"
+					   Grid.Row="1"
+					   Content="{Binding Path=ShowType, Mode=OneTime}"
+					   Padding="15,5,0,0"
+					   VerticalContentAlignment="Top" />
 
-				<Label Grid.Column="1" Grid.Row="1" Content="{Binding Path=Time, Mode=OneTime, Converter={StaticResource dateTimeOffsetConverter}, ConverterParameter='ddd MMM dd  -  HH:mm'}" Padding="0,5,0,0" VerticalContentAlignment="Top" />
+				<Label Grid.Column="1"
+					   Grid.Row="1"
+					   Content="{Binding Path=Time, Mode=OneTime, Converter={StaticResource dateTimeOffsetConverter}, ConverterParameter='ddd MMM dd  -  HH:mm'}"
+					   Padding="0,5,0,0"
+					   VerticalContentAlignment="Top" />
 			</Grid>
 		</DataTemplate>
 	</Window.Resources>
 
 	<Grid>
 		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" MinHeight="70" />
 			<RowDefinition Height="*" />
 		</Grid.RowDefinitions>
 
@@ -126,7 +142,8 @@
 				   Foreground="Green"
 				   FontSize="13">
 				<Label.Content>
-					<TextBlock Text="{Binding Path=LiveShowTitle, FallbackValue='live show title'}" TextTrimming="CharacterEllipsis" />
+					<TextBlock Text="{Binding Path=LiveShowTitle, FallbackValue='live show title'}"
+							   TextTrimming="CharacterEllipsis" />
 				</Label.Content>
 				<Label.Style>
 					<Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
@@ -141,7 +158,9 @@
 			</Label>
 		</StackPanel>
 
-		<ItemsControl Grid.Row="1" ItemsSource="{Binding Source={StaticResource showsSortedByTime}}" MouseDoubleClick="ItemsControl_MouseDoubleClick">
+		<ItemsControl Grid.Row="1"
+					  ItemsSource="{Binding Source={StaticResource showsSortedByTime}}"
+					  MouseDoubleClick="ItemsControl_MouseDoubleClick">
 			<ItemsControl.Resources>
 				<Style TargetType="{x:Type Image}" BasedOn="{StaticResource {x:Type Image}}">
 					<EventSetter Event="Loaded" Handler="Image_Loaded" />
