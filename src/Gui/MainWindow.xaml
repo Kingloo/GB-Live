@@ -119,7 +119,7 @@
 					</Setter>
 					<Setter Property="Foreground" Value="Red" />
 					<Setter Property="Opacity" Value="0.75" />
-					<Setter Property="Padding" Value="0,30,0,30" />
+					<Setter Property="Margin" Value="0,10,0,10" />
 					<Style.Triggers>
 						<DataTrigger Binding="{Binding IsLive}" Value="True">
 							<DataTrigger.Setters>
@@ -132,7 +132,7 @@
 								<Setter Property="FontStretch" Value="UltraExpanded" />
 								<Setter Property="Foreground" Value="Green" />
 								<Setter Property="Opacity" Value="1.0" />
-								<Setter Property="Padding" Value="0,50,0,50" />
+								<Setter Property="Margin" Value="0,18,0,10" />
 							</DataTrigger.Setters>
 						</DataTrigger>
 					</Style.Triggers>
@@ -142,7 +142,8 @@
 
 		<Label Grid.Row="1"
 			   Foreground="Green"
-			   FontSize="15">
+			   Margin="0,0,0,20"
+			   FontSize="17">
 			<Label.Content>
 				<TextBlock Text="{Binding Path=LiveShowTitle, FallbackValue='live show title'}"
 						   TextTrimming="CharacterEllipsis" />
