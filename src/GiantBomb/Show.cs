@@ -2,32 +2,43 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
+using System.Text.Json.Serialization;
 using GBLive.Common;
-using GBLive.GiantBomb.Interfaces;
+using GBLive.JsonConverters;
 
 namespace GBLive.GiantBomb
 {
-	public class Show : IShow
+	public class Show
 	{
 		private DispatcherCountdownTimer? countdown;
 
-		public bool IsCountdownTimerRunning => countdown?.IsRunning ?? false;
-
-		public string Title { get; set; } = "Untitled";
-		public DateTimeOffset Time { get; set; } = DateTimeOffset.MinValue;
+		public string Type { get; set; } = string.Empty;
+		public string Title { get; set; } = string.Empty;
+		
+		[JsonConverter(typeof(JsonUriConverter))]
+		public Uri Image { get; set; } = Constants.FallbackImage;
+		
+		[JsonConverter(typeof(JsonDateTimeOffsetConverter))]
+		public DateTimeOffset Date { get; set; } = DateTimeOffset.MinValue;
+		
+		[JsonPropertyName("premium")]
 		public bool IsPremium { get; set; } = false;
-		public string ShowType { get; set; } = "Unknown";
-		public Uri Image { get; set; } = new Uri("https://www.giantbomb.com/");
 
 		public Show() { }
 
 		public void StartCountdown(Action notify)
 		{
-			if (countdown != null && countdown.IsRunning) { return; }
+			if (countdown != null && countdown.IsRunning)
+			{
+				return;
+			}
 
-			Int64 ticksUntilShow = CalculateTicks(Time);
+			Int64 ticksUntilShow = CalculateTicks(Date);
 
-			if (!IsTicksValid(ticksUntilShow)) { return; }
+			if (!IsTicksValid(ticksUntilShow))
+			{
+				return;
+			}
 
 			TimeSpan timeUntilShow = TimeSpan.FromTicks(ticksUntilShow);
 
@@ -38,7 +49,10 @@ namespace GBLive.GiantBomb
 
 		private static Int64 CalculateTicks(DateTimeOffset dto)
 		{
-			if (dto < DateTimeOffset.Now) { return -1L; }
+			if (dto < DateTimeOffset.Now)
+			{
+				return -1L;
+			}
 
 			TimeSpan fromNowUntilShow = dto - DateTimeOffset.Now;
 
@@ -63,7 +77,10 @@ namespace GBLive.GiantBomb
                 -> ctor with TimeSpan, DispatcherPriority, EventHandler, Dispatcher
             */
 
-			if (ticks < 0L) { return false; }
+			if (ticks < 0L)
+			{
+				return false;
+			}
 
 			Int64 msUntilShow = ticks / 10_000;
 
@@ -72,7 +89,7 @@ namespace GBLive.GiantBomb
 
 		public void StopCountdown()
 		{
-			if (countdown != null)
+			if (countdown is not null)
 			{
 				countdown.Stop();
 
@@ -80,18 +97,18 @@ namespace GBLive.GiantBomb
 			}
 		}
 
-		public int CompareTo([AllowNull] IShow other) => (other is Show show) ? Time.CompareTo(show.Time) : 1; // we treat null-other as always earlier
+		public int CompareTo([AllowNull] Show other) => (other is not null) ? Date.CompareTo(other.Date) : 1; // we treat null-other as always earlier
 
-		public bool Equals([AllowNull] IShow other) => (other is Show show) && EqualsInternal(show);
+		public bool Equals([AllowNull] Show other) => (other is not null) && EqualsInternal(other);
 
 		private bool EqualsInternal(Show show)
 		{
 			var sco = StringComparison.Ordinal;
 
 			bool sameTitle = Title.Equals(show.Title, sco);
-			bool sameTime = Time.EqualsExact(show.Time);
+			bool sameTime = Date.EqualsExact(show.Date);
 			bool samePremium = IsPremium == show.IsPremium;
-			bool sameShowType = ShowType.Equals(show.ShowType, sco);
+			bool sameShowType = Type.Equals(show.Type, sco);
 			bool sameImage = AreLinksEqual(Image, show.Image);
 
 			return sameTitle && sameTime && samePremium && sameShowType && sameImage;
@@ -109,7 +126,7 @@ namespace GBLive.GiantBomb
 				return false;
 			}
 
-			if ((!(one is null) && (!(two is null))))
+			if ((one is not null) && (two is not null))
 			{
 				return one.Equals(two);
 			}
@@ -122,11 +139,10 @@ namespace GBLive.GiantBomb
 			StringBuilder sb = new StringBuilder();
 
 			sb.AppendLine(base.ToString());
-			sb.AppendLine(IsCountdownTimerRunning ? "countdown running" : "countdown NOT running");
 			sb.AppendLine(Title);
-			sb.AppendLine(Time.ToString(CultureInfo.CurrentCulture));
+			sb.AppendLine(Date.ToString(CultureInfo.CurrentCulture));
 			sb.AppendLine(IsPremium ? "premium" : "not premium");
-			sb.AppendLine(ShowType);
+			sb.AppendLine(Type);
 			sb.AppendLine(Image?.AbsoluteUri ?? "no image uri");
 
 			return sb.ToString();

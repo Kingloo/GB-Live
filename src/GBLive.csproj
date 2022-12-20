@@ -3,19 +3,9 @@
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<UseWPF>true</UseWPF>
-		<Nullable>enable</Nullable>
 		<EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
 		<StartupObject>GBLive.Program</StartupObject>
 		<ApplicationIcon>giantbomb_logo.ico</ApplicationIcon>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<Content Include="GiantBombSettings.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Include="LogSettings.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
 
 </Project>

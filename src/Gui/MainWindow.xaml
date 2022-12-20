@@ -25,7 +25,7 @@
 							  Source="{Binding Shows, Mode=OneTime}"
 							  IsLiveSortingRequested="True">
 			<CollectionViewSource.SortDescriptions>
-				<scm:SortDescription PropertyName="Time" Direction="Ascending" />
+				<scm:SortDescription PropertyName="Date" Direction="Ascending" />
 			</CollectionViewSource.SortDescriptions>
 		</CollectionViewSource>
 
@@ -78,13 +78,13 @@
 
 				<Label Grid.Column="0"
 					   Grid.Row="1"
-					   Content="{Binding Path=ShowType, Mode=OneTime}"
+					   Content="{Binding Path=Type, Mode=OneTime}"
 					   Padding="15,5,0,0"
 					   VerticalContentAlignment="Top" />
 
 				<Label Grid.Column="1"
 					   Grid.Row="1"
-					   Content="{Binding Path=Time, Mode=OneTime, Converter={StaticResource dateTimeOffsetConverter}, ConverterParameter='ddd MMM dd  -  HH:mm'}"
+					   Content="{Binding Path=Date, Mode=OneTime, Converter={StaticResource dateTimeOffsetConverter}, ConverterParameter='ddd MMM dd  -  HH:mm'}"
 					   Padding="0,5,0,0"
 					   VerticalContentAlignment="Top" />
 			</Grid>
@@ -163,13 +163,6 @@
 		<ItemsControl Grid.Row="2"
 					  ItemsSource="{Binding Source={StaticResource showsSortedByTime}}"
 					  MouseDoubleClick="ItemsControl_MouseDoubleClick">
-			<ItemsControl.Resources>
-				<Style TargetType="{x:Type Image}" BasedOn="{StaticResource {x:Type Image}}">
-					<EventSetter Event="Loaded" Handler="Image_Loaded" />
-					<EventSetter Event="Unloaded" Handler="Image_Unloaded" />
-					<EventSetter Event="ImageFailed" Handler="Image_ImageFailed" />
-				</Style>
-			</ItemsControl.Resources>
 			<ItemsControl.Style>
 				<Style TargetType="{x:Type ItemsControl}" BasedOn="{StaticResource {x:Type ItemsControl}}">
 					<Style.Triggers>

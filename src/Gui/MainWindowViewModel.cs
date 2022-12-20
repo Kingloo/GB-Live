@@ -3,26 +3,22 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using GBLive.Common;
 using GBLive.GiantBomb;
-using GBLive.GiantBomb.Interfaces;
 
 namespace GBLive.Gui
 {
-	public class MainWindowViewModel : IMainWindowViewModel, INotifyPropertyChanged, IDisposable
+	public class MainWindowViewModel : INotifyPropertyChanged
 	{
 		public event PropertyChangedEventHandler? PropertyChanged;
 
 		private void OnPropertyChanged(string propertyName)
 			=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-		private readonly ILog _logger;
-		private readonly IGiantBombContext _gbContext;
 		private DispatcherTimer? timer = null;
-
-		public ISettings Settings { get; } // needed for MainWindow.xaml data-binding for FallbackImage
 
 		private bool _isLive = false;
 		public bool IsLive
@@ -48,143 +44,109 @@ namespace GBLive.Gui
 			}
 		}
 
-		private readonly ObservableCollection<IShow> _shows = new ObservableCollection<IShow>();
-		public IReadOnlyCollection<IShow> Shows => _shows;
+		private readonly ObservableCollection<Show> shows = new ObservableCollection<Show>();
+		public IReadOnlyCollection<Show> Shows { get => shows; }
 
-		public MainWindowViewModel(ILog logger, IGiantBombContext gbContext, ISettings settings)
+		public MainWindowViewModel() { }
+
+		public ValueTask UpdateAsync()
+			=> UpdateAsync(CancellationToken.None);
+
+		public async ValueTask UpdateAsync(CancellationToken cancellationToken)
 		{
-			_logger = logger;
-			_gbContext = gbContext;
-			Settings = settings;
-		}
+			UpcomingData? upcomingData = await Updater.UpdateAsync(Constants.UpcomingJsonUri, cancellationToken).ConfigureAwait(true);
 
-		public async Task UpdateAsync()
-		{
-			await _logger.MessageAsync("update started", Severity.Debug).ConfigureAwait(true);
-
-			IResponse response = await _gbContext.UpdateAsync().ConfigureAwait(true);
-
-			await _logger.MessageAsync($"response contains {response.Shows.Count} shows", Severity.Debug).ConfigureAwait(true);
-
-			if (response.Reason != Reason.Success)
+			if (upcomingData is null)
 			{
-				await _logger.MessageAsync($"update failed: {response.Reason}", Severity.Warning).ConfigureAwait(true);
+				IsLive = false;
+				LiveShowTitle = Constants.NameOfNoLiveShow;
 
 				return;
 			}
 
 			bool wasLive = IsLive;
 
-			IsLive = response.LiveNow != null;
-			LiveShowTitle = (IsLive && (response.LiveNow != null)) ? response.LiveNow.Title : Settings.NameOfNoLiveShow;
+			IsLive = upcomingData.LiveNow is not null;
 
-			if (Settings.ShouldNotify)
+			LiveShowTitle = upcomingData.LiveNow is not null
+				? upcomingData.LiveNow.Title
+				: Constants.NameOfNoLiveShow;
+
+			if (!wasLive && IsLive) // we only want the notification once, upon changing from not-live to live
 			{
-				if (!wasLive && IsLive) // we only want the notification once, upon changing from not-live to live
-				{
-					NotificationService.Send(Settings.IsLiveMessage, OpenChatPage);
-
-					await _logger.MessageAsync($"GiantBomb went live ({response.LiveNow?.Title})", Severity.Information).ConfigureAwait(true);
-				}
+				NotificationService.Send(Constants.IsLiveMessage, OpenChatPage);
 			}
 
-			AddNewRemoveOldRemoveExpired(response.Shows);
+			AddNewShows(upcomingData);
 
-			await _logger.MessageAsync("update succeeded", Severity.Debug).ConfigureAwait(true);
+			RemoveRemovedShows(upcomingData);
+
+			RemoveOldShows(TimeSpan.FromMinutes(5d));
 		}
 
-		private void AddNewRemoveOldRemoveExpired(IEnumerable<IShow> shows)
+		private void AddNewShows(UpcomingData upcomingData)
 		{
-			// add events that that we don't already have, and that are in the future
+			IEnumerable<Show> futureShows = upcomingData.Upcoming.Where(x => x.Date > DateTimeOffset.Now);
 
-			foreach (var each in shows.Where(x => x.Time > DateTimeOffset.Now))
+			foreach (Show show in futureShows)
 			{
-				if (!_shows.Contains(each))
+				if (!shows.Contains(show))
 				{
-					void notify() => NotificationService.Send(each.Title, OpenHomePage);
+					void notify() => NotificationService.Send(show.Title, OpenHomePage);
 
-					each.StartCountdown(notify);
+					show.StartCountdown(notify);
 
-					_shows.Add(each);
-
-					_logger.Message($"added show {each}", Severity.Debug);
+					shows.Add(show);
 				}
 			}
+		}
 
+		private void RemoveRemovedShows(UpcomingData upcomingData)
+		{
 			// remove events that we have locally but that are no longer in the API response
 
-			var toRemove = _shows
-				.Where(x => !shows.Contains(x))
+			IList<Show> showsNoLongerInApi = shows
+				.Where(x => !upcomingData.Upcoming.Contains(x))
 				.ToList();
 
-			if (toRemove.Any())
-			{
-				foreach (IShow remove in toRemove)
-				{
-					remove.StopCountdown();
+			RemoveShows(showsNoLongerInApi);
+		}
 
-					_shows.Remove(remove);
-
-					_logger.Message($"removed show {remove}", Severity.Debug);
-				}
-			}
-			else
-			{
-				_logger.Message($"no shows removed", Severity.Debug);
-			}
-
-
-			// remove any events that the API response contains but whose time is in the past
-			// well, 10 minutes in the past to allow for some leeway
-
-			var expired = _shows
-				.Where(x => x.Time < DateTimeOffset.Now.AddMinutes(-10d))
+		private void RemoveOldShows(TimeSpan olderThan)
+		{
+			IList<Show> showsOlderThan = shows
+				.Where(x => x.Date < DateTimeOffset.Now.Subtract(olderThan))
 				.ToList();
 
-			if (expired.Any())
+			RemoveShows(showsOlderThan);
+		}
+
+		private void RemoveShows(IList<Show> toRemove)
+		{
+			foreach (Show show in toRemove)
 			{
-				foreach (IShow each in expired)
+				if (shows.Contains(show))
 				{
-					each.StopCountdown();
+					show.StopCountdown();
 
-					_shows.Remove(each);
-
-					_logger.Message($"removed old show {each}", Severity.Debug);
+					shows.Remove(show);
 				}
-			}
-			else
-			{
-				_logger.Message($"no expired shows", Severity.Debug);
 			}
 		}
 
-		public void OpenHomePage()
-		{
-			if (Settings.Home is Uri uri)
-			{
-				if (!SystemLaunch.Uri(uri))
-				{
-					_logger.Message($"home page ({uri.AbsoluteUri}) failed to open", Severity.Error);
-				}
-			}
-			else
-			{
-				_logger.Message("home page Uri is null", Severity.Error);
-			}
-		}
+#pragma warning disable CA1822
+		public void OpenHomePage() => OpenUriInBrowser(Constants.HomePage);
+#pragma warning restore CA1822
 
-		public void OpenChatPage()
+#pragma warning disable CA1822
+		public void OpenChatPage() => OpenUriInBrowser(Constants.ChatPage);
+#pragma warning restore CA1822
+
+		private static void OpenUriInBrowser(Uri uri)
 		{
-			if (Settings.Chat is Uri uri)
+			if (!SystemLaunch.Uri(uri))
 			{
-				if (!SystemLaunch.Uri(uri))
-				{
-					_logger.Message($"chat page ({uri.AbsoluteUri}) failed to open", Severity.Error);
-				}
-			}
-			else
-			{
-				_logger.Message("chat page Uri is null", Severity.Error);
+				throw new ArgumentException($"failed to launch URI: {uri.AbsoluteUri}", nameof(uri));
 			}
 		}
 
@@ -194,7 +156,7 @@ namespace GBLive.Gui
 			{
 				timer = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
 				{
-					Interval = TimeSpan.FromSeconds(Settings.UpdateIntervalInSeconds)
+					Interval = Constants.UpdateInterval
 				};
 
 				timer.Tick += Timer_Tick;
@@ -208,7 +170,7 @@ namespace GBLive.Gui
 
 		public void StopTimer()
 		{
-			if (!(timer is null))
+			if (timer is not null)
 			{
 				timer.Stop();
 				timer.Tick -= Timer_Tick;
@@ -220,27 +182,6 @@ namespace GBLive.Gui
 		private async void Timer_Tick(object? sender, EventArgs e)
 		{
 			await UpdateAsync().ConfigureAwait(true);
-		}
-
-		private bool disposedValue = false; // To detect redundant calls
-
-		protected virtual void Dispose(bool disposing)
-		{
-			if (!disposedValue)
-			{
-				if (disposing)
-				{
-					(_gbContext as IDisposable)?.Dispose();
-				}
-
-				disposedValue = true;
-			}
-		}
-
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
 		}
 	}
 }

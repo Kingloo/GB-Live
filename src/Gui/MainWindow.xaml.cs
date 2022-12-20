@@ -2,16 +2,14 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Markup;
-using GBLive.Common;
 
 namespace GBLive.Gui
 {
 	public partial class MainWindow : Window
 	{
-		private readonly ILog _logger;
-		private readonly IMainWindowViewModel viewModel;
+		private readonly MainWindowViewModel viewModel;
 
-		public MainWindow(ILog logger, IMainWindowViewModel vm)
+		public MainWindow(MainWindowViewModel viewModel)
 		{
 			InitializeComponent();
 
@@ -19,11 +17,9 @@ namespace GBLive.Gui
 			KeyDown += Window_KeyDown;
 			Closing += Window_Closing;
 
-			_logger = logger;
-
 			Language = XmlLanguage.GetLanguage(CultureInfo.CurrentCulture.IetfLanguageTag);
 
-			viewModel = vm;
+			this.viewModel = viewModel;
 
 			DataContext = viewModel;
 		}
@@ -44,12 +40,7 @@ namespace GBLive.Gui
 					break;
 				case Key.F5:
 					{
-						_logger.Message("pressed F5, update started", Severity.Debug);
-
 						await viewModel.UpdateAsync().ConfigureAwait(true);
-
-						_logger.Message("update finished", Severity.Debug);
-
 						break;
 					}
 				default:
@@ -75,24 +66,11 @@ namespace GBLive.Gui
 
 		private void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
 		{
+			viewModel.StopTimer();
+
 			Loaded -= Window_Loaded;
 			KeyDown -= Window_KeyDown;
 			Closing -= Window_Closing;
-		}
-
-		private void Image_Loaded(object sender, RoutedEventArgs e)
-		{
-			_logger.Message("image loaded", Severity.Debug);
-		}
-
-		private void Image_Unloaded(object sender, RoutedEventArgs e)
-		{
-			_logger.Message("image unloaded", Severity.Debug);
-		}
-
-		private void Image_ImageFailed(object sender, ExceptionRoutedEventArgs e)
-		{
-			_logger.Message("image failed", Severity.Debug);
 		}
 	}
 }
