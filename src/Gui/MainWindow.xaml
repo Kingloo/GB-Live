@@ -171,7 +171,7 @@
 								<Setter.Value>
 									<ControlTemplate>
 										<Grid Height="105">
-											<Image Opacity="0.25" Source="{Binding Path=Settings.FallbackImage, Mode=OneTime}" />
+											<Image Opacity="0.25" Source="{Binding Source={x:Static gb:Constants.FallbackImage}, Mode=OneTime}" />
 											<Label>
 												<Label.Style>
 													<Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
