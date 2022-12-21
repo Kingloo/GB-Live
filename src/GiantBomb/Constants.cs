@@ -15,6 +15,6 @@ namespace GBLive.GiantBomb
 		public static Uri UpcomingJsonUri { get; } = new Uri("https://www.giantbomb.com/upcoming_json", UriKind.Absolute);
 		public static Uri FallbackImage { get; } = new Uri("https://www.giantbomb.com/bundles/phoenixsite/images/core/loose/apple-touch-icon-precomposed-gb.png", UriKind.Absolute);
 
-		public static TimeSpan UpdateInterval { get; } = TimeSpan.FromSeconds(90d);
+		public static TimeSpan UpdateInterval { get; } = TimeSpan.FromMinutes(2d);
 	}
 }
