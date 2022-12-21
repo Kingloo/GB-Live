@@ -14,12 +14,14 @@ namespace GBLive.JsonConverters
 		{
 			DateTimeOffset giantbombTime = DateTimeOffset.ParseExact(reader.GetString()!, giantbombDateTimeFormat, CultureInfo.InvariantCulture);
 
-			TimeSpan local = TimeZoneInfo.Local.GetUtcOffset(DateTimeOffset.Now);
-			TimeSpan pacific = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time").GetUtcOffset(DateTimeOffset.Now);
-
-			TimeSpan offset = local - pacific;
+			TimeSpan localOffset = TimeZoneInfo.Local.GetUtcOffset(DateTimeOffset.Now);
 			
-			return giantbombTime.Add(offset);
+			// IANA: America/Los_Angeles
+			TimeSpan pacificOffset = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time").GetUtcOffset(DateTimeOffset.Now);
+
+			TimeSpan relativeOffset = localOffset - pacificOffset;
+			
+			return giantbombTime.Add(relativeOffset);
 		}
 
 		public override void Write(Utf8JsonWriter writer, DateTimeOffset value, JsonSerializerOptions options)
