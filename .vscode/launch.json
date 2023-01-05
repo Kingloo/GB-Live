@@ -11,6 +11,9 @@
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/src/bin/Debug/net6.0-windows/GBLive.dll",
             "args": [],
+			"env": {
+				"Environment": "Development"
+			},
             "cwd": "${workspaceFolder}/src",
             "console": "internalConsole",
             "stopAtEntry": false
