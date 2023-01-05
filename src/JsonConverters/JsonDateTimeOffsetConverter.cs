@@ -8,7 +8,11 @@ namespace GBLive.JsonConverters
 	public class JsonDateTimeOffsetConverter : JsonConverter<DateTimeOffset>
 	{
 		// Dec 20, 2022 11:00 AM
-		private const string giantbombDateTimeFormat = "MMM dd, yyyy HH:mm tt";
+		// hh (lowercase h) is for 12-hour clocks
+		private const string giantbombDateTimeFormat = "MMM dd, yyyy hh:mm tt";
+		
+		// IANA: America/Los_Angeles
+		private const string giantbombTimeZoneWindowsName = "Pacific Standard Time";
 
 		public override DateTimeOffset Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
 		{
@@ -16,8 +20,7 @@ namespace GBLive.JsonConverters
 
 			TimeSpan localOffset = TimeZoneInfo.Local.GetUtcOffset(DateTimeOffset.Now);
 			
-			// IANA: America/Los_Angeles
-			TimeSpan pacificOffset = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time").GetUtcOffset(DateTimeOffset.Now);
+			TimeSpan pacificOffset = TimeZoneInfo.FindSystemTimeZoneById(giantbombTimeZoneWindowsName).GetUtcOffset(DateTimeOffset.Now);
 
 			TimeSpan relativeOffset = localOffset - pacificOffset;
 			
