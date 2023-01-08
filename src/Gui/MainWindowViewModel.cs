@@ -106,6 +106,7 @@ namespace GBLive.Gui
 			// remove events that we have locally but that are no longer in the API response
 
 			IList<Show> showsNoLongerInApi = shows
+				.Where(x => x.Date > DateTimeOffset.Now.AddMinutes(2d)) // to avoid removing an active/will-happen Show that hasn't sent its notification yet
 				.Where(x => !upcomingData.Upcoming.Contains(x))
 				.ToList();
 
@@ -173,6 +174,7 @@ namespace GBLive.Gui
 			if (timer is not null)
 			{
 				timer.Stop();
+
 				timer.Tick -= Timer_Tick;
 
 				timer = null;
