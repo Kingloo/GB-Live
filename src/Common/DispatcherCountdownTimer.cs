@@ -16,7 +16,7 @@ namespace GBLive.Common
 		public bool IsRunning => timer?.IsEnabled ?? false;
 
 		public TimeSpan TimeLeft => IsRunning
-			? ((created + (timer?.Interval ?? TimeSpan.Zero)) - DateTime.Now)
+			? (created + (timer?.Interval ?? TimeSpan.Zero) - DateTime.Now)
 			: TimeSpan.Zero;
 
 		public DispatcherCountdownTimer(TimeSpan span, Action tick)
@@ -41,8 +41,11 @@ namespace GBLive.Common
 
 		public void Start()
 		{
-			timer = new DispatcherTimer(DispatcherPriority.Background);
-			timer.Interval = span;
+			timer = new DispatcherTimer(DispatcherPriority.Background)
+			{
+				Interval = span
+			};
+			
 			timer.Tick += Timer_Tick;
 
 			timer.Start();
