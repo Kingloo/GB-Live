@@ -10,7 +10,7 @@ namespace GBLive.JsonConverters
 		// Dec 20, 2022 11:00 AM
 		// hh (lowercase h) is for 12-hour clocks
 		private const string giantbombDateTimeFormat = "MMM dd, yyyy hh:mm tt";
-		
+
 		// IANA: America/Los_Angeles
 		private const string giantbombTimeZoneWindowsName = "Pacific Standard Time";
 
@@ -19,11 +19,11 @@ namespace GBLive.JsonConverters
 			DateTimeOffset giantbombTime = DateTimeOffset.ParseExact(reader.GetString()!, giantbombDateTimeFormat, CultureInfo.InvariantCulture);
 
 			TimeSpan localOffset = TimeZoneInfo.Local.GetUtcOffset(DateTimeOffset.Now);
-			
+
 			TimeSpan pacificOffset = TimeZoneInfo.FindSystemTimeZoneById(giantbombTimeZoneWindowsName).GetUtcOffset(DateTimeOffset.Now);
 
 			TimeSpan relativeOffset = localOffset - pacificOffset;
-			
+
 			return giantbombTime.Add(relativeOffset);
 		}
 

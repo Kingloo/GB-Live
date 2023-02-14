@@ -9,7 +9,7 @@ namespace GBLive.GiantBomb
 		public static string NameOfUntitledLiveShow { get; } = "Untitled Live Show";
 		public static string NameOfNoLiveShow { get; } = "No live show";
 		public static string UserAgent { get; } = "GB Live (GitHub) - Desktop app showing upcoming events and live status - polls /upcoming_json every 2 mins";
-		
+
 		public static Uri HomePage { get; } = new Uri("https://www.giantbomb.com/", UriKind.Absolute);
 		public static Uri ChatPage { get; } = new Uri("https://www.giantbomb.com/chat/", UriKind.Absolute);
 		public static Uri UpcomingJsonUri { get; } = new Uri("https://www.giantbomb.com/upcoming_json", UriKind.Absolute);

@@ -28,7 +28,7 @@ namespace GBLive.GiantBomb
 			{
 				Version = HttpVersion.Version20
 			};
-				
+
 			request.Headers.Accept.ParseAdd("application/json; charset=utf-8");
 			request.Headers.AcceptEncoding.ParseAdd("gzip, deflate, br");
 			request.Headers.Connection.ParseAdd("close"); // Connection is not used under HTTP/2, but the worst they can do is ignore it
@@ -42,7 +42,7 @@ namespace GBLive.GiantBomb
 				response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
 				Stream upcomingJsonStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-				
+
 				upcomingData = await JsonSerializer.DeserializeAsync<UpcomingData>(upcomingJsonStream, jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
 			}
 #pragma warning disable CA1031

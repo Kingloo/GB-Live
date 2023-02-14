@@ -45,7 +45,7 @@ namespace GBLive.Common
 			{
 				Interval = span
 			};
-			
+
 			timer.Tick += Timer_Tick;
 
 			timer.Start();

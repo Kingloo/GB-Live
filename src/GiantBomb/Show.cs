@@ -14,13 +14,13 @@ namespace GBLive.GiantBomb
 
 		public string Type { get; set; } = string.Empty;
 		public string Title { get; set; } = string.Empty;
-		
+
 		[JsonConverter(typeof(JsonUriConverter))]
 		public Uri Image { get; set; } = Constants.FallbackImage;
-		
+
 		[JsonConverter(typeof(JsonDateTimeOffsetConverter))]
 		public DateTimeOffset Date { get; set; } = DateTimeOffset.MinValue;
-		
+
 		[JsonPropertyName("premium")]
 		public bool IsPremium { get; set; } = false;
 
@@ -35,7 +35,7 @@ namespace GBLive.GiantBomb
 
 			TimeSpan timeUntilShowIncludingBuffer = (Date - DateTimeOffset.Now)
 				.Add(TimeSpan.FromSeconds(10d)); // some buffer time to allow the site to actually update
-			
+
 			if (timeUntilShowIncludingBuffer > TimeSpan.FromDays(24d))
 			{
 				/*
