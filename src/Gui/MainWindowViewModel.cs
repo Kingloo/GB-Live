@@ -81,7 +81,7 @@ namespace GBLive.Gui
 
 			RemoveRemovedShows(upcomingData);
 
-			RemoveOldShows(TimeSpan.FromMinutes(5d));
+			RemoveOldShows(olderThan: TimeSpan.FromSeconds(15d));
 		}
 
 		private void AddNewShows(UpcomingData upcomingData)
@@ -106,7 +106,7 @@ namespace GBLive.Gui
 			// remove events that we have locally but that are no longer in the API response
 
 			IList<Show> showsNoLongerInApi = shows
-				.Where(x => x.Date > DateTimeOffset.Now.AddMinutes(2d)) // to avoid removing an active/will-happen Show that hasn't sent its notification yet
+				.Where(x => x.Date > DateTimeOffset.Now.AddSeconds(15d)) // to avoid removing an active/will-happen Show that hasn't sent its notification yet
 				.Where(x => !upcomingData.Upcoming.Contains(x))
 				.ToList();
 
