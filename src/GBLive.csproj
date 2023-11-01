@@ -6,6 +6,7 @@
 		<EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
 		<StartupObject>GBLive.Program</StartupObject>
 		<ApplicationIcon>giantbomb_logo.ico</ApplicationIcon>
+		<RuntimeIdentifier>win10-x64</RuntimeIdentifier>
 	</PropertyGroup>
 
 </Project>
