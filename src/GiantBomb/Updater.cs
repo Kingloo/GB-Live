@@ -2,6 +2,9 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Net.Security;
+using System.Net.Sockets;
+using System.Security.Authentication;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,7 +25,22 @@ namespace GBLive.GiantBomb
 		{
 			UpcomingData? upcomingData = null;
 
-			HttpClient client = new HttpClient();
+			HttpMessageHandler handler = new SocketsHttpHandler
+			{
+				AllowAutoRedirect = false,
+				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
+				MaxConnectionsPerServer = 1,
+				SslOptions = new SslClientAuthenticationOptions
+				{
+					AllowRenegotiation = false,
+#pragma warning disable CA5398 // I want to set these explicitly
+					EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
+#pragma warning restore CA5398
+					EncryptionPolicy = System.Net.Security.EncryptionPolicy.RequireEncryption
+				}
+			};
+
+			HttpClient client = new HttpClient(handler, disposeHandler: false);
 
 			HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, upcomingJsonUri)
 			{
@@ -45,13 +63,15 @@ namespace GBLive.GiantBomb
 
 				upcomingData = await JsonSerializer.DeserializeAsync<UpcomingData>(upcomingJsonStream, jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
 			}
-#pragma warning disable CA1031
-			catch (Exception)
-			{ }
-#pragma warning restore CA1031
+			catch (HttpRequestException) { }
+			catch (IOException) { }
+			catch (SocketException) { }
+			catch (TimeoutException) { }
+			catch (OperationCanceledException) { }
 			finally
 			{
 				client.Dispose();
+				handler.Dispose();
 				request.Dispose();
 				response?.Dispose();
 			}
