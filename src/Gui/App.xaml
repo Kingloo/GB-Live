@@ -1,10 +1,11 @@
-﻿<Application x:Class="GBLive.Gui.App"
-	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:gb="clr-namespace:GBLive.GiantBomb"
-	xmlns:converters="clr-namespace:GBLive.Converters"
-	ShutdownMode="OnMainWindowClose"
-	Startup="Application_Startup">
+<Application x:Class="GBLive.Gui.App"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:gb="clr-namespace:GBLive.GiantBomb"
+			 xmlns:converters="clr-namespace:GBLive.Converters"
+			 Startup="Application_Startup"
+			 ShutdownMode="OnMainWindowClose"
+			 DispatcherUnhandledException="Application_DispatcherUnhandledException">
 
 	<Application.Resources>
 		<x:Static x:Key="IsLiveMessage" Member="gb:Constants.IsLiveMessage" />
