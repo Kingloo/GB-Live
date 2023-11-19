@@ -58,7 +58,7 @@ namespace GBLive.GiantBomb
 			try
 			{
 				response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-				
+
 				response.EnsureSuccessStatusCode();
 
 				Stream upcomingJsonStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
