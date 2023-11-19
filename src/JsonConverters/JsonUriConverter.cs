@@ -27,15 +27,8 @@ namespace GBLive.JsonConverters
 
 		public override void Write(Utf8JsonWriter writer, Uri value, JsonSerializerOptions options)
 		{
-			if (writer is null)
-			{
-				throw new ArgumentNullException(nameof(writer));
-			}
-
-			if (value is null)
-			{
-				throw new ArgumentNullException(nameof(value));
-			}
+			ArgumentNullException.ThrowIfNull(writer);
+			ArgumentNullException.ThrowIfNull(value);
 
 			writer.WriteString("image", value.AbsoluteUri);
 		}

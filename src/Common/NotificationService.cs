@@ -94,7 +94,7 @@ namespace GBLive.Common
 
 		private static void Display(Notification notification)
 		{
-			if (notification is null) { throw new ArgumentNullException(nameof(notification)); }
+			ArgumentNullException.ThrowIfNull(notification);
 
 			notification.Show();
 
@@ -185,10 +185,7 @@ namespace GBLive.Common
 
 			private static Grid BuildGrid(int numRows)
 			{
-				if (numRows < 1)
-				{
-					throw new ArgumentOutOfRangeException(nameof(numRows));
-				}
+				ArgumentOutOfRangeException.ThrowIfLessThan<int>(numRows, 1);
 
 				Grid grid = new Grid
 				{

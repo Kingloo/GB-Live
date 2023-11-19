@@ -29,10 +29,7 @@ namespace GBLive.JsonConverters
 
 		public override void Write(Utf8JsonWriter writer, DateTimeOffset value, JsonSerializerOptions options)
 		{
-			if (writer is null)
-			{
-				throw new ArgumentNullException(nameof(writer));
-			}
+			ArgumentNullException.ThrowIfNull(writer);
 
 			writer.WriteStringValue(value.ToUnixTimeSeconds().ToString(CultureInfo.CurrentCulture));
 		}
