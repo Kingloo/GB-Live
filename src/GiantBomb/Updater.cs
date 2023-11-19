@@ -36,7 +36,7 @@ namespace GBLive.GiantBomb
 #pragma warning disable CA5398 // I want to set these explicitly
 					EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
 #pragma warning restore CA5398
-					EncryptionPolicy = System.Net.Security.EncryptionPolicy.RequireEncryption
+					EncryptionPolicy = EncryptionPolicy.RequireEncryption
 				}
 			};
 
@@ -58,6 +58,8 @@ namespace GBLive.GiantBomb
 			try
 			{
 				response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+				
+				response.EnsureSuccessStatusCode();
 
 				Stream upcomingJsonStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
