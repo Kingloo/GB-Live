@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/src/bin/Debug/net6.0-windows/GBLive.dll",
+            "program": "${workspaceFolder}/src/bin/Debug/net8.0-windows/GBLive.dll",
             "args": [],
 			"env": {
 				"Environment": "Development"
