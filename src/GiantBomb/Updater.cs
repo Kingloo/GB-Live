@@ -8,6 +8,7 @@ using System.Security.Authentication;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using GBLive.Options;
 
 namespace GBLive.GiantBomb
 {
@@ -18,11 +19,21 @@ namespace GBLive.GiantBomb
 			PropertyNameCaseInsensitive = true
 		};
 
-		public static ValueTask<UpcomingData?> UpdateAsync(Uri upcomingJsonUri)
-			=> UpdateAsync(upcomingJsonUri, CancellationToken.None);
+		public static Task<UpcomingData?> UpdateAsync(GBLiveOptions gbLiveOptions, GiantBombOptions giantBombOptions)
+			=> UpdateAsyncInternal(gbLiveOptions, giantBombOptions, CancellationToken.None);
 
-		public static async ValueTask<UpcomingData?> UpdateAsync(Uri upcomingJsonUri, CancellationToken cancellationToken)
+		public static Task<UpcomingData?> UpdateAsync(GBLiveOptions gbLiveOptions, GiantBombOptions giantBombOptions, CancellationToken cancellationToken)
+			=> UpdateAsyncInternal(gbLiveOptions, giantBombOptions, cancellationToken);
+
+		private static async Task<UpcomingData?> UpdateAsyncInternal(
+			GBLiveOptions gbLiveOptions,
+			GiantBombOptions giantBombOptions,
+			CancellationToken cancellationToken)
 		{
+			ArgumentNullException.ThrowIfNull(gbLiveOptions);
+			ArgumentNullException.ThrowIfNull(giantBombOptions);
+			ArgumentNullException.ThrowIfNull(giantBombOptions.UpcomingJsonUri);
+
 			UpcomingData? upcomingData = null;
 
 			HttpMessageHandler handler = new SocketsHttpHandler
@@ -42,7 +53,7 @@ namespace GBLive.GiantBomb
 
 			HttpClient client = new HttpClient(handler, disposeHandler: false);
 
-			HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, upcomingJsonUri)
+			HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, giantBombOptions.UpcomingJsonUri)
 			{
 				Version = HttpVersion.Version20
 			};
@@ -51,7 +62,11 @@ namespace GBLive.GiantBomb
 			request.Headers.AcceptEncoding.ParseAdd("gzip, deflate, br");
 			request.Headers.Connection.ParseAdd("close"); // Connection is not used under HTTP/2, but the worst they can do is ignore it
 			request.Headers.Host = "www.giantbomb.com"; // this MUST have www - no idea why
-			request.Headers.UserAgent.ParseAdd(Constants.UserAgent);
+			
+			if (!String.IsNullOrWhiteSpace(gbLiveOptions.UserAgent))
+			{
+				request.Headers.UserAgent.ParseAdd(gbLiveOptions.UserAgent);
+			}
 
 			HttpResponseMessage? response = null;
 

@@ -6,8 +6,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using GBLive.Common;
 using GBLive.GiantBomb;
+using GBLive.Options;
+using GBLive.Exceptions;
 
 namespace GBLive.Gui
 {
@@ -47,19 +51,42 @@ namespace GBLive.Gui
 		private readonly ObservableCollection<Show> shows = new ObservableCollection<Show>();
 		public IReadOnlyCollection<Show> Shows { get => shows; }
 
-		public MainWindowViewModel() { }
+		private readonly ILogger<MainWindowViewModel> logger;
+
+		private readonly IOptionsMonitor<GiantBombOptions> giantBombOptionsMonitor;
+		public GiantBombOptions GiantBombOptions { get => giantBombOptionsMonitor.CurrentValue; }
+
+		private readonly IOptionsMonitor<GBLiveOptions> gbLiveOptionsMonitor;
+		public GBLiveOptions GBLiveOptions { get => gbLiveOptionsMonitor.CurrentValue; }
+
+		public MainWindowViewModel(
+			ILogger<MainWindowViewModel> logger,
+			IOptionsMonitor<GiantBombOptions> giantBombOptionsMonitor,
+			IOptionsMonitor<GBLiveOptions> gbLiveOptionsMonitor)
+		{
+			this.logger = logger;
+			this.giantBombOptionsMonitor = giantBombOptionsMonitor;
+			this.gbLiveOptionsMonitor = gbLiveOptionsMonitor;
+		}
 
 		public ValueTask UpdateAsync()
 			=> UpdateAsync(CancellationToken.None);
 
 		public async ValueTask UpdateAsync(CancellationToken cancellationToken)
 		{
-			UpcomingData? upcomingData = await Updater.UpdateAsync(Constants.UpcomingJsonUri, cancellationToken).ConfigureAwait(true);
+			GiantBombOptions currentGiantBombOptions = giantBombOptionsMonitor.CurrentValue;
+			GBLiveOptions currentGBLiveOptions = gbLiveOptionsMonitor.CurrentValue;
+
+			UpcomingData? upcomingData = await Updater.UpdateAsync(
+				currentGBLiveOptions,
+				currentGiantBombOptions,
+				cancellationToken)
+			.ConfigureAwait(true);
 
 			if (upcomingData is null)
 			{
 				IsLive = false;
-				LiveShowTitle = Constants.NameOfNoLiveShow;
+				LiveShowTitle = currentGBLiveOptions.NameOfNoLiveShow;
 
 				return;
 			}
@@ -70,11 +97,11 @@ namespace GBLive.Gui
 
 			LiveShowTitle = upcomingData.LiveNow is not null
 				? upcomingData.LiveNow.Title
-				: Constants.NameOfNoLiveShow;
+				: currentGBLiveOptions.NameOfNoLiveShow;
 
 			if (!wasLive && IsLive) // we only want the notification once, upon changing from not-live to live
 			{
-				NotificationService.Send(Constants.IsLiveMessage, OpenChatPage);
+				NotificationService.Send(currentGBLiveOptions.IsLiveMessage, OpenChatPage);
 			}
 
 			AddNewShows(upcomingData);
@@ -135,16 +162,17 @@ namespace GBLive.Gui
 			}
 		}
 
-#pragma warning disable CA1822
-		public void OpenHomePage() => OpenUriInBrowser(Constants.HomePage);
-#pragma warning restore CA1822
+		public void OpenHomePage() => OpenUriInBrowser(giantBombOptionsMonitor.CurrentValue.HomePage);
 
-#pragma warning disable CA1822
-		public void OpenChatPage() => OpenUriInBrowser(Constants.ChatPage);
-#pragma warning restore CA1822
+		public void OpenChatPage() => OpenUriInBrowser(giantBombOptionsMonitor.CurrentValue.ChatPage);
 
-		private static void OpenUriInBrowser(Uri uri)
+		private static void OpenUriInBrowser(Uri? uri)
 		{
+			if (uri is null)
+			{
+				throw new GBLiveException("uri was null");
+			}
+
 			if (!SystemLaunch.Uri(uri))
 			{
 				throw new ArgumentException($"failed to launch URI: {uri.AbsoluteUri}", nameof(uri));
@@ -157,7 +185,7 @@ namespace GBLive.Gui
 			{
 				timer = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
 				{
-					Interval = Constants.UpdateInterval
+					Interval = gbLiveOptionsMonitor.CurrentValue.UpdateInterval
 				};
 
 				timer.Tick += Timer_Tick;

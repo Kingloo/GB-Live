@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "GBLive (Dev)": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ENVIRONMENT": "Development"
+      }
+    },
+    "GBLive (Prod)": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ENVIRONMENT": "Production"
+      }
+    }
+  }
+}

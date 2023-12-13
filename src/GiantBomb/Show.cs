@@ -16,7 +16,7 @@ namespace GBLive.GiantBomb
 		public string Title { get; set; } = string.Empty;
 
 		[JsonConverter(typeof(JsonUriConverter))]
-		public Uri Image { get; set; } = Constants.FallbackImage;
+		public Uri? Image { get; set; }
 
 		[JsonConverter(typeof(JsonDateTimeOffsetConverter))]
 		public DateTimeOffset Date { get; set; } = DateTimeOffset.MinValue;

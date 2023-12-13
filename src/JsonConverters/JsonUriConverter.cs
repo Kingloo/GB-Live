@@ -9,7 +9,7 @@ namespace GBLive.JsonConverters
 	{
 		private const string https = "https://";
 
-		public override Uri Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+		public override Uri? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
 		{
 			if (reader.GetString() is string value
 				&& value.Length > 0)
@@ -23,7 +23,7 @@ namespace GBLive.JsonConverters
 			}
 			else
 			{
-				return Constants.FallbackImage;
+				return null;
 			}
 		}
 
