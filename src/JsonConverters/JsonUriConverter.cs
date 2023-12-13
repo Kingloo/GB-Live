@@ -1,6 +1,7 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using GBLive.GiantBomb;
 
 namespace GBLive.JsonConverters
 {
@@ -10,19 +11,20 @@ namespace GBLive.JsonConverters
 
 		public override Uri Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
 		{
-			string? raw = reader.GetString();
-
-			if (String.IsNullOrWhiteSpace(raw))
+			if (reader.GetString() is string value
+				&& value.Length > 0)
 			{
-				throw new ArgumentException(nameof(raw));
-			}
+				if (!value.StartsWith(https, StringComparison.OrdinalIgnoreCase))
+				{
+					value = value.Insert(0, https);
+				}
 
-			if (!raw.StartsWith(https, StringComparison.OrdinalIgnoreCase))
+				return new Uri(value, UriKind.Absolute);
+			}
+			else
 			{
-				raw = raw.Insert(0, https);
+				return Constants.FallbackImage;
 			}
-
-			return new Uri(raw, UriKind.Absolute);
 		}
 
 		public override void Write(Utf8JsonWriter writer, Uri value, JsonSerializerOptions options)
