@@ -62,7 +62,7 @@ namespace GBLive.GiantBomb
 			request.Headers.AcceptEncoding.ParseAdd("gzip, deflate, br");
 			request.Headers.Connection.ParseAdd("close"); // Connection is not used under HTTP/2, but the worst they can do is ignore it
 			request.Headers.Host = "www.giantbomb.com"; // this MUST have www - no idea why
-			
+
 			if (!String.IsNullOrWhiteSpace(gbLiveOptions.UserAgent))
 			{
 				request.Headers.UserAgent.ParseAdd(gbLiveOptions.UserAgent);

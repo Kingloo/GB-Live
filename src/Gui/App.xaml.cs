@@ -166,16 +166,16 @@ namespace GBLive.Gui
 	{
 		[LoggerMessage(StartupStartedId, LogLevel.Debug, "startup started")]
 		internal static partial void LogStartupStarted(ILogger<App> logger);
-		
+
 		[LoggerMessage(StartupFinishedId, LogLevel.Information, "started")]
 		internal static partial void LogStartupFinished(ILogger<App> logger);
-		
+
 		[LoggerMessage(AppExitZeroId, LogLevel.Information, "exited")]
 		internal static partial void LogAppExitZero(ILogger<App> logger);
-		
+
 		[LoggerMessage(AppExitNotZeroId, LogLevel.Critical, "exited (exit code {ExitCode})")]
 		internal static partial void LogAppExitNotZero(ILogger<App> logger, int exitCode);
-		
+
 		[LoggerMessage(DispatcherUnhandledExceptionId, LogLevel.Error, "unhandled exception: '{Type}' with message: '{Message}'")]
 		internal static partial void LogDispatcherUnhandledException(ILogger<App> logger, string type, string message);
 	}
