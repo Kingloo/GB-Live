@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": ".NET Core Launch (WPF)",
+            "name": ".NET Core Launch (WPF) (dev)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
@@ -13,6 +13,20 @@
             "args": [],
 			"env": {
 				"Environment": "Development"
+			},
+            "cwd": "${workspaceFolder}/src",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": ".NET Core Launch (WPF) (prod)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/bin/Debug/net8.0-windows/GBLive.dll",
+            "args": [],
+			"env": {
+				"Environment": "Production"
 			},
             "cwd": "${workspaceFolder}/src",
             "console": "internalConsole",
