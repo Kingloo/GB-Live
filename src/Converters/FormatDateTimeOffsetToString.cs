@@ -12,16 +12,13 @@ namespace GBLive.Converters
 
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			if (value is DateTimeOffset dt)
-			{
-				string format = (parameter is string providedFormat) ? providedFormat : defaultFormat;
+			string format = (parameter is string providedFormat) ? providedFormat : defaultFormat;
 
-				return dt.ToString(format, culture);
-			}
-			else
+			return value switch
 			{
-				return ErrorMessage;
-			}
+				DateTimeOffset dto => dto.ToString(format, culture),
+				_ => ErrorMessage
+			};
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
