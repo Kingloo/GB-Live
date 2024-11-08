@@ -99,9 +99,12 @@ namespace GBLive.Gui
 				? upcomingData.LiveNow.Title
 				: currentGBLiveOptions.NameOfNoLiveShow;
 
-			if (!wasLive && IsLive) // we only want the notification once, upon changing from not-live to live
+			if (currentGBLiveOptions.ShowNotifications)
 			{
-				NotificationService.Send(currentGBLiveOptions.IsLiveMessage, OpenChatPage);
+				if (!wasLive && IsLive) // we only want the notification once, upon changing from not-live to live
+				{
+					NotificationService.Send(currentGBLiveOptions.IsLiveMessage, OpenChatPage);
+				}
 			}
 
 			AddNewShows(upcomingData);
