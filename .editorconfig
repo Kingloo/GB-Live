@@ -1,3 +1,4 @@
+
 root = true
 
 [*]
@@ -7,9 +8,33 @@ charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
 
-# IDE0090: Use 'new(...)'
-csharp_style_implicit_object_creation_when_type_is_apparent = false
+# wants you to make API-classes internal
+# WPF App and MainWindow must be public, therefore anything they expose as public must be as well
+dotnet_diagnostic.CA1515.severity = none
 
 # CA1805 - complains about initializing to default value
 # e.g. int i = 0;
 dotnet_diagnostic.CA1805.severity = none
+
+# complains that some classes are never instantiated
+# not smart enough to tell that JSON-deserialized classes *are* used
+dotnet_diagnostic.CA1812.severity = none
+
+# wants you to turn on GenerateDocumentationFile in proj files
+# would automatically remove unused imports
+dotnet_diagnostic.IDE0005.severity = none
+
+# IDE0022 - expression-bodied methods
+dotnet_diagnostic.IDE0022.severity = none
+
+# wants to change 'public Foo MyFoo { get => _myFoo; }' to 'public Foo MyFoo => _myFoo;'
+dotnet_diagnostic.IDE0025.severity = none
+
+# wants to simplify collection initialization from 'new Foo()' to '[]'
+dotnet_diagnostic.IDE0028.severity = none
+
+# IDE0090: Use 'new(...)'
+csharp_style_implicit_object_creation_when_type_is_apparent = false
+
+# IDE0290 - use primary constructors
+dotnet_diagnostic.IDE0290.severity = none
