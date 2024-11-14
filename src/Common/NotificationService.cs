@@ -9,11 +9,11 @@ using System.Windows.Threading;
 
 namespace GBLive.Common
 {
-	public static class NotificationService
+	internal static class NotificationService
 	{
 		private static bool canShowNotification = true;
 
-		private readonly static Queue<Notification> notificationQueue = new Queue<Notification>();
+		private static readonly Queue<Notification> notificationQueue = new Queue<Notification>();
 
 		/// <summary>
 		/// How many times the timer ticked but found nothing in the queue to work on.
@@ -167,7 +167,7 @@ namespace GBLive.Common
 				if (action != null)
 				{
 					MouseButtonEventHandler handler = new MouseButtonEventHandler((s, e) => action());
-					var leftMouseDoubleClick = new EventSetter(MouseDoubleClickEvent, handler);
+					EventSetter leftMouseDoubleClick = new EventSetter(MouseDoubleClickEvent, handler);
 
 					style.Setters.Add(leftMouseDoubleClick);
 				}

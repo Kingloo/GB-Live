@@ -4,14 +4,11 @@ using System.IO;
 
 namespace GBLive.Common
 {
-	public static class SystemLaunch
+	internal static class SystemLaunch
 	{
 		public static bool Path(string path)
 		{
-			if (String.IsNullOrWhiteSpace(path))
-			{
-				throw new ArgumentNullException(nameof(path));
-			}
+			ArgumentException.ThrowIfNullOrWhiteSpace(path);
 
 			return File.Exists(path) && Launch(path);
 		}

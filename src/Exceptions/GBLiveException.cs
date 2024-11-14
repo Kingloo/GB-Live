@@ -2,7 +2,7 @@ using System;
 
 namespace GBLive.Exceptions
 {
-	public class GBLiveException : Exception
+	internal sealed class GBLiveException : Exception
 	{
 		public GBLiveException()
 		{ }

@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace GBLive.JsonConverters
 {
-	public class JsonUriConverter : JsonConverter<Uri>
+	internal sealed class JsonUriConverter : JsonConverter<Uri>
 	{
 		public override Uri? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
 		{

@@ -4,7 +4,7 @@ using System.Windows.Data;
 
 namespace GBLive.Converters
 {
-	public class FormatDateTimeOffsetToString : IValueConverter
+	internal sealed class FormatDateTimeOffsetToString : IValueConverter
 	{
 		private const string defaultFormat = "ddd MMM dd";
 

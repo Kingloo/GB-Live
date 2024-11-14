@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace GBLive.JsonConverters
 {
-	public class JsonDateTimeOffsetConverter : JsonConverter<DateTimeOffset>
+	internal sealed class JsonDateTimeOffsetConverter : JsonConverter<DateTimeOffset>
 	{
 		// Dec 20, 2022 11:00 AM
 		// hh (lowercase h) is for 12-hour clocks

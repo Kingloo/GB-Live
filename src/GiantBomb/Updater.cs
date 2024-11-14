@@ -12,7 +12,7 @@ using GBLive.Options;
 
 namespace GBLive.GiantBomb
 {
-	public static class Updater
+	internal static class Updater
 	{
 		private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions
 		{
@@ -74,7 +74,7 @@ namespace GBLive.GiantBomb
 			{
 				response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
-				response.EnsureSuccessStatusCode();
+				_ = response.EnsureSuccessStatusCode();
 
 				Stream upcomingJsonStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
