@@ -83,6 +83,13 @@ namespace GBLive.Gui
 				cancellationToken)
 			.ConfigureAwait(true);
 
+			logger.LogDebug(
+				"updated - {}, {} upcoming {}",
+				upcomingData?.LiveNow is not null ? "live" : "not live",
+				upcomingData?.Upcoming.Count ?? 0,
+				upcomingData?.Upcoming.Count == 1 ? "event" : "events"
+			);
+
 			if (upcomingData is null)
 			{
 				IsLive = false;
@@ -122,7 +129,9 @@ namespace GBLive.Gui
 			{
 				if (!shows.Contains(show))
 				{
+#pragma warning disable IDE0061
 					void notify() => NotificationService.Send(show.Title, OpenHomePage);
+#pragma warning restore IDE0061
 
 					show.StartCountdown(notify);
 
