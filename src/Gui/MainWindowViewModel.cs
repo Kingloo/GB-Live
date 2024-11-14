@@ -48,10 +48,10 @@ namespace GBLive.Gui
 			}
 		}
 
+		private readonly ILogger<MainWindowViewModel> logger;
+
 		private readonly ObservableCollection<Show> shows = new ObservableCollection<Show>();
 		public IReadOnlyCollection<Show> Shows { get => shows; }
-
-		private readonly ILogger<MainWindowViewModel> logger;
 
 		private readonly IOptionsMonitor<GiantBombOptions> giantBombOptionsMonitor;
 		public GiantBombOptions GiantBombOptions { get => giantBombOptionsMonitor.CurrentValue; }
@@ -160,7 +160,7 @@ namespace GBLive.Gui
 				{
 					show.StopCountdown();
 
-					shows.Remove(show);
+					_ = shows.Remove(show);
 				}
 			}
 		}
