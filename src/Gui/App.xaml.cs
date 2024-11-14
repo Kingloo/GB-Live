@@ -15,6 +15,7 @@ using static GBLive.Gui.AppLoggerMessages;
 
 namespace GBLive.Gui
 {
+#pragma warning disable IDE0058
 	public partial class App : Application
 	{
 		private readonly IHost host;
@@ -179,4 +180,5 @@ namespace GBLive.Gui
 		[LoggerMessage(DispatcherUnhandledExceptionId, LogLevel.Error, "unhandled exception: '{Type}' with message: '{Message}'")]
 		internal static partial void LogDispatcherUnhandledException(ILogger<App> logger, string type, string message);
 	}
+#pragma warning restore IDE0058
 }

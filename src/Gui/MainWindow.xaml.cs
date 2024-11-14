@@ -33,6 +33,7 @@ namespace GBLive.Gui
 
 		private async void Window_KeyDown(object sender, KeyEventArgs e)
 		{
+#pragma warning disable IDE0010 // complains that you haven't specified every enum case
 			switch (e.Key)
 			{
 				case Key.Escape:
@@ -46,6 +47,7 @@ namespace GBLive.Gui
 				default:
 					break;
 			}
+#pragma warning restore IDE0010
 		}
 
 		private void ItemsControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)

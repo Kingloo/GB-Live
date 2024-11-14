@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 
+#pragma warning disable IDE0130 // wants to change namespace to GBLive to match folder structure
 namespace GBLive.EventIds
 {
 	internal static class App
@@ -17,3 +18,4 @@ namespace GBLive.EventIds
 		internal static readonly EventId DispatcherUnhandledException = new EventId(DispatcherUnhandledExceptionId, nameof(DispatcherUnhandledException));
 	}
 }
+#pragma warning restore IDE0130
