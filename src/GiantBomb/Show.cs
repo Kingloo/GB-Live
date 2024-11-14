@@ -76,7 +76,7 @@ namespace GBLive.GiantBomb
 
 		private bool EqualsInternal(Show show)
 		{
-			var sco = StringComparison.Ordinal;
+			StringComparison sco = StringComparison.Ordinal;
 
 			bool sameTitle = Title.Equals(show.Title, sco);
 			bool sameTime = Date.EqualsExact(show.Date);
@@ -109,16 +109,15 @@ namespace GBLive.GiantBomb
 
 		public override string ToString()
 		{
-			StringBuilder sb = new StringBuilder();
-
-			sb.AppendLine(base.ToString());
-			sb.AppendLine(Title);
-			sb.AppendLine(Date.ToString(CultureInfo.CurrentCulture));
-			sb.AppendLine(IsPremium ? "premium" : "not premium");
-			sb.AppendLine(Type);
-			sb.AppendLine(Image?.AbsoluteUri ?? "no image uri");
-
-			return sb.ToString();
+			return new StringBuilder()
+				.AppendLine(base.ToString())
+				.AppendLine(base.ToString())
+				.AppendLine(Title)
+				.AppendLine(Date.ToString(CultureInfo.CurrentCulture))
+				.AppendLine(IsPremium ? "premium" : "not premium")
+				.AppendLine(Type)
+				.AppendLine(Image?.AbsoluteUri ?? "no image uri")
+				.ToString();
 		}
 	}
 }
