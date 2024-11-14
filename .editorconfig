@@ -20,6 +20,9 @@ dotnet_diagnostic.CA1805.severity = none
 # not smart enough to tell that JSON-deserialized classes *are* used
 dotnet_diagnostic.CA1812.severity = none
 
+# wants you to use LoggerMessage extensions
+dotnet_diagnostic.CA1848.severity = none
+
 # wants you to turn on GenerateDocumentationFile in proj files
 # would automatically remove unused imports
 dotnet_diagnostic.IDE0005.severity = none
@@ -32,6 +35,9 @@ dotnet_diagnostic.IDE0025.severity = none
 
 # wants to simplify collection initialization from 'new Foo()' to '[]'
 dotnet_diagnostic.IDE0028.severity = none
+
+# wants to simplify if statements
+dotnet_diagnostic.IDE0046.severity = none
 
 # IDE0090: Use 'new(...)'
 csharp_style_implicit_object_creation_when_type_is_apparent = false
